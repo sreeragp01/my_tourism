@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: keralink-postgis
+    environment:
+      POSTGRES_DB: keralink_db
+      POSTGRES_USER: keralink_user
+      POSTGRES_PASSWORD: keralink_secure_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: keralink-redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: ../infrastructure/docker/Dockerfile.backend
+    container_name: keralink-django-api
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4
+    environment:
+      DJANGO_SECRET_KEY: keralink-prod-super-secure-key-2026-gods-own-country
+      USE_POSTGIS: "true"
+      DB_NAME: keralink_db
+      DB_USER: keralink_user
+      DB_PASSWORD: keralink_secure_password_2026
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+      RAZORPAY_KEY_ID: rzp_test_keralink_sandbox_2026
+      RAZORPAY_KEY_SECRET: rzp_test_secret_sandbox_key
+      OPENWEATHER_API_KEY: staging_openweather_mock_key
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  celery-worker:
+    build:
+      context: ../../backend
+      dockerfile: ../infrastructure/docker/Dockerfile.backend
+    container_name: keralink-celery-worker
+    command: celery -A config worker -l info
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      DB_HOST: postgres
+    depends_on:
+      - backend
+      - redis
+
+  celery-beat:
+    build:
+      context: ../../backend
+      dockerfile: ../infrastructure/docker/Dockerfile.backend
+    container_name: keralink-celery-beat
+    command: celery -A config beat -l info
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      DB_HOST: postgres
+    depends_on:
+      - backend
+      - redis
+
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: ../infrastructure/docker/Dockerfile.frontend
+    container_name: keralink-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
