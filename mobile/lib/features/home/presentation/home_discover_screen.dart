@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
 class HomeDiscoverScreen extends StatelessWidget {
+  final String userName;
   final VoidCallback onOpenPlanner;
   final VoidCallback onOpenCompanion;
+  final VoidCallback? onLogout;
 
   const HomeDiscoverScreen({
     super.key,
+    this.userName = 'Sreerag',
     required this.onOpenPlanner,
     required this.onOpenCompanion,
+    this.onLogout,
   });
 
   @override
@@ -53,9 +57,9 @@ class HomeDiscoverScreen extends StatelessWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Good morning, Sreerag 🌴',
-              style: TextStyle(
+            Text(
+              'Good morning, $userName 🌴',
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFFF7F3E8),
@@ -76,6 +80,12 @@ class HomeDiscoverScreen extends StatelessWidget {
             tooltip: 'Live Companion',
             onPressed: onOpenCompanion,
           ),
+          if (onLogout != null)
+            IconButton(
+              icon: const Icon(Icons.logout_rounded, color: Colors.white70, size: 20),
+              tooltip: 'Sign Out',
+              onPressed: onLogout,
+            ),
         ],
       ),
       body: SingleChildScrollView(
