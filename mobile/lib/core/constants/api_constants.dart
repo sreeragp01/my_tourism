@@ -9,6 +9,7 @@ class ApiConstants {
   static const String destinations = '/destinations/';
   static const String experiences = '/experiences/';
   static const String accommodations = '/accommodations/';
+  static const String search = '/search/';
   static const String inventoryHold = '/inventory/hold/';
 
   // AI Travel Architect

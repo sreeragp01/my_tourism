@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../data/destination_repository.dart';
 import '../models/destination_model.dart';
 import 'destination_details_screen.dart';
+import '../../search/data/search_repository.dart';
+import '../../search/presentation/search_discovery_screen.dart';
 
 class HomeDiscoverScreen extends StatefulWidget {
   final String userName;
@@ -9,6 +11,7 @@ class HomeDiscoverScreen extends StatefulWidget {
   final VoidCallback onOpenCompanion;
   final VoidCallback? onLogout;
   final DestinationRepository destinationRepository;
+  final SearchRepository? searchRepository;
 
   const HomeDiscoverScreen({
     super.key,
@@ -17,6 +20,7 @@ class HomeDiscoverScreen extends StatefulWidget {
     required this.onOpenCompanion,
     this.onLogout,
     required this.destinationRepository,
+    this.searchRepository,
   });
 
   @override
@@ -83,6 +87,20 @@ class _HomeDiscoverScreenState extends State<HomeDiscoverScreen> {
     return result;
   }
 
+  void _openSearch([String initialQuery = '', String? initialCategory]) {
+    final searchRepo = widget.searchRepository ??
+        SearchRepository(apiClient: widget.destinationRepository.apiClient);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SearchDiscoveryScreen(
+          searchRepository: searchRepo,
+          initialQuery: initialQuery,
+          initialCategory: initialCategory,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,7 +143,7 @@ class _HomeDiscoverScreenState extends State<HomeDiscoverScreen> {
         ],
       ),
       body: RefreshIndicator(
-        color: const Color(0xFFD4AF37),
+        color: const Color(0xFF10B981),
         backgroundColor: const Color(0xFF142B20),
         onRefresh: () => _loadDestinations(forceRefresh: true),
         child: SingleChildScrollView(
@@ -137,13 +155,21 @@ class _HomeDiscoverScreenState extends State<HomeDiscoverScreen> {
               // Smart Search Bar
               TextField(
                 onChanged: (v) => setState(() => _searchQuery = v),
+                onSubmitted: (v) => _openSearch(v),
                 style: const TextStyle(color: Colors.white, fontSize: 13),
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: const Color(0xFF142B20),
                   hintText: 'Search destinations (e.g. Munnar, Alleppey)...',
                   hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFF10B981), size: 18),
+                  prefixIcon: IconButton(
+                    icon: const Icon(Icons.search, color: Color(0xFF10B981), size: 18),
+                    onPressed: () => _openSearch(_searchQuery),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.tune, color: Color(0xFF10B981), size: 18),
+                    onPressed: () => _openSearch(_searchQuery),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,

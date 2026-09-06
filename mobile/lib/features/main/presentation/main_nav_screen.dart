@@ -12,6 +12,7 @@ import '../../ai_planner/presentation/ai_planner_screen.dart';
 import '../../companion/presentation/live_companion_screen.dart';
 import '../../trips/presentation/my_trips_screen.dart';
 import '../../safety/presentation/safety_hub_screen.dart';
+import '../../search/data/search_repository.dart';
 
 class MainNavScreen extends StatefulWidget {
   final AuthRepository? authRepository;
@@ -33,32 +34,25 @@ class _MainNavScreenState extends State<MainNavScreen> {
   int _currentIndex = 0;
   late final DestinationRepository _destRepo;
   late final ExperienceRepository _expRepo;
+  late final SearchRepository _searchRepo;
 
   @override
   void initState() {
     super.initState();
-    if (widget.destinationRepository != null) {
-      _destRepo = widget.destinationRepository!;
-    } else {
-      final storage = widget.authRepository?.storage ?? SecureTokenStorage();
-      final client = widget.authRepository?.apiClient ??
-          ApiClient(
-            config: AppConfig.fromEnvironment(),
-            storage: storage,
-          );
-      _destRepo = DestinationRepository(apiClient: client, storage: storage);
-    }
+    final storage = widget.authRepository?.storage ?? SecureTokenStorage();
+    final client = widget.authRepository?.apiClient ??
+        ApiClient(
+          config: AppConfig.fromEnvironment(),
+          storage: storage,
+        );
 
-    if (widget.experienceRepository != null) {
-      _expRepo = widget.experienceRepository!;
-    } else {
-      final client = widget.authRepository?.apiClient ??
-          ApiClient(
-            config: AppConfig.fromEnvironment(),
-            storage: widget.authRepository?.storage ?? SecureTokenStorage(),
-          );
-      _expRepo = ExperienceRepository(apiClient: client);
-    }
+    _destRepo = widget.destinationRepository ??
+        DestinationRepository(apiClient: client, storage: storage);
+
+    _expRepo = widget.experienceRepository ??
+        ExperienceRepository(apiClient: client);
+
+    _searchRepo = SearchRepository(apiClient: client);
   }
 
   Future<void> _handleLogout() async {
@@ -105,6 +99,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
       HomeDiscoverScreen(
         userName: userName,
         destinationRepository: _destRepo,
+        searchRepository: _searchRepo,
         onOpenPlanner: () => setState(() => _currentIndex = 2),
         onOpenCompanion: () => setState(() => _currentIndex = 3),
         onLogout: widget.authRepository != null ? _handleLogout : null,

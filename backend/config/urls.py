@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/v1/payments/', include('apps.payments.urls')),
     path('api/v1/provider/', include('apps.organizations.urls')),
     path('api/v1/audit/', include('apps.audit.urls')),
+    path('api/v1/search/', include('apps.search.urls')),
 ]
 
 # Optional OpenAPI Spectacular docs if installed

@@ -1,50 +1,74 @@
 class Attraction {
   final String id;
+  final String? destinationId;
   final String name;
   final String category;
   final String description;
   final String image;
   final double latitude;
   final double longitude;
+  final String openingTime;
+  final String closingTime;
+  final double entryFee;
   final int typicalDurationMins;
   final bool rainFriendly;
+  final String crowdProfile;
+  final double? distanceKm;
 
   const Attraction({
     required this.id,
+    this.destinationId,
     required this.name,
     required this.category,
     required this.description,
     required this.image,
     required this.latitude,
     required this.longitude,
+    this.openingTime = '08:00',
+    this.closingTime = '18:00',
+    this.entryFee = 0.0,
     this.typicalDurationMins = 90,
     this.rainFriendly = false,
+    this.crowdProfile = 'MODERATE',
+    this.distanceKm,
   });
 
   factory Attraction.fromJson(Map<String, dynamic> json) {
     return Attraction(
       id: json['id']?.toString() ?? '',
+      destinationId: json['destination_id']?.toString() ?? json['destination']?.toString(),
       name: json['name']?.toString() ?? '',
       category: json['category']?.toString() ?? 'SIGHTSEEING',
       description: json['description']?.toString() ?? '',
       image: json['image']?.toString() ?? '',
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
-      typicalDurationMins: json['typical_duration_mins'] ?? 90,
+      openingTime: json['opening_time']?.toString() ?? '08:00',
+      closingTime: json['closing_time']?.toString() ?? '18:00',
+      entryFee: (json['entry_fee'] as num?)?.toDouble() ?? 0.0,
+      typicalDurationMins: (json['typical_duration_mins'] as num?)?.toInt() ?? 90,
       rainFriendly: json['rain_friendly'] == true,
+      crowdProfile: json['crowd_profile']?.toString() ?? 'MODERATE',
+      distanceKm: (json['distance_km'] as num?)?.toDouble(),
     );
   }
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'destination_id': destinationId,
         'name': name,
         'category': category,
         'description': description,
         'image': image,
         'latitude': latitude,
         'longitude': longitude,
+        'opening_time': openingTime,
+        'closing_time': closingTime,
+        'entry_fee': entryFee,
         'typical_duration_mins': typicalDurationMins,
         'rain_friendly': rainFriendly,
+        'crowd_profile': crowdProfile,
+        'distance_km': distanceKm,
       };
 }
 

@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'apps.payments',
     'apps.events',        # Dedicated Transactional Outbox & Event Dispatcher
     'apps.audit',         # Immutable Security & Compliance Audit Log
+    'apps.search',        # Unified Tourism Search & Discovery Engine
 ]
 
 
