@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import '../../../core/config/app_config.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/storage/secure_token_storage.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/presentation/login_screen.dart';
+import '../../home/data/destination_repository.dart';
 import '../../home/presentation/home_discover_screen.dart';
+import '../../explore/data/experience_repository.dart';
+import '../../explore/presentation/explore_kerala_screen.dart';
 import '../../ai_planner/presentation/ai_planner_screen.dart';
 import '../../companion/presentation/live_companion_screen.dart';
 import '../../trips/presentation/my_trips_screen.dart';
@@ -9,10 +15,14 @@ import '../../safety/presentation/safety_hub_screen.dart';
 
 class MainNavScreen extends StatefulWidget {
   final AuthRepository? authRepository;
+  final DestinationRepository? destinationRepository;
+  final ExperienceRepository? experienceRepository;
 
   const MainNavScreen({
     super.key,
     this.authRepository,
+    this.destinationRepository,
+    this.experienceRepository,
   });
 
   @override
@@ -21,6 +31,35 @@ class MainNavScreen extends StatefulWidget {
 
 class _MainNavScreenState extends State<MainNavScreen> {
   int _currentIndex = 0;
+  late final DestinationRepository _destRepo;
+  late final ExperienceRepository _expRepo;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.destinationRepository != null) {
+      _destRepo = widget.destinationRepository!;
+    } else {
+      final storage = widget.authRepository?.storage ?? SecureTokenStorage();
+      final client = widget.authRepository?.apiClient ??
+          ApiClient(
+            config: AppConfig.fromEnvironment(),
+            storage: storage,
+          );
+      _destRepo = DestinationRepository(apiClient: client, storage: storage);
+    }
+
+    if (widget.experienceRepository != null) {
+      _expRepo = widget.experienceRepository!;
+    } else {
+      final client = widget.authRepository?.apiClient ??
+          ApiClient(
+            config: AppConfig.fromEnvironment(),
+            storage: widget.authRepository?.storage ?? SecureTokenStorage(),
+          );
+      _expRepo = ExperienceRepository(apiClient: client);
+    }
+  }
 
   Future<void> _handleLogout() async {
     final confirm = await showDialog<bool>(
@@ -65,10 +104,12 @@ class _MainNavScreenState extends State<MainNavScreen> {
     final screens = [
       HomeDiscoverScreen(
         userName: userName,
-        onOpenPlanner: () => setState(() => _currentIndex = 1),
-        onOpenCompanion: () => setState(() => _currentIndex = 2),
+        destinationRepository: _destRepo,
+        onOpenPlanner: () => setState(() => _currentIndex = 2),
+        onOpenCompanion: () => setState(() => _currentIndex = 3),
         onLogout: widget.authRepository != null ? _handleLogout : null,
       ),
+      ExploreKeralaScreen(experienceRepository: _expRepo),
       const AIPlannerScreen(),
       const LiveCompanionScreen(),
       const MyTripsScreen(),
@@ -91,14 +132,19 @@ class _MainNavScreenState extends State<MainNavScreen> {
         },
         destinations: const [
           NavigationDestination(
+            icon: Icon(Icons.home_outlined, color: Colors.white70),
+            selectedIcon: Icon(Icons.home, color: Color(0xFF10B981)),
+            label: 'Discover',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.explore_outlined, color: Colors.white70),
             selectedIcon: Icon(Icons.explore, color: Color(0xFF10B981)),
-            label: 'Discover',
+            label: 'Explore',
           ),
           NavigationDestination(
             icon: Icon(Icons.auto_awesome_outlined, color: Colors.white70),
             selectedIcon: Icon(Icons.auto_awesome, color: Color(0xFFD4AF37)),
-            label: 'AI Planner',
+            label: 'AI Plan',
           ),
           NavigationDestination(
             icon: Icon(Icons.forum_outlined, color: Colors.white70),
