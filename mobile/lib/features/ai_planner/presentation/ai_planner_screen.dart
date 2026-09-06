@@ -1,60 +1,105 @@
 import 'package:flutter/material.dart';
+import 'package:keralink_mobile/core/config/app_config.dart';
+import 'package:keralink_mobile/core/network/api_client.dart';
+import 'package:keralink_mobile/core/storage/secure_token_storage.dart';
+import '../data/ai_planner_repository.dart';
+import '../models/itinerary_models.dart';
+import 'itinerary_details_screen.dart';
 
 class AIPlannerScreen extends StatefulWidget {
-  const AIPlannerScreen({super.key});
+  final IAIPlannerRepository? repository;
+
+  const AIPlannerScreen({super.key, this.repository});
 
   @override
   State<AIPlannerScreen> createState() => _AIPlannerScreenState();
 }
 
 class _AIPlannerScreenState extends State<AIPlannerScreen> {
+  late final IAIPlannerRepository _repository;
+
   final TextEditingController _promptController = TextEditingController(
     text: '6 days luxury Kerala trip to Munnar and Alleppey with authentic cuisine',
   );
 
   double _durationDays = 6;
   String _travelStyle = 'PREMIUM';
+  double _estimatedBudget = 65000;
   bool _isGenerating = false;
-  Map<String, dynamic>? _generatedPlan;
+  bool _isParsingPrompt = false;
+  AIPlan? _generatedPlan;
+  String? _errorMessage;
 
-  void _generateItinerary() {
+  @override
+  void initState() {
+    super.initState();
+    _repository = widget.repository ??
+        AIPlannerRepository(
+          apiClient: ApiClient(
+            config: AppConfig.fromEnvironment(),
+            storage: SecureTokenStorage(),
+          ),
+        );
+  }
+
+  Future<void> _parsePrompt() async {
+    final text = _promptController.text.trim();
+    if (text.isEmpty) return;
+
     setState(() {
-      _isGenerating = true;
+      _isParsingPrompt = true;
+      _errorMessage = null;
     });
 
-    // Simulate AI synthesis based on requirement parser & pricing engine
-    Future.delayed(const Duration(milliseconds: 1200), () {
+    try {
+      final profile = await _repository.parsePrompt(text);
+      if (!mounted) return;
+      setState(() {
+        _isParsingPrompt = false;
+        _durationDays = profile.durationDays.toDouble().clamp(2, 10);
+        _travelStyle = profile.travelStyle;
+        _estimatedBudget = profile.budgetLimit;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('AI Extracted: ${_durationDays.toInt()} Days · $_travelStyle style'),
+          backgroundColor: const Color(0xFF10B981),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isParsingPrompt = false;
+      });
+    }
+  }
+
+  Future<void> _generateItinerary() async {
+    setState(() {
+      _isGenerating = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final plan = await _repository.generateItinerary(
+        budget: _estimatedBudget,
+        duration: _durationDays.toInt(),
+        travelStyle: _travelStyle,
+      );
+
       if (!mounted) return;
       setState(() {
         _isGenerating = false;
-        _generatedPlan = {
-          'title': 'Romantic Kerala Hills & Backwaters Corridor',
-          'duration': '${_durationDays.toInt()} Days / ${(_durationDays - 1).toInt()} Nights',
-          'totalPrice': '₹78,400',
-          'greenScore': '91/100',
-          'days': [
-            {
-              'day': 'Day 1',
-              'location': 'Fort Kochi & Colonial Promenade',
-              'activity': 'Heritage Net Walk & Kathakali Performance',
-              'stay': 'Brunton Boatyard (Heritage)',
-            },
-            {
-              'day': 'Day 2',
-              'location': 'Munnar Tea Highlands',
-              'activity': 'Lockhart Tea Tasting & Mist Cloud Trail',
-              'stay': 'Spice Tree Luxury Chalet',
-            },
-            {
-              'day': 'Day 3',
-              'location': 'Alleppey Backwaters',
-              'activity': 'Private Solar-Assisted Houseboat Cruise',
-              'stay': 'Vembanad Lake Heritage Tharavadu',
-            },
-          ],
-        };
+        _generatedPlan = plan;
       });
-    });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isGenerating = false;
+        _errorMessage = 'Generation failed: ${e.toString()}';
+      });
+    }
   }
 
   @override
@@ -85,16 +130,39 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'What kind of Kerala journey do you dream of?',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFF7F3E8),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'What kind of Kerala journey do you dream of?',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFF7F3E8),
+                          ),
+                        ),
+                      ),
+                      TextButton.icon(
+                        key: const Key('ai_parse_prompt_btn'),
+                        onPressed: _isParsingPrompt ? null : _parsePrompt,
+                        icon: _isParsingPrompt
+                            ? const SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF10B981)),
+                              )
+                            : const Icon(Icons.auto_awesome, size: 14, color: Color(0xFF10B981)),
+                        label: const Text(
+                          'Extract Intent',
+                          style: TextStyle(fontSize: 11, color: Color(0xFF10B981)),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 4),
                   TextField(
+                    key: const Key('ai_prompt_input'),
                     controller: _promptController,
                     maxLines: 3,
                     style: const TextStyle(fontSize: 13, color: Colors.white),
@@ -129,9 +197,9 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                   ),
                   Slider(
                     value: _durationDays,
-                    min: 3,
+                    min: 2,
                     max: 10,
-                    divisions: 7,
+                    divisions: 8,
                     activeColor: const Color(0xFF10B981),
                     inactiveColor: Colors.white10,
                     onChanged: (v) => setState(() => _durationDays = v),
@@ -176,8 +244,9 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                   const SizedBox(height: 18),
                   SizedBox(
                     width: double.infinity,
-                    height: 46,
+                    height: 48,
                     child: ElevatedButton.icon(
+                      key: const Key('ai_generate_plan_btn'),
                       onPressed: _isGenerating ? null : _generateItinerary,
                       icon: _isGenerating
                           ? const SizedBox(
@@ -186,7 +255,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                               child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF144032)),
                             )
                           : const Icon(Icons.bolt, size: 18),
-                      label: Text(_isGenerating ? 'Synthesizing Route...' : 'Generate Plan'),
+                      label: Text(_isGenerating ? 'Synthesizing Authoritative Route...' : 'Generate Plan'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFD4AF37),
                         foregroundColor: const Color(0xFF144032),
@@ -199,13 +268,37 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
               ),
             ),
 
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.redAccent),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             if (_generatedPlan != null) ...[
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Generated Itinerary',
+                    'Synthesized Itinerary',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -217,9 +310,10 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF10B981)),
                     ),
                     child: Text(
-                      'Green Score ${_generatedPlan!['greenScore']}',
+                      'Score ${_generatedPlan!.validation.score}/100',
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -241,7 +335,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _generatedPlan!['title'],
+                      _generatedPlan!.title,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -253,21 +347,37 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          _generatedPlan!['duration'],
+                          '${_generatedPlan!.durationDays} Days / ${_generatedPlan!.travelStyle}',
                           style: const TextStyle(fontSize: 12, color: Color(0xFFC5D8CD)),
                         ),
                         Text(
-                          _generatedPlan!['totalPrice'],
+                          '₹${_generatedPlan!.pricing.total.toStringAsFixed(0)}',
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFFD4AF37),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: _generatedPlan!.corridorRoute.map((c) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0D1F17),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.white12),
+                          ),
+                          child: Text(c, style: const TextStyle(color: Colors.white70, fontSize: 10)),
+                        );
+                      }).toList(),
+                    ),
                     const Divider(color: Colors.white12, height: 24),
-                    ...(_generatedPlan!['days'] as List).map((d) {
+                    ..._generatedPlan!.days.take(3).map((d) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: Row(
@@ -280,7 +390,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                d['day'],
+                                'Day ${d.dayNumber}',
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -294,7 +404,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    d['location'],
+                                    d.destinationName,
                                     style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
@@ -302,7 +412,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                                     ),
                                   ),
                                   Text(
-                                    d['activity'],
+                                    d.themeTitle,
                                     style: const TextStyle(
                                       fontSize: 11,
                                       color: Color(0xFFC5D8CD),
@@ -315,6 +425,40 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                         ),
                       );
                     }),
+                    if (_generatedPlan!.days.length > 3)
+                      Center(
+                        child: Text(
+                          '+ ${_generatedPlan!.days.length - 3} more days in corridor',
+                          style: const TextStyle(color: Colors.white38, fontSize: 11),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton.icon(
+                        key: const Key('ai_view_details_btn'),
+                        icon: const Icon(Icons.tune, size: 18),
+                        label: const Text('Customize & View Day Schedule'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: const Color(0xFF0D1F17),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (ctx) => ItineraryDetailsScreen(
+                                initialPlan: _generatedPlan!,
+                                repository: _repository,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -325,3 +469,4 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
     );
   }
 }
+

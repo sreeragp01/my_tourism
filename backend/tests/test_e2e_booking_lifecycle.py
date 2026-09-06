@@ -35,7 +35,7 @@ class MasterE2EBookingLifecycleTestCase(unittest.TestCase):
         # Step 2: AI Travel Architect generates full plan (v1)
         plan_v1 = AITravelArchitect.generate_full_package(profile)
         self.assertEqual(plan_v1['version_number'], 1)
-        self.assertEqual(len(plan_v1['days']), 2)
+        self.assertEqual(len(plan_v1['days']), profile['duration_days'])
         self.assertTrue(plan_v1['validation']['is_valid'])
 
         # Step 3: Authoritative pricing calculation

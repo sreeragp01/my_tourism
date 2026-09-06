@@ -12,11 +12,18 @@ class ApiConstants {
   static const String search = '/search/';
   static const String inventoryHold = '/inventory/hold/';
 
-  // AI Travel Architect
+  // AI Travel Architect & Plan Versioning
   static const String parsePrompt = '/ai/parse-prompt/';
   static const String generateItinerary = '/ai/generate-itinerary/';
   static const String substituteRain = '/ai/substitute-rain/';
   static const String optimizeRoute = '/ai/optimize-route/';
+  static String aiPlan(String id) => '/ai/plans/$id/';
+  static String aiPlanCustomize(String id) => '/ai/plans/$id/customize/';
+  static String aiPlanRegenerate(String id) => '/ai/plans/$id/regenerate/';
+  static String aiPlanSubstituteRain(String id) => '/ai/plans/$id/substitute-rain/';
+  static String aiPlanVersions(String id) => '/ai/plans/$id/versions/';
+  static String aiPlanVersion(String id, int version) => '/ai/plans/$id/versions/$version/';
+  static String aiPlanValidate(String id) => '/ai/plans/$id/validate/';
 
   // Live Trip Companion
   static const String companionChat = '/companion/chat/';

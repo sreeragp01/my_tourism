@@ -64,10 +64,13 @@ class AuthoritativePricingEngine:
         total = subtotal + taxes_and_fees - discount
 
         return {
+            'subtotal': float(subtotal),
             'stays_total': float(stays_total),
             'transport_total': float(transport_total),
             'experiences_total': float(experiences_total),
             'meals_estimate': float(meals_estimate),
+            'gst_amount': float(taxes),
+            'platform_fee': float(platform_fees),
             'taxes_and_fees': float(taxes_and_fees),
             'discount': float(discount),
             'total': float(total),

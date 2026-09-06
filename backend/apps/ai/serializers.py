@@ -12,11 +12,33 @@ class GenerateItineraryRequestSerializer(serializers.Serializer):
     travel_style = serializers.CharField(default='PREMIUM')
     pace = serializers.CharField(default='BALANCED')
     origin = serializers.CharField(default='Kochi')
+    raw_prompt = serializers.CharField(required=False, allow_blank=True, default='')
+
+class CustomizePlanRequestSerializer(serializers.Serializer):
+    action = serializers.ChoiceField(choices=[
+        'SUBSTITUTE_RAIN',
+        'REMOVE_ACTIVITY',
+        'REPLACE_ACTIVITY',
+        'ADD_ACTIVITY',
+        'REORDER'
+    ])
+    day_number = serializers.IntegerField(min_value=1)
+    timeline_event_id = serializers.CharField(required=False, allow_blank=True, default=None)
+    new_event = serializers.DictField(required=False, default=None)
+    reason = serializers.CharField(required=False, allow_blank=True, default=None)
+
+class RegeneratePlanRequestSerializer(serializers.Serializer):
+    reason = serializers.CharField(required=False, default='Traveler requested complete replan')
+    preferences_override = serializers.DictField(required=False, default=dict)
+
+class SubstituteRainPlanRequestSerializer(serializers.Serializer):
+    day_number = serializers.IntegerField(min_value=1)
+    destination_id = serializers.CharField(required=False, default='munnar')
 
 class SubstituteRainRequestSerializer(serializers.Serializer):
-    day_number = serializers.IntegerField()
-    outdoor_item_id = serializers.CharField()
-    destination_id = serializers.CharField()
+    day_number = serializers.IntegerField(min_value=1)
+    outdoor_item_id = serializers.CharField(required=False, default='Outdoor Activity')
+    destination_id = serializers.CharField(required=False, default='munnar')
 
 class RouteOptimizeRequestSerializer(serializers.Serializer):
     origin = serializers.DictField()
