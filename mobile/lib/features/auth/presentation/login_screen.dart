@@ -86,15 +86,31 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Header
                   Center(
                     child: Container(
-                      width: 64,
-                      height: 64,
+                      width: 68,
+                      height: 68,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF144032),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: const Color(0xFFD4AF37), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                          ),
+                        ],
                       ),
-                      child: const Center(
-                        child: Text('🌴', style: TextStyle(fontSize: 32)),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: Image.asset(
+                          'assets/images/app_logo.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: const Color(0xFF144032),
+                            child: const Center(
+                              child: Text('🌴', style: TextStyle(fontSize: 32)),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),

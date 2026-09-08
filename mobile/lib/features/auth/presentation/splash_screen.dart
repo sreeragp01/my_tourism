@@ -54,22 +54,31 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 80,
-              height: 80,
+              width: 88,
+              height: 88,
               decoration: BoxDecoration(
-                color: const Color(0xFF144032),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
                     blurRadius: 20,
                     spreadRadius: 2,
                   ),
                 ],
               ),
-              child: const Center(
-                child: Text('🌴', style: TextStyle(fontSize: 40)),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(22),
+                child: Image.asset(
+                  'assets/images/app_logo.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: const Color(0xFF144032),
+                    child: const Center(
+                      child: Text('🌴', style: TextStyle(fontSize: 40)),
+                    ),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 20),
