@@ -88,3 +88,35 @@
   background-image: radial-gradient(rgba(212, 175, 55, 0.08) 1px, transparent 0);
   background-size: 24px 24px;
 }
+
+/* Leaflet Map Styling Overrides */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #0A1D19 !important;
+  font-family: inherit;
+}
+
+.custom-leaflet-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.leaflet-control-zoom {
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.leaflet-control-zoom a {
+  background: #0F2823 !important;
+  color: #D4AF37 !important;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #144032 !important;
+  color: #FFFFFF !important;
+}
+

@@ -1,11 +1,22 @@
 import math
+import logging
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
+from django.conf import settings
+from django.db import connection
 from django.db.models import Q
 
 from apps.destinations.models import Destination, Attraction
 from apps.experiences.models import Experience
 from apps.accommodations.models import Accommodation
+
+logger = logging.getLogger(__name__)
+
+try:
+    from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+    HAS_POSTGRES_SEARCH = True
+except ImportError:
+    HAS_POSTGRES_SEARCH = False
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -21,7 +32,8 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
 class BaseSearchAdapter(ABC):
     """
     Search Adapter Interface.
-    Allows swappable search backends: DatabaseSearchAdapter (SQL/PostGIS/Haversine)
+    Allows swappable search backends: DatabaseSearchAdapter (SQL/icontains/Haversine),
+    PostgresFullTextSearchAdapter (PostgreSQL Full-Text Search + GIN indexes),
     or OpenSearchAdapter in the future.
     """
 
@@ -30,10 +42,271 @@ class BaseSearchAdapter(ABC):
         pass
 
 
+class PostgresFullTextSearchAdapter(BaseSearchAdapter):
+    """
+    Production-grade PostgreSQL Full-Text Search Adapter.
+    Leverages PostgreSQL GIN-compatible SearchVector, SearchQuery, and SearchRank
+    with weighted relevance (A: title/name, B: tags/district/category, C: descriptions)
+    and seamless fallback to icontains for prefix and partial token matching.
+    """
+
+    def __init__(self):
+        self.fallback_adapter = DatabaseSearchAdapter()
+
+    def search(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        # If not running on postgres or postgres search extensions unavailable, fallback seamlessly
+        if connection.vendor != 'postgresql' or not HAS_POSTGRES_SEARCH:
+            return self.fallback_adapter.search(params)
+
+        q_str = (params.get('q') or '').strip()
+        if not q_str:
+            return self.fallback_adapter.search(params)
+
+        dest_filter = params.get('destination')
+        cat_filter = params.get('category')
+        item_type = params.get('type') or 'all'
+        min_price = params.get('min_price')
+        max_price = params.get('max_price')
+        rain_friendly = params.get('rain_friendly')
+        family_friendly = params.get('family_friendly')
+        min_rating = params.get('min_rating')
+        lat = params.get('lat')
+        lng = params.get('lng')
+        radius_km = params.get('radius_km')
+
+        destinations = []
+        experiences = []
+        accommodations = []
+        attractions = []
+
+        search_query = SearchQuery(q_str)
+
+        # 1. Destinations
+        if item_type in ('all', 'destinations', 'destination'):
+            vector = (
+                SearchVector('name', weight='A') +
+                SearchVector('district', weight='B') +
+                SearchVector('tagline', weight='B') +
+                SearchVector('description', weight='C')
+            )
+            dest_qs = Destination.objects.annotate(
+                search=vector,
+                rank=SearchRank(vector, search_query)
+            ).filter(
+                Q(search=search_query) |
+                Q(id__icontains=q_str) |
+                Q(name__icontains=q_str) |
+                Q(district__icontains=q_str) |
+                Q(tagline__icontains=q_str) |
+                Q(description__icontains=q_str)
+            )
+
+            if dest_filter:
+                dest_qs = dest_qs.filter(Q(id__iexact=dest_filter) | Q(name__icontains=dest_filter))
+            if family_friendly is not None:
+                dest_qs = dest_qs.filter(family_friendly=family_friendly)
+
+            dest_qs = dest_qs.order_by('-rank')
+
+            for d in dest_qs:
+                dist = None
+                if lat is not None and lng is not None and d.latitude and d.longitude:
+                    dist = haversine_distance(lat, lng, d.latitude, d.longitude)
+                    if radius_km is not None and dist > radius_km:
+                        continue
+
+                destinations.append({
+                    'id': d.id,
+                    'name': d.name,
+                    'slug': d.slug,
+                    'district': d.district,
+                    'tagline': d.tagline,
+                    'description': d.description,
+                    'hero_image': d.hero_image,
+                    'latitude': d.latitude,
+                    'longitude': d.longitude,
+                    'best_season': d.best_season,
+                    'tags': d.tags,
+                    'family_friendly': d.family_friendly,
+                    'average_stay_days': d.average_stay_days,
+                    'distance_km': dist,
+                })
+
+        # 2. Experiences
+        if item_type in ('all', 'experiences', 'experience'):
+            exp_vector = (
+                SearchVector('title', weight='A') +
+                SearchVector('category', weight='B') +
+                SearchVector('meeting_point', weight='B') +
+                SearchVector('description', weight='C')
+            )
+            exp_qs = Experience.objects.annotate(
+                search=exp_vector,
+                rank=SearchRank(exp_vector, search_query)
+            ).filter(
+                Q(search=search_query) |
+                Q(title__icontains=q_str) |
+                Q(description__icontains=q_str) |
+                Q(category__icontains=q_str) |
+                Q(destination_id__icontains=q_str) |
+                Q(meeting_point__icontains=q_str)
+            )
+
+            if dest_filter:
+                exp_qs = exp_qs.filter(destination_id__iexact=dest_filter)
+            if cat_filter:
+                exp_qs = exp_qs.filter(category__iexact=cat_filter)
+            if min_price is not None:
+                exp_qs = exp_qs.filter(price_per_person__gte=min_price)
+            if max_price is not None:
+                exp_qs = exp_qs.filter(price_per_person__lte=max_price)
+            if rain_friendly is not None:
+                exp_qs = exp_qs.filter(rain_friendly=rain_friendly)
+            if min_rating is not None:
+                exp_qs = exp_qs.filter(rating__gte=min_rating)
+
+            exp_qs = exp_qs.order_by('-rank')
+
+            for exp in exp_qs:
+                experiences.append({
+                    'id': exp.id,
+                    'org_id': str(exp.org_id),
+                    'destination_id': exp.destination_id,
+                    'title': exp.title,
+                    'category': exp.category,
+                    'description': exp.description,
+                    'price_per_person': float(exp.price_per_person),
+                    'duration_hours': exp.duration_hours,
+                    'max_group_size': exp.max_group_size,
+                    'hero_image': exp.hero_image,
+                    'included_items': exp.included_items,
+                    'meeting_point': exp.meeting_point,
+                    'host_name': exp.host_name,
+                    'host_role': exp.host_role,
+                    'rating': exp.rating,
+                    'review_count': exp.review_count,
+                    'verified': exp.verified,
+                    'rain_friendly': exp.rain_friendly,
+                    'rain_alternative_id': exp.rain_alternative_id,
+                })
+
+        # 3. Accommodations
+        if item_type in ('all', 'accommodations', 'accommodation', 'stays', 'stay'):
+            acc_vector = (
+                SearchVector('name', weight='A') +
+                SearchVector('type', weight='B') +
+                SearchVector('tagline', weight='B') +
+                SearchVector('description', weight='C')
+            )
+            acc_qs = Accommodation.objects.annotate(
+                search=acc_vector,
+                rank=SearchRank(acc_vector, search_query)
+            ).filter(
+                Q(search=search_query) |
+                Q(name__icontains=q_str) |
+                Q(tagline__icontains=q_str) |
+                Q(description__icontains=q_str) |
+                Q(type__icontains=q_str) |
+                Q(destination_id__icontains=q_str)
+            )
+
+            if dest_filter:
+                acc_qs = acc_qs.filter(destination_id__iexact=dest_filter)
+            if cat_filter:
+                acc_qs = acc_qs.filter(type__iexact=cat_filter)
+            if min_price is not None:
+                acc_qs = acc_qs.filter(base_price_per_night__gte=min_price)
+            if max_price is not None:
+                acc_qs = acc_qs.filter(base_price_per_night__lte=max_price)
+            if min_rating is not None:
+                acc_qs = acc_qs.filter(star_rating__gte=int(min_rating))
+
+            acc_qs = acc_qs.order_by('-rank')
+
+            for acc in acc_qs:
+                accommodations.append({
+                    'id': acc.id,
+                    'org_id': str(acc.org_id),
+                    'destination_id': acc.destination_id,
+                    'name': acc.name,
+                    'type': acc.type,
+                    'tagline': acc.tagline,
+                    'description': acc.description,
+                    'hero_image': acc.hero_image,
+                    'star_rating': acc.star_rating,
+                    'base_price_per_night': float(acc.base_price_per_night),
+                    'eco_green_score': acc.eco_green_score,
+                    'amenities': acc.amenities,
+                    'ai_suitability_score': acc.ai_suitability_score,
+                })
+
+        # 4. Attractions
+        if item_type in ('all', 'attractions', 'attraction'):
+            att_vector = (
+                SearchVector('name', weight='A') +
+                SearchVector('category', weight='B') +
+                SearchVector('description', weight='C')
+            )
+            att_qs = Attraction.objects.annotate(
+                search=att_vector,
+                rank=SearchRank(att_vector, search_query)
+            ).filter(
+                Q(search=search_query) |
+                Q(name__icontains=q_str) |
+                Q(category__icontains=q_str) |
+                Q(description__icontains=q_str) |
+                Q(destination__name__icontains=q_str)
+            )
+
+            if dest_filter:
+                att_qs = att_qs.filter(Q(destination__id__iexact=dest_filter) | Q(destination__name__icontains=dest_filter))
+            if cat_filter:
+                att_qs = att_qs.filter(category__iexact=cat_filter)
+            if rain_friendly is not None:
+                att_qs = att_qs.filter(rain_friendly=rain_friendly)
+            if max_price is not None:
+                att_qs = att_qs.filter(entry_fee__lte=max_price)
+
+            att_qs = att_qs.order_by('-rank')
+
+            for att in att_qs:
+                dist = None
+                if lat is not None and lng is not None and att.latitude and att.longitude:
+                    dist = haversine_distance(lat, lng, att.latitude, att.longitude)
+                    if radius_km is not None and dist > radius_km:
+                        continue
+
+                attractions.append({
+                    'id': att.id,
+                    'destination_id': att.destination_id,
+                    'name': att.name,
+                    'category': att.category,
+                    'description': att.description,
+                    'image': att.image,
+                    'latitude': att.latitude,
+                    'longitude': att.longitude,
+                    'opening_time': att.opening_time,
+                    'closing_time': att.closing_time,
+                    'entry_fee': float(att.entry_fee),
+                    'typical_duration_mins': att.typical_duration_mins,
+                    'rain_friendly': att.rain_friendly,
+                    'crowd_profile': att.crowd_profile,
+                    'distance_km': dist,
+                })
+
+        return {
+            'destinations': destinations,
+            'experiences': experiences,
+            'accommodations': accommodations,
+            'attractions': attractions,
+        }
+
+
 class DatabaseSearchAdapter(BaseSearchAdapter):
     """
     Authoritative database search adapter with multi-faceted filtering,
     case-insensitive matching, and geographic coordinate proximity calculations.
+    Serves as default engine and fallback for non-PostgreSQL/SQLite environments.
     """
 
     def search(self, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -231,3 +504,15 @@ class DatabaseSearchAdapter(BaseSearchAdapter):
             'accommodations': accommodations,
             'attractions': attractions,
         }
+
+
+def get_search_adapter(name: Optional[str] = None) -> BaseSearchAdapter:
+    """
+    Search Adapter Factory.
+    Selects PostgresFullTextSearchAdapter when PostgreSQL is the active engine
+    or explicitly configured in settings.SEARCH_ADAPTER; falls back to DatabaseSearchAdapter.
+    """
+    configured = name or getattr(settings, 'SEARCH_ADAPTER', None)
+    if configured == 'postgres' or (configured is None and connection.vendor == 'postgresql'):
+        return PostgresFullTextSearchAdapter()
+    return DatabaseSearchAdapter()

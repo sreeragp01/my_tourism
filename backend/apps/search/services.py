@@ -1,5 +1,5 @@
 from typing import Dict, Any, Optional
-from .adapters import BaseSearchAdapter, DatabaseSearchAdapter
+from .adapters import BaseSearchAdapter, DatabaseSearchAdapter, get_search_adapter
 
 
 class UnifiedSearchService:
@@ -10,7 +10,7 @@ class UnifiedSearchService:
     """
 
     def __init__(self, adapter: Optional[BaseSearchAdapter] = None):
-        self.adapter = adapter or DatabaseSearchAdapter()
+        self.adapter = adapter or get_search_adapter()
 
     def search(self, params: Dict[str, Any]) -> Dict[str, Any]:
         page = max(1, int(params.get('page') or 1))

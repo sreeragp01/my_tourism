@@ -8,9 +8,15 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 class CreatePaymentOrderSerializer(serializers.Serializer):
     booking_id = serializers.UUIDField()
-    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, required=False)
     idempotency_key = serializers.CharField(max_length=128)
     gateway = serializers.ChoiceField(choices=['RAZORPAY', 'SIMULATOR'], default='RAZORPAY')
+
+class VerifyPaymentSerializer(serializers.Serializer):
+    booking_id = serializers.UUIDField()
+    gateway_order_id = serializers.CharField(max_length=128)
+    gateway_payment_id = serializers.CharField(max_length=128)
+    gateway_signature = serializers.CharField(max_length=255)
 
 class WebhookPayloadSerializer(serializers.Serializer):
     event_id = serializers.CharField(max_length=128)

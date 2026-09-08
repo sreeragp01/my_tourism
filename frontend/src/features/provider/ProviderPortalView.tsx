@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppStore } from '../../stores/useAppStore';
-import { mockBackend } from '../../adapters/mockAdapter';
+import { httpAdapter } from '../../adapters/httpAdapter';
 import { ProviderDashboardMetrics } from '../../types/contracts';
 import {
   Building2,
@@ -22,7 +22,7 @@ export const ProviderPortalView: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<'OVERVIEW' | 'PRODUCTS' | 'CALENDAR'>('OVERVIEW');
 
   React.useEffect(() => {
-    mockBackend.getProviderMetrics().then(setMetrics);
+    httpAdapter.getProviderMetrics().then(setMetrics);
   }, []);
 
   return (

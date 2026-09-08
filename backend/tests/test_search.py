@@ -271,3 +271,45 @@ class UnifiedSearchTestCase(TestCase):
         # Invalid min_price (negative)
         response = self.client.get('/api/v1/search/?min_price=-500')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_adapter_factory_and_postgres_adapter_fallback(self):
+        from apps.search.adapters import get_search_adapter, PostgresFullTextSearchAdapter, DatabaseSearchAdapter
+        
+        # Test factory resolution
+        adapter_default = get_search_adapter()
+        self.assertIsInstance(adapter_default, DatabaseSearchAdapter)
+        
+        adapter_pg = get_search_adapter('postgres')
+        self.assertIsInstance(adapter_pg, PostgresFullTextSearchAdapter)
+
+        # On SQLite / fallback, PostgresFullTextSearchAdapter falls back cleanly to DatabaseSearchAdapter
+        res = adapter_pg.search({'q': 'munnar'})
+        self.assertTrue(any(d['id'] == 'munnar' for d in res['destinations']))
+
+    def test_haversine_distance_calculation(self):
+        from apps.search.adapters import haversine_distance
+        # Distance between Munnar (10.0889, 77.0595) and Kochi (9.9312, 76.2673) is ~88-90 km
+        dist = haversine_distance(10.0889, 77.0595, 9.9312, 76.2673)
+        self.assertGreaterEqual(dist, 85.0)
+        self.assertLessEqual(dist, 95.0)
+
+    def test_unified_search_service_type_filtering(self):
+        from apps.search.services import UnifiedSearchService
+        service = UnifiedSearchService()
+        
+        # Experiences only
+        res_exp = service.search({'type': 'experiences', 'q': 'jeep'})
+        self.assertEqual(len(res_exp['experiences']), 1)
+        self.assertEqual(len(res_exp['destinations']), 0)
+        self.assertEqual(len(res_exp['accommodations']), 0)
+        self.assertEqual(len(res_exp['attractions']), 0)
+        
+        # Accommodations only
+        res_acc = service.search({'type': 'accommodations', 'q': 'estate'})
+        self.assertEqual(len(res_acc['accommodations']), 1)
+        self.assertEqual(len(res_acc['destinations']), 0)
+        
+        # Attractions only
+        res_att = service.search({'type': 'attractions', 'q': 'museum'})
+        self.assertEqual(len(res_att['attractions']), 1)
+        self.assertEqual(len(res_att['experiences']), 0)

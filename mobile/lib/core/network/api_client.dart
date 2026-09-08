@@ -184,8 +184,10 @@ class ApiClient {
       return response;
     } on TimeoutException {
       throw const TimeoutException();
-    } on SocketException {
-      throw const NetworkException();
+    } on SocketException catch (e) {
+      throw NetworkException(
+        message: 'Unable to connect to server at $baseUrl (${e.message.isNotEmpty ? e.message : "Connection refused"}). Ensure Django backend is running on port 8000.',
+      );
     } catch (e) {
       if (e is ApiException) rethrow;
       throw NetworkException(message: 'Connection failed: ${e.toString()}');

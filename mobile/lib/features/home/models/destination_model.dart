@@ -90,6 +90,7 @@ class Destination {
   final bool seniorFriendly;
   final int averageStayDays;
   final List<Attraction> attractions;
+  final double? distanceKm;
 
   const Destination({
     required this.id,
@@ -109,6 +110,7 @@ class Destination {
     this.seniorFriendly = true,
     this.averageStayDays = 2,
     this.attractions = const [],
+    this.distanceKm,
   });
 
   factory Destination.fromJson(Map<String, dynamic> json) {
@@ -136,6 +138,7 @@ class Destination {
               ?.map((e) => Attraction.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+      distanceKm: (json['distance_km'] as num?)?.toDouble(),
     );
   }
 
@@ -157,5 +160,6 @@ class Destination {
         'senior_friendly': seniorFriendly,
         'average_stay_days': averageStayDays,
         'attractions': attractions.map((a) => a.toJson()).toList(),
+        'distance_km': distanceKm,
       };
 }

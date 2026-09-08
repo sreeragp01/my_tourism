@@ -12,6 +12,10 @@ ENV/
 db.sqlite3
 local_settings.py
 *.log
+.env
+*.env
+backend/.env
+frontend/.env.local
 
 # Node / Frontend
 frontend/node_modules/

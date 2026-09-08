@@ -9,7 +9,7 @@ import {
   Booking,
   UserRole,
 } from '../types/contracts';
-import { mockBackend } from '../adapters/mockAdapter';
+import { httpAdapter } from '../adapters/httpAdapter';
 
 export type ScreenId =
   | 'LANDING'
@@ -37,6 +37,10 @@ interface AppState {
   previousScreen?: ScreenId;
   setViewMode: (mode: ViewMode) => void;
   navigateTo: (screen: ScreenId) => void;
+
+  // Live Backend Health
+  isBackendOnline: boolean | null;
+  checkBackendHealth: () => Promise<boolean>;
 
   // Auth & RBAC
   currentUser: User | null;
@@ -98,11 +102,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
 
+  isBackendOnline: null,
+  checkBackendHealth: async () => {
+    const online = await httpAdapter.checkBackendHealth();
+    set({ isBackendOnline: online });
+    return online;
+  },
+
   currentUser: null,
   currentRole: 'CUSTOMER',
   setCurrentUser: (user) => set({ currentUser: user }),
   switchRole: async (role) => {
-    const updated = await mockBackend.switchRole(role);
+    const updated = await httpAdapter.switchRole(role);
     set({ currentUser: updated, currentRole: role });
     if (role.startsWith('PROVIDER')) {
       get().navigateTo('PROVIDER_PORTAL');
@@ -126,20 +137,25 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSelectedAccommodation: (acc) => set({ selectedAccommodation: acc }),
 
   loadInitialData: async () => {
-    const [user, dests, exps, accs, bks] = await Promise.all([
-      mockBackend.getCurrentUser(),
-      mockBackend.getDestinations(),
-      mockBackend.getExperiences(),
-      mockBackend.getAccommodations(),
-      mockBackend.getUserBookings(),
-    ]);
-    set({
-      currentUser: user,
-      destinations: dests,
-      experiences: exps,
-      accommodations: accs,
-      myBookings: bks,
-    });
+    try {
+      const [user, dests, exps, accs, bks] = await Promise.all([
+        httpAdapter.getCurrentUser(),
+        httpAdapter.getDestinations(),
+        httpAdapter.getExperiences(),
+        httpAdapter.getAccommodations(),
+        httpAdapter.getUserBookings(),
+      ]);
+      set({
+        currentUser: user,
+        destinations: dests,
+        experiences: exps,
+        accommodations: accs,
+        myBookings: bks,
+        isBackendOnline: httpAdapter.isOnlineBackendAvailable,
+      });
+    } catch (e) {
+      console.warn('Initial data load warning:', e);
+    }
   },
 
   currentTripProfile: null,
@@ -154,10 +170,15 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   generateTrip: async (profile) => {
     set({ isGenerating: true, activeScreen: 'AI_GENERATING', currentTripProfile: profile });
-    // Simulate multi-stage AI reasoning delay
-    await new Promise((r) => setTimeout(r, 2600));
-    const plan = await mockBackend.generateTripItinerary(profile);
-    set({ currentPlan: plan, isGenerating: false, activeScreen: 'ITINERARY', selectedDayNumber: 2 });
+    // Keep smooth UX feedback during AI computation
+    const plan = await httpAdapter.generateTripItinerary(profile);
+    set({
+      currentPlan: plan,
+      isGenerating: false,
+      activeScreen: 'ITINERARY',
+      selectedDayNumber: 2,
+      isBackendOnline: httpAdapter.isOnlineBackendAvailable,
+    });
     return plan;
   },
 
@@ -165,12 +186,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     const plan = get().currentPlan;
     if (!plan) return;
     set({ isGenerating: true });
-    await new Promise((r) => setTimeout(r, 1400));
-    const updated = await mockBackend.regenerateDay(plan.id, dayNumber, modification);
+    const updated = await httpAdapter.regenerateDay(plan.id, dayNumber, modification);
     set({
       currentPlan: updated,
       isGenerating: false,
       dayCustomizeModalOpen: false,
+      isBackendOnline: httpAdapter.isOnlineBackendAvailable,
     });
     get().showToast(`✨ Day ${dayNumber} regenerated: ${updated.currentVersion.changeReason}`);
   },
@@ -182,8 +203,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   createBooking: async (guestInfo) => {
     const plan = get().currentPlan;
     if (!plan) throw new Error('No active trip plan');
-    const booking = await mockBackend.createBookingFromPlan(plan, guestInfo);
-    set({ currentBooking: booking });
+    const booking = await httpAdapter.createBookingFromPlan(plan, guestInfo);
+    set({ currentBooking: booking, isBackendOnline: httpAdapter.isOnlineBackendAvailable });
     get().navigateTo('CHECKOUT');
     return booking;
   },
@@ -192,12 +213,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     const booking = get().currentBooking;
     if (!booking) throw new Error('No active booking');
     set({ isGenerating: true });
-    await new Promise((r) => setTimeout(r, 1500));
-    const confirmed = await mockBackend.confirmBookingPayment(booking.id, paymentMethod);
+    const confirmed = await httpAdapter.confirmBookingPayment(booking.id, paymentMethod);
     set({
       currentBooking: confirmed,
       myBookings: [confirmed, ...get().myBookings],
       isGenerating: false,
+      isBackendOnline: httpAdapter.isOnlineBackendAvailable,
     });
     get().navigateTo('BOOKING_CONFIRMED');
     return confirmed;

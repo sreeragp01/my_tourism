@@ -23,10 +23,16 @@ export const Navbar: React.FC = () => {
     currentUser,
     currentRole,
     switchRole,
+    isBackendOnline,
+    checkBackendHealth,
   } = useAppStore();
 
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    checkBackendHealth();
+  }, [checkBackendHealth]);
 
   const navItems: { label: string; screen: ScreenId; icon: React.ReactNode }[] = [
     { label: 'Discover', screen: 'HOME', icon: <Compass className="w-4 h-4" /> },
@@ -88,8 +94,38 @@ export const Navbar: React.FC = () => {
           })}
         </nav>
 
-        {/* Action Controls: Presentation Mode & Role Switcher */}
-        <div className="flex items-center gap-3">
+        {/* Action Controls: Presentation Mode, Role Switcher & Live API Status */}
+        <div className="flex items-center gap-2.5">
+          {/* Live Backend Connection Indicator */}
+          <button
+            onClick={() => checkBackendHealth()}
+            title="Django Backend API Status (Click to ping http://localhost:8000)"
+            className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
+              isBackendOnline === true
+                ? 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-950'
+                : isBackendOnline === false
+                ? 'bg-amber-950/60 text-amber-300 border-amber-500/40'
+                : 'bg-[#144032] text-[#C5D8CD] border-[#D4AF37]/20'
+            }`}
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                isBackendOnline === true
+                  ? 'bg-emerald-400 animate-pulse'
+                  : isBackendOnline === false
+                  ? 'bg-amber-400'
+                  : 'bg-gray-400'
+              }`}
+            />
+            <span>
+              {isBackendOnline === true
+                ? 'API: Online'
+                : isBackendOnline === false
+                ? 'API: Sandbox'
+                : 'API: Connecting...'}
+            </span>
+          </button>
+
           {/* View Mode Toggle Switcher */}
           <div className="bg-[#144032] border border-[#D4AF37]/30 rounded-lg p-0.5 flex items-center shadow-inner">
             <button

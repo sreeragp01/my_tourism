@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'keralink-prod-super-secure-key-2026-gods-own-country')
 
-DEBUG = False
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = ['*']
 
@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # Third-Party
+    'corsheaders',
     'rest_framework',
     
     # KeraLink Modular Apps
@@ -36,10 +37,18 @@ INSTALLED_APPS = [
     'apps.events',        # Dedicated Transactional Outbox & Event Dispatcher
     'apps.audit',         # Immutable Security & Compliance Audit Log
     'apps.search',        # Unified Tourism Search & Discovery Engine
+    
+    # Wave D: Live Trip Experience Engine
+    'apps.location',
+    'apps.maps',
+    'apps.weather',
+    'apps.safety',
+    'apps.notifications',
 ]
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -99,6 +108,19 @@ SPECTACULAR_SETTINGS = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'idempotency-key',
+]
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True

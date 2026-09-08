@@ -2,11 +2,13 @@ import uuid
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from .models import Payment
-from .serializers import PaymentSerializer, CreatePaymentOrderSerializer, WebhookPayloadSerializer
-from .services import IdempotentPaymentService
+from .serializers import (
+    CreatePaymentOrderSerializer,
+    VerifyPaymentSerializer,
+    WebhookPayloadSerializer,
+)
+from .services import IdempotentPaymentService, PaymentVerificationError
 from apps.bookings.models import Booking
-from apps.bookings.state_machine import BookingStateMachine
 
 class CreatePaymentOrderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -20,35 +22,50 @@ class CreatePaymentOrderView(APIView):
         if not booking:
             return Response({"error": "Booking not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Check idempotency
-        payment = Payment.objects.filter(idempotency_key=data['idempotency_key']).first()
-        if payment:
-            return Response(PaymentSerializer(payment).data, status=status.HTTP_200_OK)
+        service = IdempotentPaymentService()
+        try:
+            order_data = service.create_order(
+                booking=booking,
+                user=request.user,
+                idempotency_key=data['idempotency_key'],
+                gateway=data.get('gateway', 'RAZORPAY'),
+            )
+            return Response(order_data, status=status.HTTP_201_CREATED)
+        except PermissionError as e:
+            return Response({"error": str(e), "code": "UNAUTHORIZED"}, status=status.HTTP_403_FORBIDDEN)
+        except ValueError as e:
+            return Response({"error": str(e), "code": "PAYMENT_ORDER_ERROR"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create Razorpay order simulation / API
-        order_id = f"order_{uuid.uuid4().hex[:14]}"
-        payment = Payment.objects.create(
-            booking=booking,
-            amount=data['amount'],
-            currency='INR',
-            gateway=data['gateway'],
-            gateway_order_id=order_id,
-            idempotency_key=data['idempotency_key'],
-            status='INITIATED'
-        )
 
-        sm = BookingStateMachine(booking)
-        if sm.can_transition_to('PAYMENT_PROCESSING'):
-            sm.transition('PAYMENT_PROCESSING', user=request.user, reason="Payment order initiated")
+class DirectPaymentVerifyView(APIView):
+    """
+    Authoritative payment signature verification endpoint.
+    Only confirms booking and consumes holds if cryptographic signature is valid.
+    """
+    permission_classes = [permissions.IsAuthenticated]
 
-        return Response({
-            "payment_id": str(payment.id),
-            "gateway_order_id": order_id,
-            "amount": float(payment.amount),
-            "currency": payment.currency,
-            "razorpay_key_id": "rzp_live_keralink_tourism_2026",
-            "booking_reference": booking.booking_reference
-        }, status=status.HTTP_201_CREATED)
+    def post(self, request):
+        serializer = VerifyPaymentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        service = IdempotentPaymentService()
+        try:
+            result = service.verify_and_confirm_payment(
+                booking_id=data['booking_id'],
+                gateway_order_id=data['gateway_order_id'],
+                gateway_payment_id=data['gateway_payment_id'],
+                gateway_signature=data['gateway_signature'],
+                user=request.user,
+            )
+            return Response(result, status=status.HTTP_200_OK)
+        except PaymentVerificationError as e:
+            return Response({"error": str(e), "code": "INVALID_SIGNATURE"}, status=status.HTTP_400_BAD_REQUEST)
+        except PermissionError as e:
+            return Response({"error": str(e), "code": "UNAUTHORIZED"}, status=status.HTTP_403_FORBIDDEN)
+        except ValueError as e:
+            return Response({"error": str(e), "code": "BOOKING_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
+
 
 class PaymentWebhookView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -63,27 +80,6 @@ class PaymentWebhookView(APIView):
             event_id=data['event_id'],
             event_type=data['event_type'],
             payload=data['payload'],
-            signature=data.get('signature', '')
+            signature=data.get('signature', ''),
         )
         return Response(result, status=status.HTTP_200_OK)
-
-class DirectPaymentVerifyView(APIView):
-    """
-    Direct client verification fallback after Razorpay modal completes.
-    """
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request):
-        booking_id = request.data.get('booking_id')
-        payment_id = request.data.get('payment_id')
-        
-        booking = Booking.objects.filter(id=booking_id).first()
-        if not booking:
-            return Response({"error": "Booking not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        sm = BookingStateMachine(booking)
-        if sm.can_transition_to('CONFIRMED'):
-            sm.transition('CONFIRMED', user=request.user, reason=f"Direct verification payment {payment_id}")
-            return Response({"status": "confirmed", "booking_reference": booking.booking_reference}, status=status.HTTP_200_OK)
-
-        return Response({"status": booking.status, "booking_reference": booking.booking_reference}, status=status.HTTP_200_OK)

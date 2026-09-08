@@ -131,6 +131,8 @@ class MockAIPlannerRepository implements IAIPlannerRepository {
       travelStyle: 'PREMIUM',
       interests: ['Highland Tea', 'Backwaters'],
       adults: 2,
+      month: 'June',
+      monsoonMode: true,
     );
   }
 
@@ -143,6 +145,8 @@ class MockAIPlannerRepository implements IAIPlannerRepository {
     int adults = 2,
     int children = 0,
     String pace = 'MODERATE',
+    String? month,
+    bool monsoonMode = false,
   }) async {
     if (throwOnGenerate) {
       throw Exception('Network timeout connecting to AI engine');
@@ -175,16 +179,23 @@ class MockAIPlannerRepository implements IAIPlannerRepository {
   @override
   Future<AIPlan> customizePlan({
     required String planId,
-    required String action,
-    required int dayNumber,
+    String? operation,
+    String? action,
+    int? dayNumber,
     String? timelineEventId,
+    String? eventId,
+    int? targetDay,
+    int? targetOrder,
+    String? swapWithEventId,
+    String? entityType,
+    dynamic entityId,
     Map<String, dynamic>? newEvent,
     String? reason,
   }) async {
     versionCounter++;
     currentMockPlan = _createSamplePlan(
       versionCounter,
-      reason: reason ?? 'Applied $action',
+      reason: reason ?? 'Applied ${operation ?? action}',
       rainFriendly: true,
     );
     return currentMockPlan!;
@@ -200,7 +211,7 @@ class MockAIPlannerRepository implements IAIPlannerRepository {
         totalPrice: 45475,
       ),
       if (versionCounter >= 2)
-        const PlanVersionSummary(
+        PlanVersionSummary(
           version: 2,
           changeReason: 'Monsoon Weather Adaptation',
           createdAt: '2026-09-06T12:05:00Z',
@@ -212,6 +223,62 @@ class MockAIPlannerRepository implements IAIPlannerRepository {
   @override
   Future<AIPlan> getPlanVersionDetail(String planId, int version) async {
     return _createSamplePlan(version, reason: 'Retrieved version $version');
+  }
+
+  @override
+  Future<ItineraryDiff> getPlanDiff(String planId, {int? fromVersion, int? toVersion}) async {
+    return ItineraryDiff(
+      fromVersion: fromVersion ?? (versionCounter > 1 ? versionCounter - 1 : 1),
+      toVersion: toVersion ?? versionCounter,
+      added: const [DiffItem(eventId: 'cand_1', title: 'New Added Experience', day: 1)],
+      removed: const [],
+      moved: const [],
+      priceDifference: 1200.0,
+      distanceDifference: 5.4,
+      monsoonCompliant: true,
+      summaryText: 'Added New Added Experience (+₹1,200)',
+    );
+  }
+
+  @override
+  Future<AIPlan> revertPlan(String planId, int targetVersion, {String? reason}) async {
+    versionCounter++;
+    currentMockPlan = _createSamplePlan(
+      versionCounter,
+      reason: reason ?? 'Reverted to v$targetVersion',
+    );
+    return currentMockPlan!;
+  }
+
+  @override
+  Future<List<PlanCandidate>> getCandidates(
+    String planId,
+    int dayNumber, {
+    String? entityType,
+    bool rainFriendlyOnly = false,
+  }) async {
+    return const [
+      PlanCandidate(
+        id: 101,
+        title: 'Tea Tasting & Processing Masterclass',
+        entityType: 'EXPERIENCE',
+        price: 850.0,
+        rainFriendly: true,
+        destinationName: 'Munnar',
+        rating: 4.8,
+        durationMins: 90,
+      ),
+      PlanCandidate(
+        id: 102,
+        title: 'Pothamedu Viewpoint Trek',
+        entityType: 'EXPERIENCE',
+        price: 500.0,
+        rainFriendly: false,
+        destinationName: 'Munnar',
+        rating: 4.6,
+        durationMins: 120,
+      ),
+    ];
   }
 }
 
@@ -232,6 +299,8 @@ void main() {
         'adults': 2,
         'children': 1,
         'pace': 'SLOW',
+        'month': 'June',
+        'monsoon_mode': true,
       };
 
       final profile = TripProfile.fromJson(json);
@@ -239,10 +308,14 @@ void main() {
       expect(profile.travelStyle, 'LUXURY');
       expect(profile.budgetLimit, 60000.0);
       expect(profile.interests.length, 2);
+      expect(profile.month, 'June');
+      expect(profile.monsoonMode, isTrue);
 
       final serialized = profile.toJson();
       expect(serialized['budget_limit'], 60000.0);
       expect(serialized['duration_days'], 6);
+      expect(serialized['month'], 'June');
+      expect(serialized['monsoon_mode'], isTrue);
     });
 
     test('Authoritative PricingBreakdown preserves all tax and fee lines', () {
@@ -319,6 +392,9 @@ void main() {
       // Tap Extract Intent
       await tester.tap(find.byKey(const Key('ai_parse_prompt_btn')));
       await tester.pumpAndSettle();
+
+      // Verify extracted intent chip reflects monsoon safety
+      expect(find.text('June · Monsoon Safe'), findsOneWidget);
 
       // Tap Generate Plan
       await tester.tap(find.byKey(const Key('ai_generate_plan_btn')));

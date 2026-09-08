@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/destination_model.dart';
+import '../../maps/presentation/live_map_screen.dart';
 
 class DestinationDetailsScreen extends StatelessWidget {
   final Destination destination;
@@ -170,6 +171,33 @@ class DestinationDetailsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 28),
                   ],
+
+                  // Live Map Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => LiveMapScreen(
+                              initialLat: destination.latitude != 0.0 ? destination.latitude : 10.0889,
+                              initialLon: destination.longitude != 0.0 ? destination.longitude : 77.0595,
+                              destinationName: destination.name,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.map_outlined, size: 18, color: Color(0xFF10B981)),
+                      label: Text('View ${destination.name} on Live Map', style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold)),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
 
                   // Plan Itinerary Action Button
                   SizedBox(

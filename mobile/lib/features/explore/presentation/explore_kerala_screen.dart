@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/experience_repository.dart';
 import '../models/experience_model.dart';
+import '../../maps/presentation/live_map_screen.dart';
 
 class ExploreKeralaScreen extends StatefulWidget {
   final ExperienceRepository experienceRepository;
@@ -74,6 +75,18 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
           'Explore Kerala',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.map_outlined, color: Color(0xFF10B981)),
+            tooltip: 'Live Corridor Map',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LiveMapScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

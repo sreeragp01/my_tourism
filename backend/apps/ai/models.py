@@ -18,8 +18,10 @@ class TripProfile(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    month = models.CharField(max_length=32, default='October')
+    monsoon_mode = models.BooleanField(default=False)
     duration_days = models.PositiveIntegerField(default=6)
     adults = models.PositiveIntegerField(default=2)
     children = models.PositiveIntegerField(default=0)
@@ -45,9 +47,21 @@ class AIPlanVersion(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     plan = models.ForeignKey(AIPlan, on_delete=models.CASCADE, related_name='versions')
     version_number = models.PositiveIntegerField(default=1)
+    parent_version = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='child_versions'
+    )
     change_reason = models.CharField(max_length=255)
+    changed_events = models.JSONField(default=list)
+    diff_summary = models.JSONField(default=dict)
     itinerary_payload = models.JSONField()  # Full structured days, hourly timeline, transits, stays
     pricing_payload = models.JSONField()    # Price breakdown
+    validation_result = models.JSONField(default=dict)
+    validation_status = models.CharField(max_length=20, default='VALID')  # VALID, WARNINGS, INVALID
+    route_result = models.JSONField(default=dict)
     total_distance_km = models.FloatField(default=0.0)
     total_travel_hours = models.FloatField(default=0.0)
     green_trip_score = models.PositiveIntegerField(default=88)

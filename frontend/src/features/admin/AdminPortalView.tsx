@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppStore } from '../../stores/useAppStore';
-import { mockBackend } from '../../adapters/mockAdapter';
+import { httpAdapter } from '../../adapters/httpAdapter';
 import { AdminKPIs } from '../../types/contracts';
 import {
   ShieldAlert,
@@ -24,7 +24,7 @@ export const AdminPortalView: React.FC = () => {
   ]);
 
   React.useEffect(() => {
-    mockBackend.getAdminKPIs().then(setKpis);
+    httpAdapter.getAdminKPIs().then(setKpis);
   }, []);
 
   const handleApprove = (id: string, name: string) => {

@@ -11,6 +11,7 @@ import 'package:keralink_mobile/features/search/models/search_result_model.dart'
 import 'package:keralink_mobile/features/search/data/search_repository.dart';
 import 'package:keralink_mobile/features/search/presentation/search_discovery_screen.dart';
 import 'package:keralink_mobile/features/explore/models/accommodation_model.dart';
+import 'package:keralink_mobile/features/home/models/destination_model.dart';
 
 void main() {
   group('Phase 3: Search Models & Query Parameters Tests', () {
@@ -153,6 +154,59 @@ void main() {
       expect(results.accommodations.length, 1);
       expect(results.attractions.length, 1);
       expect(results.isEmpty, false);
+    });
+
+    test('SearchResults.append concatenates paginated results correctly', () {
+      final page1 = SearchResults(
+        query: 'munnar',
+        totalCount: 3,
+        page: 1,
+        pageSize: 2,
+        hasNext: true,
+        destinations: const [
+          Destination(
+            id: 'munnar',
+            name: 'Munnar',
+            slug: 'munnar',
+            district: 'Idukki',
+            tagline: 'Tea Hills',
+            description: 'Misty hills',
+            heroImage: 'https://example.com/img.jpg',
+            latitude: 10.0889,
+            longitude: 77.0595,
+            distanceKm: 1.2,
+          )
+        ],
+      );
+
+      final page2 = SearchResults(
+        query: 'munnar',
+        totalCount: 3,
+        page: 2,
+        pageSize: 2,
+        hasNext: false,
+        destinations: const [
+          Destination(
+            id: 'alleppey',
+            name: 'Alleppey',
+            slug: 'alleppey',
+            district: 'Alappuzha',
+            tagline: 'Backwaters',
+            description: 'Canals',
+            heroImage: 'https://example.com/img2.jpg',
+            latitude: 9.4981,
+            longitude: 76.3388,
+            distanceKm: 120.5,
+          )
+        ],
+      );
+
+      final combined = page1.append(page2);
+      expect(combined.destinations.length, 2);
+      expect(combined.page, 2);
+      expect(combined.hasNext, false);
+      expect(combined.destinations.first.distanceKm, 1.2);
+      expect(combined.destinations.last.distanceKm, 120.5);
     });
   });
 
@@ -303,6 +357,7 @@ void main() {
       expect(find.text('Monsoon Safe'), findsAtLeastNWidgets(1));
       expect(find.text('Family Friendly'), findsOneWidget);
       expect(find.text('All Types'), findsOneWidget);
+      expect(find.text('Radius / Hub'), findsOneWidget);
 
       // Verify Tabs & Section Headers
       expect(find.text('All (2)'), findsAtLeastNWidgets(1));
@@ -312,6 +367,73 @@ void main() {
       // Verify Results rendered
       expect(find.text('Munnar'), findsOneWidget);
       expect(find.text('Tea Tasting Experience'), findsOneWidget);
+
+      // Tap on experience card to verify detail sheet opens
+      await tester.tap(find.text('Tea Tasting Experience'));
+      await tester.pumpAndSettle();
+
+      // Verify experience detail sheet rendered with details and CTA
+      expect(find.text('About Experience'), findsOneWidget);
+      expect(find.text('Artisanal tea tasting'), findsOneWidget);
+      expect(find.text('Explore & Add to Trip'), findsOneWidget);
+    });
+
+    testWidgets('SearchDiscoveryScreen renders Load More button when hasNext is true', (tester) async {
+      final mockClient = MockClient((request) async {
+        return http.Response(
+          jsonEncode({
+            'query': '',
+            'total_count': 10,
+            'page': 1,
+            'page_size': 2,
+            'has_next': true,
+            'destinations': [
+              {
+                'id': 'munnar',
+                'name': 'Munnar',
+                'slug': 'munnar',
+                'district': 'Idukki',
+                'tagline': 'Misty Tea Hills',
+                'description': 'Famous tea hills',
+                'hero_image': 'https://example.com/img.jpg',
+                'latitude': 10.0889,
+                'longitude': 77.0595,
+                'best_season': 'Sept-March',
+                'tags': ['Tea'],
+                'family_friendly': true,
+                'distance_km': 2.5,
+              }
+            ],
+            'experiences': [],
+            'accommodations': [],
+            'attractions': [],
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+
+      final apiClient = ApiClient(
+        config: const AppConfig(environment: AppEnvironment.development, customBaseUrl: 'http://test.api/api/v1'),
+        storage: InMemoryTokenStorage(),
+        httpClient: mockClient,
+      );
+
+      final repo = SearchRepository(apiClient: apiClient);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: SearchDiscoveryScreen(searchRepository: repo),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify distance badge
+      expect(find.text('2.5 km'), findsOneWidget);
+
+      // Verify Load More button is rendered when hasNext is true
+      expect(find.text('Load More Results'), findsOneWidget);
     });
   });
 }

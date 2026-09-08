@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppStore } from '../../stores/useAppStore';
 import { Sparkles, Calendar, MapPin, Users, Heart, ArrowRight, ArrowLeft, Send, Check } from 'lucide-react';
-import { mockBackend } from '../../adapters/mockAdapter';
+import { httpAdapter } from '../../adapters/httpAdapter';
 import { TripProfile } from '../../types/contracts';
 
 export const AIPlannerFlow: React.FC = () => {
@@ -50,7 +50,7 @@ export const AIPlannerFlow: React.FC = () => {
   };
 
   const handlePromptSubmit = async () => {
-    const profile = await mockBackend.parseNaturalLanguagePrompt(promptText);
+    const profile = await httpAdapter.parseNaturalLanguagePrompt(promptText);
     setTripProfile(profile);
     generateTrip(profile);
   };

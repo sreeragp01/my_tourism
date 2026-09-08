@@ -118,6 +118,44 @@ class SearchResults {
       accommodations.isEmpty &&
       attractions.isEmpty;
 
+  SearchResults append(SearchResults next) {
+    return SearchResults(
+      query: next.query.isNotEmpty ? next.query : query,
+      totalCount: next.totalCount,
+      page: next.page,
+      pageSize: next.pageSize,
+      hasNext: next.hasNext,
+      destinations: [...destinations, ...next.destinations],
+      experiences: [...experiences, ...next.experiences],
+      accommodations: [...accommodations, ...next.accommodations],
+      attractions: [...attractions, ...next.attractions],
+    );
+  }
+
+  SearchResults copyWith({
+    String? query,
+    int? totalCount,
+    int? page,
+    int? pageSize,
+    bool? hasNext,
+    List<Destination>? destinations,
+    List<Experience>? experiences,
+    List<Accommodation>? accommodations,
+    List<Attraction>? attractions,
+  }) {
+    return SearchResults(
+      query: query ?? this.query,
+      totalCount: totalCount ?? this.totalCount,
+      page: page ?? this.page,
+      pageSize: pageSize ?? this.pageSize,
+      hasNext: hasNext ?? this.hasNext,
+      destinations: destinations ?? this.destinations,
+      experiences: experiences ?? this.experiences,
+      accommodations: accommodations ?? this.accommodations,
+      attractions: attractions ?? this.attractions,
+    );
+  }
+
   factory SearchResults.empty() {
     return const SearchResults(
       query: '',

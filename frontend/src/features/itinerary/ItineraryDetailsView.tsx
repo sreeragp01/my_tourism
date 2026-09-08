@@ -15,8 +15,12 @@ import {
   TrendingDown,
   Compass,
   ArrowRight,
+  CloudRain,
+  Sun,
+  AlertTriangle,
 } from 'lucide-react';
 import { ItineraryDay } from '../../types/contracts';
+import { httpAdapter } from '../../adapters/httpAdapter';
 
 export const ItineraryDetailsView: React.FC = () => {
   const {
@@ -31,6 +35,7 @@ export const ItineraryDetailsView: React.FC = () => {
 
   const [customizeModalOpen, setCustomizeModalOpen] = React.useState(false);
   const [costBreakdownOpen, setCostBreakdownOpen] = React.useState(false);
+  const [dayWeather, setDayWeather] = React.useState<any>(null);
 
   if (!currentPlan) {
     return (
@@ -49,6 +54,18 @@ export const ItineraryDetailsView: React.FC = () => {
   const currentVersion = currentPlan.currentVersion;
   const days = currentVersion.itineraryDays;
   const activeDay = days.find((d) => d.dayNumber === selectedDayNumber) || days[0];
+
+  React.useEffect(() => {
+    if (!activeDay) return;
+    let isMounted = true;
+    const destSlug = activeDay.destinationId?.toLowerCase() || 'munnar';
+    httpAdapter.getDestinationWeather(destSlug).then((data) => {
+      if (isMounted) setDayWeather(data);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [activeDay]);
 
   const handleBookNow = async () => {
     await createBooking({
@@ -195,6 +212,45 @@ export const ItineraryDetailsView: React.FC = () => {
             <span className="text-xs font-bold text-[#C35B3A]">
               ₹{activeDay.accommodation.basePricePerNight.toLocaleString('en-IN')}/nt
             </span>
+          </div>
+        )}
+
+        {/* Real-time Day Weather Telemetry & Monsoon Shield */}
+        {dayWeather && (
+          <div className="p-3 bg-[#0F2823] text-[#F7F3E8] border-b border-[#D4AF37]/30 flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-[#144032] border border-[#D4AF37]/40 flex items-center justify-center">
+                {dayWeather.rain_probability_percent >= 50 ? (
+                  <CloudRain className="w-4 h-4 text-cyan-400" />
+                ) : (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                )}
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-white">
+                    {dayWeather.temperature_celsius}°C • {dayWeather.condition}
+                  </span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#144032] text-emerald-400 font-mono font-bold border border-emerald-500/30">
+                    {dayWeather.rain_probability_percent}% Rain
+                  </span>
+                </div>
+                <p className="text-[10px] text-[#C5D8CD] italic line-clamp-1">
+                  {dayWeather.recommendation || 'Ghat road speeds monitored.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Rain Shift Trigger */}
+            <button
+              onClick={() => regenerateDay(activeDay.dayNumber, 'RAIN_FRIENDLY')}
+              disabled={isGenerating}
+              className="px-2.5 py-1 rounded-lg bg-[#144032] hover:bg-[#1A5340] text-[11px] font-bold text-[#D4AF37] border border-[#D4AF37]/40 transition-all flex items-center gap-1 shadow-sm"
+              title="Re-architect outdoor activities for sheltered spice masterclasses and heritage museums"
+            >
+              <Umbrella className="w-3.5 h-3.5 text-blue-400" />
+              <span>Shift to Rain-Friendly</span>
+            </button>
           </div>
         )}
 

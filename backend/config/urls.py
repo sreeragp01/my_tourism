@@ -14,10 +14,18 @@ urlpatterns = [
     path('api/v1/ai/', include('apps.ai.urls')),
     path('api/v1/companion/', include('apps.companion.urls')),
     path('api/v1/bookings/', include('apps.bookings.urls')),
+    path('api/v1/trips/', include('apps.bookings.trip_urls')),
     path('api/v1/payments/', include('apps.payments.urls')),
     path('api/v1/provider/', include('apps.organizations.urls')),
     path('api/v1/audit/', include('apps.audit.urls')),
     path('api/v1/search/', include('apps.search.urls')),
+
+    # Wave D: Live Trip Experience Engine
+    path('api/v1/location/', include('apps.location.urls')),
+    path('api/v1/maps/', include('apps.maps.urls')),
+    path('api/v1/weather/', include('apps.weather.urls')),
+    path('api/v1/safety/', include('apps.safety.urls')),
+    path('api/v1/notifications/', include('apps.notifications.urls')),
 ]
 
 # Optional OpenAPI Spectacular docs if installed

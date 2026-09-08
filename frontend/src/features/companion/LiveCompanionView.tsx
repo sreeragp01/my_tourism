@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppStore } from '../../stores/useAppStore';
-import { mockBackend } from '../../adapters/mockAdapter';
+import { httpAdapter } from '../../adapters/httpAdapter';
 import { CompanionMessage } from '../../types/contracts';
 import { Sparkles, Mic, Send, Umbrella, Utensils, MapPin, Clock, ArrowRight } from 'lucide-react';
 
@@ -47,8 +47,8 @@ export const LiveCompanionView: React.FC = () => {
     setMessages((prev) => [...prev, userMsg]);
     setInputText('');
 
-    // Query backend companion assistant
-    const reply = await mockBackend.sendCompanionMessage(query);
+    // Query backend companion assistant via live HTTP API
+    const reply = await httpAdapter.sendCompanionMessage(query, 'munnar', 2);
     setMessages((prev) => [...prev, reply]);
   };
 

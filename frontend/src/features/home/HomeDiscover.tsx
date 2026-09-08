@@ -2,6 +2,7 @@ import React from 'react';
 import { useAppStore } from '../../stores/useAppStore';
 import { Search, Sparkles, Bell, ArrowRight, Star, Heart, MapPin } from 'lucide-react';
 import { KERALA_EXPERIENCES, KERALA_DESTINATIONS } from '../../data/keralaData';
+import { LiveWeatherRibbon } from '../../components/common/LiveWeatherRibbon';
 
 export const HomeDiscover: React.FC = () => {
   const { navigateTo, currentUser, setSelectedExperience, setSelectedDestination } = useAppStore();
@@ -51,6 +52,9 @@ export const HomeDiscover: React.FC = () => {
         />
         <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
       </div>
+
+      {/* Live Meteorological Radar & Weather Ribbon */}
+      <LiveWeatherRibbon />
 
       {/* Flagship Feature Banner: "Plan Your Perfect Trip" */}
       <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#144032] to-[#0A1D19] p-5 text-[#F7F3E8] shadow-xl border border-[#D4AF37]/30">

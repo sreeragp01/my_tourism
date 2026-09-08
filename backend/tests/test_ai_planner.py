@@ -223,3 +223,40 @@ class AIPlannerAndCustomizationTestCase(TestCase):
         v1_resp = self.client.get(f'/api/v1/ai/plans/{plan_id}/versions/1/')
         self.assertEqual(v1_resp.status_code, status.HTTP_200_OK)
         self.assertEqual(v1_resp.json()['version_number'], 1)
+
+    def test_user_prompt_june_monsoon_extraction(self):
+        prompt = "Plan 6 days in Kerala with my wife in June, budget ₹80,000, relaxed trip with nature and good food."
+        profile = RequirementParser.parse_text(prompt)
+
+        self.assertEqual(profile['duration_days'], 6)
+        self.assertEqual(profile['adults'], 2)
+        self.assertEqual(profile['month'], 'June')
+        self.assertTrue(profile['monsoon_mode'])
+        self.assertEqual(profile['budget_limit'], 80000.0)
+        self.assertEqual(profile['pace'], 'RELAXED')
+        self.assertIn('Nature', profile['interests'])
+        self.assertIn('Food', profile['interests'])
+
+    def test_deterministic_monsoon_safety_boundary(self):
+        # Day with outdoor activity lacking rain alternative
+        unsafe_days = [{
+            'day_number': 1,
+            'timeline': [
+                {'time': '10:00', 'type': 'ACTIVITY', 'title': 'Open Cliffside Trek', 'rain_friendly': False, 'rain_alternative_id': None},
+                {'time': '14:00', 'type': 'MEAL', 'title': 'Lunch', 'rain_friendly': True}
+            ]
+        }]
+        res = DeterministicValidator.validate_plan(unsafe_days, 80000.0, {'total': 50000.0}, monsoon_mode=True)
+        self.assertFalse(res['is_valid'])
+        self.assertTrue(any('monsoon season' in v for v in res['violations']))
+
+    def test_ai_provider_adapter_resolution(self):
+        from apps.ai.adapters import get_ai_provider_adapter, RuleBasedAIProviderAdapter, GeminiAIProviderAdapter
+        adapter_default = get_ai_provider_adapter()
+        self.assertIsInstance(adapter_default, RuleBasedAIProviderAdapter)
+
+        adapter_gemini = get_ai_provider_adapter('gemini')
+        self.assertIsInstance(adapter_gemini, GeminiAIProviderAdapter)
+        # Fallback executes without errors
+        res = adapter_gemini.parse_prompt("5 days in Munnar with family")
+        self.assertEqual(res['duration_days'], 5)
