@@ -26,7 +26,12 @@ class ApiClient {
     this.onSessionExpired,
   }) : _httpClient = httpClient ?? http.Client();
 
-  String get baseUrl => config.apiBaseUrl;
+  String? _activeBaseUrl;
+  String get baseUrl => _activeBaseUrl ?? config.apiBaseUrl;
+
+  void setCustomBaseUrl(String url) {
+    _activeBaseUrl = url.endsWith('/') ? url.substring(0, url.length - 1) : url;
+  }
 
   Future<dynamic> get(
     String endpoint, {
@@ -183,8 +188,16 @@ class ApiClient {
 
       return response;
     } on TimeoutException {
+      if (config.isDevelopment && _activeBaseUrl == null) {
+        final fallback = await _probeFallbackCandidates(cleanEndpoint, method, requestHeaders, body);
+        if (fallback != null) return fallback;
+      }
       throw const TimeoutException();
     } on SocketException catch (e) {
+      if (config.isDevelopment && _activeBaseUrl == null) {
+        final fallback = await _probeFallbackCandidates(cleanEndpoint, method, requestHeaders, body);
+        if (fallback != null) return fallback;
+      }
       throw NetworkException(
         message: 'Unable to connect to server at $baseUrl (${e.message.isNotEmpty ? e.message : "Connection refused"}). Ensure Django backend is running on port 8000.',
       );
@@ -192,6 +205,43 @@ class ApiClient {
       if (e is ApiException) rethrow;
       throw NetworkException(message: 'Connection failed: ${e.toString()}');
     }
+  }
+
+  Future<http.Response?> _probeFallbackCandidates(
+    String cleanEndpoint,
+    String method,
+    Map<String, String> requestHeaders,
+    dynamic body,
+  ) async {
+    for (final candidate in config.candidateBaseUrls) {
+      if (candidate == baseUrl) continue;
+      try {
+        final altUri = Uri.parse('$candidate$cleanEndpoint');
+        http.Response altResponse;
+        final bodyString = body != null ? jsonEncode(body) : null;
+        switch (method) {
+          case 'GET':
+            altResponse = await _httpClient.get(altUri, headers: requestHeaders).timeout(const Duration(seconds: 3));
+            break;
+          case 'POST':
+            altResponse = await _httpClient.post(altUri, headers: requestHeaders, body: bodyString).timeout(const Duration(seconds: 3));
+            break;
+          case 'PUT':
+            altResponse = await _httpClient.put(altUri, headers: requestHeaders, body: bodyString).timeout(const Duration(seconds: 3));
+            break;
+          case 'DELETE':
+            altResponse = await _httpClient.delete(altUri, headers: requestHeaders).timeout(const Duration(seconds: 3));
+            break;
+          default:
+            continue;
+        }
+        _activeBaseUrl = candidate;
+        return altResponse;
+      } catch (_) {
+        continue;
+      }
+    }
+    return null;
   }
 
   /// Single-flight mutex token refresh flow
