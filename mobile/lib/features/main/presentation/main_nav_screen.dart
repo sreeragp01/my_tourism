@@ -10,6 +10,7 @@ import '../../explore/data/experience_repository.dart';
 import '../../explore/presentation/explore_kerala_screen.dart';
 import '../../ai_planner/presentation/ai_planner_screen.dart';
 import '../../companion/presentation/live_companion_screen.dart';
+import '../../companion/data/companion_repository.dart';
 import '../../trips/presentation/my_trips_screen.dart';
 import '../../safety/presentation/safety_hub_screen.dart';
 import '../../search/data/search_repository.dart';
@@ -35,6 +36,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
   late final DestinationRepository _destRepo;
   late final ExperienceRepository _expRepo;
   late final SearchRepository _searchRepo;
+  late final CompanionRepository _compRepo;
 
   @override
   void initState() {
@@ -53,6 +55,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
         ExperienceRepository(apiClient: client);
 
     _searchRepo = SearchRepository(apiClient: client);
+    _compRepo = CompanionRepository(apiClient: client);
   }
 
   Future<void> _handleLogout() async {
@@ -93,7 +96,10 @@ class _MainNavScreenState extends State<MainNavScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userName = widget.authRepository?.currentUser?.firstName ?? 'Sreerag';
+    final userName = (widget.authRepository?.currentUser?.firstName != null &&
+            widget.authRepository!.currentUser!.firstName.trim().isNotEmpty)
+        ? widget.authRepository!.currentUser!.firstName.trim()
+        : 'Traveler';
 
     final screens = [
       HomeDiscoverScreen(
@@ -106,7 +112,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
       ),
       ExploreKeralaScreen(experienceRepository: _expRepo),
       const AIPlannerScreen(),
-      const LiveCompanionScreen(),
+      LiveCompanionScreen(repository: _compRepo, userName: userName),
       const MyTripsScreen(),
       const SafetyHubScreen(),
     ];

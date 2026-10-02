@@ -16,11 +16,12 @@ class LiveTripCompanionChatView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        user = request.user if request.user and request.user.is_authenticated else None
+        destination_slug = data.get('destination_slug') or data.get('current_destination') or 'munnar'
         response_payload = AICompanionOrchestrator.process_query(
             query=data['query'],
-            destination_slug=data.get('current_destination', 'munnar'),
+            destination_slug=destination_slug,
             trip_day=data.get('trip_day', 2),
+            booking_reference=data.get('booking_reference'),
             user=user
         )
 

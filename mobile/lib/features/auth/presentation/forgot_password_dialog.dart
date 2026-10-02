@@ -243,7 +243,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: const Color(0xFF142B20),
-                  hintText: 'traveler@keralink.travel',
+                  hintText: 'name@example.com',
                   hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
                   prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF10B981), size: 18),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),

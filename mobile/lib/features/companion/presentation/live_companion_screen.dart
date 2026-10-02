@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../core/config/app_config.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/storage/secure_token_storage.dart';
 import '../models/companion_models.dart';
 import '../data/companion_repository.dart';
 
@@ -7,6 +10,7 @@ class LiveCompanionScreen extends StatefulWidget {
   final String destinationSlug;
   final int tripDay;
   final String? bookingReference;
+  final String? userName;
 
   const LiveCompanionScreen({
     super.key,
@@ -14,6 +18,7 @@ class LiveCompanionScreen extends StatefulWidget {
     this.destinationSlug = 'munnar',
     this.tripDay = 2,
     this.bookingReference,
+    this.userName,
   });
 
   @override
@@ -23,17 +28,40 @@ class LiveCompanionScreen extends StatefulWidget {
 class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  late final ICompanionRepository _repository;
   bool _isAwaitingResponse = false;
+  final List<CompanionMessage> _messages = [];
 
-  final List<CompanionMessage> _messages = [
-    const CompanionMessage(
-      id: 'msg-welcome',
-      sender: 'ai',
-      text: 'Namaskaram Sreerag! 🌴 I am your live KeraLink Companion for Day 2 in Munnar. Mountain mist is active (19°C). How can I assist your journey?',
-      timestamp: '10:15 AM',
-      suggestions: ["Check Weather", "Contact Chauffeur Rajesh", "Rain Alternative", "Emergency Help"],
-    )
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _repository = widget.repository ??
+        CompanionRepository(
+          apiClient: ApiClient(
+            config: AppConfig.fromEnvironment(),
+            storage: SecureTokenStorage(),
+          ),
+        );
+
+    final name = (widget.userName != null && widget.userName!.trim().isNotEmpty)
+        ? widget.userName!.trim()
+        : 'Traveler';
+
+    _messages.add(
+      CompanionMessage(
+        id: 'msg-welcome',
+        sender: 'ai',
+        text: 'Namaskaram $name! 🌴 I am your live KeraLink Companion for Day ${widget.tripDay} in ${widget.destinationSlug.toUpperCase()}. How can I assist your journey today?',
+        timestamp: 'Just now',
+        suggestions: const [
+          "Check Weather",
+          "Contact Chauffeur Rajesh",
+          "Rain Alternative",
+          "Emergency Help",
+        ],
+      ),
+    );
+  }
 
   Future<void> _handleSend(String text) async {
     final query = text.trim();
@@ -51,26 +79,25 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
     });
     _scrollToBottom();
 
-    if (widget.repository != null) {
-      try {
-        final reply = await widget.repository!.sendQuery(
-          query: query,
-          destinationSlug: widget.destinationSlug,
-          tripDay: widget.tripDay,
-          bookingReference: widget.bookingReference,
-        );
-        if (mounted) {
-          setState(() {
-            _messages.add(reply);
-            _isAwaitingResponse = false;
-          });
-          _scrollToBottom();
-          return;
-        }
-      } catch (_) {}
-    }
+    // 1. Try sending query to live cloud backend
+    try {
+      final reply = await _repository.sendQuery(
+        query: query,
+        destinationSlug: widget.destinationSlug,
+        tripDay: widget.tripDay,
+        bookingReference: widget.bookingReference,
+      );
+      if (mounted) {
+        setState(() {
+          _messages.add(reply);
+          _isAwaitingResponse = false;
+        });
+        _scrollToBottom();
+        return;
+      }
+    } catch (_) {}
 
-    // High quality deterministic fallback matching tool execution pipeline
+    // 2. High-quality offline intelligence engine fallback
     await Future.delayed(const Duration(milliseconds: 50));
     final lower = query.toLowerCase();
     CompanionMessage fallbackReply;
@@ -135,13 +162,62 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
         },
         suggestions: ['Call Tourist Police 1800-425-4747', 'Dial 112', 'Trigger SOS'],
       );
+    } else if (lower.contains('food') || lower.contains('eat') || lower.contains('sadya') || lower.contains('restaurant') || lower.contains('dining') || lower.contains('biryani') || lower.contains('seafood')) {
+      fallbackReply = CompanionMessage(
+        id: 'msg-food-${DateTime.now().millisecondsSinceEpoch}',
+        sender: 'ai',
+        text: '🌴 Top Culinary Highlights in ${widget.destinationSlug.toUpperCase()}:\n\n'
+            '• Traditional Kerala Sadya: 24+ dishes served on banana leaf with warm Palada Payasam.\n'
+            '• Karimeen Pollichathu: Pearl spot fish marinated in native spices, wrapped in banana leaf.\n'
+            '• Breakfast: Hot Appam with coconut milk vegetable stew or Puttu & Kadala curry.\n'
+            '• Local Spots: Saravana Bhavan (pure veg) and Rapsy (authentic Malabar specials).',
+        timestamp: 'Just now',
+        suggestions: const ['Find Sadya Spots', 'Breakfast Recommendations', 'Seafood Specials'],
+      );
+    } else if (lower.contains('temple') || lower.contains('dress') || lower.contains('wear') || lower.contains('mundu')) {
+      fallbackReply = CompanionMessage(
+        id: 'msg-temple-${DateTime.now().millisecondsSinceEpoch}',
+        sender: 'ai',
+        text: '🛕 Kerala Temple Etiquette Guidelines:\n\n'
+            '• Men: Traditional white Mundu/Dhoti around the waist; upper torso must be bare in ancient shrines (Padmanabhaswamy/Guruvayur).\n'
+            '• Women: Traditional saree, salwar kameez, or long skirts. Jeans/shorts prohibited.\n'
+            '• Footwear: Must be deposited at the outer cloakroom.\n'
+            '• Cameras/Phones: Strictly prohibited inside sanctums.',
+        timestamp: 'Just now',
+        suggestions: const ['Padmanabhaswamy Guide', 'Buy Traditional Kasavu', 'Temple Timings'],
+      );
+    } else if (lower.contains('how far') || lower.contains('distance') || lower.contains('travel time') || lower.contains('route') || lower.contains('kochi to') || lower.contains('munnar to')) {
+      fallbackReply = CompanionMessage(
+        id: 'msg-route-${DateTime.now().millisecondsSinceEpoch}',
+        sender: 'ai',
+        text: '🚗 Key Kerala Route Durations:\n\n'
+            '• Cochin Airport ➔ Munnar: 110 km (~3.5 to 4h via NH85, stop at Cheeyappara Falls).\n'
+            '• Cochin ➔ Alleppey: 55 km (~1.5h coastal drive).\n'
+            '• Munnar ➔ Thekkady: 90 km (~3h scenic mountain road).\n'
+            '• Thekkady ➔ Alleppey: 140 km (~3.5h descent).\n\n'
+            '💡 Ghat Advisory: Mountain curves require cautious driving (30-40 km/h).',
+        timestamp: 'Just now',
+        suggestions: const ['Contact Driver Rajesh', 'Route on Map', 'Scenic Stops'],
+      );
+    } else if (lower.contains('pack') || lower.contains('bring') || lower.contains('clothes')) {
+      fallbackReply = CompanionMessage(
+        id: 'msg-pack-${DateTime.now().millisecondsSinceEpoch}',
+        sender: 'ai',
+        text: '🎒 Packing Essentials for Kerala:\n\n'
+            '• Clothing: Light cottons for coast; light fleece/jacket for Munnar hills (12-15°C at night).\n'
+            '• Footwear: Slip-off sandals for temples, trekking shoes for hill trails.\n'
+            '• Rain & Sun: Compact umbrella, sunglasses, reef-safe sunscreen, and mosquito repellent.\n'
+            '• Modesty: A light shawl or scarf for temple visits.',
+        timestamp: 'Just now',
+        suggestions: const ['Munnar Weather Alert', 'Temple Dress Code', 'Luggage Storage'],
+      );
     } else {
       fallbackReply = CompanionMessage(
         id: 'msg-gen-${DateTime.now().millisecondsSinceEpoch}',
         sender: 'ai',
         text: '🌴 I am monitoring your Day ${widget.tripDay} timeline in ${widget.destinationSlug.toUpperCase()}. Chauffeur Rajesh is on standby, and outdoor activities are synced with live mountain radar.',
         timestamp: 'Just now',
-        suggestions: ["Check Weather", "Contact Chauffeur Rajesh", "Rain Alternative"],
+        suggestions: const ["Check Weather", "Contact Chauffeur Rajesh", "Rain Alternative"],
       );
     }
 
