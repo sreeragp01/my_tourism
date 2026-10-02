@@ -25,7 +25,7 @@ void main() {
     test('Production environment URL selection', () {
       const config = AppConfig(environment: AppEnvironment.production);
       expect(config.isProduction, isTrue);
-      expect(config.apiBaseUrl, 'https://api.keralink.org/api/v1');
+      expect(config.apiBaseUrl, AppConfig.liveProductionUrl);
     });
 
     test('Custom base URL override takes precedence', () {

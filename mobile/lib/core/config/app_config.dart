@@ -31,7 +31,7 @@ class AppConfig {
 
   /// Factory creating configuration from compile-time flags (--dart-define)
   factory AppConfig.fromEnvironment() {
-    const envStr = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
+    const envStr = String.fromEnvironment('ENVIRONMENT', defaultValue: 'production');
     const customUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
     return AppConfig(
       environment: _parseEnvironment(envStr),
@@ -49,6 +49,8 @@ class AppConfig {
     );
   }
 
+  static const String liveProductionUrl = 'https://my-tourism.onrender.com/api/v1';
+
   List<String> get candidateBaseUrls {
     if (customBaseUrl != null && customBaseUrl!.isNotEmpty) {
       return [customBaseUrl!];
@@ -57,30 +59,24 @@ class AppConfig {
     switch (environment) {
       case AppEnvironment.production:
         return const [
-          'https://api.keralink.org/api/v1',
+          liveProductionUrl,
           'http://192.168.220.40:8000/api/v1',
           'http://127.0.0.1:8000/api/v1',
         ];
 
       case AppEnvironment.staging:
         return const [
-          'https://staging-api.keralink.org/api/v1',
+          liveProductionUrl,
           'http://192.168.220.40:8000/api/v1',
           'http://127.0.0.1:8000/api/v1',
         ];
 
       case AppEnvironment.development:
-        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-          return const [
-            'http://192.168.220.40:8000/api/v1',
-            'http://127.0.0.1:8000/api/v1',
-            'http://10.0.2.2:8000/api/v1',
-          ];
-        }
         return const [
-          'http://127.0.0.1:8000/api/v1',
-          'http://localhost:8000/api/v1',
+          liveProductionUrl,
           'http://192.168.220.40:8000/api/v1',
+          'http://127.0.0.1:8000/api/v1',
+          'http://10.0.2.2:8000/api/v1',
         ];
     }
   }
@@ -92,13 +88,12 @@ class AppConfig {
 
     switch (environment) {
       case AppEnvironment.production:
-        return 'https://api.keralink.org/api/v1';
+        return liveProductionUrl;
 
       case AppEnvironment.staging:
         return 'https://staging-api.keralink.org/api/v1';
 
       case AppEnvironment.development:
-        // Safe check for Android physical phone vs emulator loopback
         if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
           return 'http://10.0.2.2:8000/api/v1';
         }

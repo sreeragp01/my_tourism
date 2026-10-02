@@ -22,7 +22,7 @@ class ApiClient {
     required this.config,
     required this.storage,
     http.Client? httpClient,
-    this.timeout = const Duration(seconds: 10),
+    this.timeout = const Duration(seconds: 30),
     this.onSessionExpired,
   }) : _httpClient = httpClient ?? http.Client();
 
@@ -51,12 +51,12 @@ class ApiClient {
     final clean = target.endsWith('/') ? target.substring(0, target.length - 1) : target;
     try {
       final uri = Uri.parse('$clean/health/');
-      final res = await _httpClient.get(uri).timeout(const Duration(milliseconds: 2500));
+      final res = await _httpClient.get(uri).timeout(const Duration(seconds: 12));
       if (res.statusCode == 200) return true;
     } catch (_) {}
     try {
       final uri = Uri.parse('$clean/auth/login/');
-      final res = await _httpClient.get(uri).timeout(const Duration(milliseconds: 2500));
+      final res = await _httpClient.get(uri).timeout(const Duration(seconds: 12));
       return res.statusCode < 500;
     } catch (_) {
       return false;

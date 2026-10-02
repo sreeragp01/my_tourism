@@ -13,7 +13,7 @@ import {
 } from '../types/contracts';
 import { mockBackend } from './mockAdapter';
 
-export const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000/api/v1';
+export const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://my-tourism.onrender.com/api/v1';
 
 // ----------------------------------------------------------------------------
 // Model Mappers (Transforms DRF snake_case responses into Frontend Contracts)
