@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../core/errors/api_exception.dart';
 import '../data/auth_repository.dart';
 import 'register_screen.dart';
-import 'server_settings_dialog.dart';
 import 'forgot_password_dialog.dart';
 import '../../main/presentation/main_nav_screen.dart';
 
@@ -72,10 +71,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showServerSettingsDialog() {
-    ServerSettingsDialog.show(context, widget.authRepository.apiClient);
-  }
-
   void _showForgotPasswordDialog() {
     ForgotPasswordDialog.show(
       context,
@@ -112,17 +107,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0D1F17),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.dns_outlined, color: Color(0xFF10B981), size: 20),
-            tooltip: 'Server Connection Settings',
-            onPressed: _showServerSettingsDialog,
-          ),
-        ],
-      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -203,12 +187,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: const TextStyle(fontSize: 12, color: Colors.white),
                             ),
                           ),
-                          if (_errorMessage!.contains('Connection') || _errorMessage!.contains('connect'))
-                            IconButton(
-                              icon: const Icon(Icons.tune, size: 18, color: Color(0xFFD4AF37)),
-                              tooltip: 'Configure Server Host',
-                              onPressed: _showServerSettingsDialog,
-                            ),
                         ],
                       ),
                     ),

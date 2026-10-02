@@ -31,9 +31,11 @@ class ApiClient {
 
   Future<void> init() async {
     try {
-      final stored = await storage.getCustomBaseUrl();
-      if (stored != null && stored.trim().isNotEmpty) {
-        _activeBaseUrl = stored.trim();
+      if (!config.isProduction) {
+        final stored = await storage.getCustomBaseUrl();
+        if (stored != null && stored.trim().isNotEmpty) {
+          _activeBaseUrl = stored.trim();
+        }
       }
     } catch (_) {}
   }
@@ -223,7 +225,7 @@ class ApiClient {
         if (fallback != null) return fallback;
       }
       throw TimeoutException(
-        message: 'Connection timed out connecting to $baseUrl. If running on a physical phone, tap Server Settings to set your PC\'s Wi-Fi IP (e.g. http://192.168.220.40:8000/api/v1) or run "adb reverse tcp:8000 tcp:8000".',
+        message: 'Connection timed out connecting to KeraLink server. Please check your internet connection and try again.',
       );
     } on SocketException catch (e) {
       if (_activeBaseUrl == null) {
@@ -231,7 +233,7 @@ class ApiClient {
         if (fallback != null) return fallback;
       }
       throw NetworkException(
-        message: 'Unable to connect to server at $baseUrl (${e.message.isNotEmpty ? e.message : "Connection refused"}). Ensure Django backend is running on 0.0.0.0:8000 and phone is on the same Wi-Fi.',
+        message: 'Unable to connect to server (${e.message.isNotEmpty ? e.message : "Network error"}). Please check your internet connection and try again.',
       );
     } catch (e) {
       if (e is ApiException) rethrow;

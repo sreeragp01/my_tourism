@@ -60,8 +60,6 @@ class AppConfig {
       case AppEnvironment.production:
         return const [
           liveProductionUrl,
-          'http://192.168.220.40:8000/api/v1',
-          'http://127.0.0.1:8000/api/v1',
         ];
 
       case AppEnvironment.staging:

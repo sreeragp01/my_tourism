@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../core/errors/api_exception.dart';
 import '../data/auth_repository.dart';
-import 'server_settings_dialog.dart';
 import '../../main/presentation/main_nav_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -78,11 +77,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final msg = e.toString();
       if (msg.contains('timed out') || msg.contains('TimeoutException')) {
         setState(() {
-          _errorMessage = 'Connection timed out connecting to ${widget.authRepository.apiClient.baseUrl}. If on a physical phone, tap "Configure Server IP" below to select your PC\'s Wi-Fi LAN address or USB ADB.';
+          _errorMessage = 'Connection timed out. Please check your internet connection and try again.';
         });
       } else {
         setState(() {
-          _errorMessage = 'Registration failed ($msg). Please check network and try again.';
+          _errorMessage = 'Registration failed. Please check your internet connection and try again.';
         });
       }
     } finally {
@@ -138,13 +137,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.dns_outlined, color: Color(0xFF10B981), size: 20),
-            tooltip: 'Server Connection Settings',
-            onPressed: () => ServerSettingsDialog.show(context, widget.authRepository.apiClient),
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -179,54 +171,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: const Color(0xFFE11D48).withValues(alpha: 0.4)),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.error_outline, color: Color(0xFFE11D48), size: 18),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                _errorMessage!,
-                                style: const TextStyle(fontSize: 12, color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (_errorMessage!.contains('timed out') ||
-                            _errorMessage!.contains('connect') ||
-                            _errorMessage!.contains('Connection') ||
-                            _errorMessage!.contains('server') ||
-                            _errorMessage!.contains('network')) ...[
-                          const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 6,
-                            children: [
-                              TextButton.icon(
-                                onPressed: () => ServerSettingsDialog.show(context, widget.authRepository.apiClient),
-                                icon: const Icon(Icons.tune, size: 15, color: Color(0xFFD4AF37)),
-                                label: const Text(
-                                  'Configure Server',
-                                  style: TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              OutlinedButton.icon(
-                                onPressed: _handleDemoRegister,
-                                icon: const Icon(Icons.explore_outlined, size: 14, color: Color(0xFF10B981)),
-                                label: const Text(
-                                  'Continue in Demo Mode',
-                                  style: TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Color(0xFF10B981), width: 0.8),
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                ),
-                              ),
-                            ],
+                        const Icon(Icons.error_outline, color: Color(0xFFE11D48), size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(fontSize: 12, color: Colors.white),
                           ),
-                        ],
+                        ),
                       ],
                     ),
                   ),
