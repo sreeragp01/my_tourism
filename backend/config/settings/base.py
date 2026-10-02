@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.audit',         # Immutable Security & Compliance Audit Log
     'apps.search',        # Unified Tourism Search & Discovery Engine
     'apps.packages',      # Verified Tour Packages & Local Operator Marketplace
+    'apps.transport',     # Cabs, Chauffeurs & Airport Transfers
     
     # Wave D: Live Trip Experience Engine
     'apps.location',

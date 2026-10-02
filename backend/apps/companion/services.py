@@ -208,6 +208,22 @@ class AICompanionOrchestrator:
             suggestions = ["View All Packages", "Chat on WhatsApp", "Munnar 3D2N Details"]
             return {"content": content, "suggestions": suggestions}
 
+        # 0.5. Cabs, Chauffeurs & Airport Transfers Inquiries
+        if any(w in lower for w in ['cab', 'cabs', 'taxi', 'chauffeur', 'airport pickup', 'airport transfer', 'car rental', 'driver', 'innova', 'tempo traveller', 'flight pickup', 'book a cab', 'book cab']):
+            content = (
+                "🚖 **KeraLink Airport Transfers & Tourist Chauffeur Rentals:**\n\n"
+                "Book your verified tourist cab in advance from abroad with live flight-delay protection and name-placard airport pickup:\n\n"
+                "• **Cochin Airport (COK) ➔ Munnar**: Fixed rate ₹3,200 (Sedan) | ₹4,500 (Innova Crysta) — includes all tolls and mountain permits.\n"
+                "• **Cochin Airport (COK) ➔ Alleppey Jetty**: Fixed rate ₹2,600 (Sedan) | ₹3,600 (Innova Crysta).\n"
+                "• **Cochin Airport (COK) ➔ Fort Kochi**: Fixed rate ₹1,400 (Sedan) | ₹2,100 (Innova Crysta).\n"
+                "• **Trivandrum Airport (TRV) ➔ Varkala Cliff**: Fixed rate ₹1,600 (Sedan) | ₹2,400 (Innova Crysta).\n"
+                "• **Multi-Day Chauffeur Disposal**: ₹2,800/day (Sedan) | ₹3,800/day (Innova Crysta) — with dedicated ghat-road certified chauffeur.\n\n"
+                "✈️ *Flight Tracking*: Enter your flight number (e.g. EK-530 / AI-934); if your flight is delayed, your driver waits with zero penalty!\n"
+                "📲 Tap the 'Cabs & Transfers' tab on your home screen to reserve with 1 tap."
+            )
+            suggestions = ["Book Airport Pickup", "Multi-Day Innova", "Call Chauffeur Rajesh"]
+            return {"content": content, "suggestions": suggestions}
+
         # A. Travel logistics, routes, durations & distances (Checked before destination keywords)
         if any(w in lower for w in ['how long', 'how far', 'distance', 'travel time', 'reach', 'route', 'kochi to', 'munnar to', 'airport to', 'drive from', 'hours to', 'taxi fare', 'train to', 'how to get']):
             content = (
