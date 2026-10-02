@@ -5,8 +5,13 @@ from django.conf import settings
 from django.utils import timezone
 from rest_framework import status, views, permissions
 from rest_framework.response import Response
-from .models import User, UserSession, RefreshTokenFamily, RefreshToken
-from .serializers import UserSerializer, UserSessionSerializer, RegisterSerializer, LoginSerializer, TokenRefreshSerializer
+from .models import User, UserSession, RefreshTokenFamily, RefreshToken, PasswordResetOTP, EmailVerificationOTP
+from .serializers import (
+    UserSerializer, UserSessionSerializer, RegisterSerializer, LoginSerializer,
+    TokenRefreshSerializer, PasswordResetRequestSerializer, PasswordResetVerifySerializer,
+    EmailVerificationSerializer
+)
+from .services import AccountEmailService
 
 def issue_tokens_for_session(user: User, session: UserSession, family: RefreshTokenFamily = None):
     now = timezone.now()
@@ -172,3 +177,97 @@ class RevokeSessionView(views.APIView):
             return Response({'success': True, 'message': 'Session revoked successfully'})
         except UserSession.DoesNotExist:
             return Response({'success': False, 'error': {'code': 'NOT_FOUND', 'message': 'Session not found'}}, status=status.HTTP_404_NOT_FOUND)
+
+
+class RequestPasswordResetView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email'].lower().strip()
+
+        try:
+            user = User.objects.get(email=email)
+            otp = PasswordResetOTP.generate_otp_for_user(user)
+            email_sent = AccountEmailService.send_password_reset_otp_email(user, otp.otp)
+            return Response({
+                'success': True,
+                'message': f'6-digit verification OTP sent to {email}.',
+                'email_sent': email_sent,
+                'demo_otp': otp.otp if getattr(settings, 'DEBUG', True) else None
+            }, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({
+                'success': True,
+                'message': f'If an account exists with {email}, a 6-digit verification OTP has been sent.'
+            }, status=status.HTTP_200_OK)
+
+
+class VerifyPasswordResetView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email'].lower().strip()
+        code = serializer.validated_data['otp'].strip()
+        new_password = serializer.validated_data['new_password']
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'success': False, 'error': {'code': 'INVALID_REQUEST', 'message': 'Invalid reset request'}}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp_record = PasswordResetOTP.objects.filter(user=user, otp=code, is_used=False).first()
+        if not otp_record or not otp_record.is_valid():
+            return Response({'success': False, 'error': {'code': 'INVALID_OTP', 'message': 'Invalid or expired 6-digit OTP code'}}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp_record.is_used = True
+        otp_record.save()
+
+        user.set_password(new_password)
+        user.save()
+
+        # Revoke all active sessions for security
+        UserSession.objects.filter(user=user, revoked_at__isnull=True).update(revoked_at=timezone.now())
+
+        return Response({
+            'success': True,
+            'message': 'Password has been successfully reset! Please log in with your new password.'
+        }, status=status.HTTP_200_OK)
+
+
+class SendVerificationOTPView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        otp = EmailVerificationOTP.generate_otp_for_user(request.user)
+        email_sent = AccountEmailService.send_verification_otp_email(request.user, otp.otp)
+        return Response({
+            'success': True,
+            'message': f'Verification OTP sent to {request.user.email}',
+            'email_sent': email_sent,
+            'demo_otp': otp.otp if getattr(settings, 'DEBUG', True) else None
+        }, status=status.HTTP_200_OK)
+
+
+class VerifyEmailOTPView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        code = request.data.get('otp', '').strip()
+        otp_record = EmailVerificationOTP.objects.filter(user=request.user, otp=code, is_used=False).first()
+        if not otp_record or not otp_record.is_valid():
+            return Response({'success': False, 'error': {'code': 'INVALID_OTP', 'message': 'Invalid or expired OTP'}}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp_record.is_used = True
+        otp_record.save()
+
+        request.user.is_email_verified = True
+        request.user.save()
+
+        return Response({
+            'success': True,
+            'message': 'Email successfully verified!'
+        }, status=status.HTTP_200_OK)

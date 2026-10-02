@@ -126,4 +126,32 @@ class AuthRepository {
     _currentUser = null;
     statusNotifier.value = AuthStatus.unauthenticated;
   }
+
+  /// Request 6-digit password reset OTP
+  Future<Map<String, dynamic>> requestPasswordReset(String email) async {
+    final response = await apiClient.post(
+      '/auth/password-reset/request/',
+      body: {'email': email.trim().toLowerCase()},
+      requiresAuth: false,
+    );
+    return response as Map<String, dynamic>;
+  }
+
+  /// Verify OTP and reset password
+  Future<Map<String, dynamic>> verifyPasswordReset({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    final response = await apiClient.post(
+      '/auth/password-reset/verify/',
+      body: {
+        'email': email.trim().toLowerCase(),
+        'otp': otp.trim(),
+        'new_password': newPassword,
+      },
+      requiresAuth: false,
+    );
+    return response as Map<String, dynamic>;
+  }
 }

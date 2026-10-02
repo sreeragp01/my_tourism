@@ -30,3 +30,15 @@ class LoginSerializer(serializers.Serializer):
 
 class TokenRefreshSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class PasswordResetVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6, min_length=6)
+    new_password = serializers.CharField(min_length=8)
+
+class EmailVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6, min_length=6)

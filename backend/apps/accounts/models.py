@@ -74,3 +74,59 @@ class RefreshToken(models.Model):
     @staticmethod
     def hash_token(raw_token: str) -> str:
         return hashlib.sha256(raw_token.encode('utf-8')).hexdigest()
+
+class PasswordResetOTP(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_otps')
+    otp = models.CharField(max_length=6, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    @classmethod
+    def generate_otp_for_user(cls, user):
+        import random
+        from datetime import timedelta
+        # Invalidate old unused OTPs
+        cls.objects.filter(user=user, is_used=False).update(is_used=True)
+        code = f"{random.randint(100000, 999999)}"
+        return cls.objects.create(
+            user=user,
+            otp=code,
+            expires_at=timezone.now() + timedelta(minutes=15),
+            is_used=False
+        )
+
+    def is_valid(self):
+        return not self.is_used and timezone.now() <= self.expires_at
+
+
+class EmailVerificationOTP(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_otps')
+    otp = models.CharField(max_length=6, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    @classmethod
+    def generate_otp_for_user(cls, user):
+        import random
+        from datetime import timedelta
+        cls.objects.filter(user=user, is_used=False).update(is_used=True)
+        code = f"{random.randint(100000, 999999)}"
+        return cls.objects.create(
+            user=user,
+            otp=code,
+            expires_at=timezone.now() + timedelta(minutes=30),
+            is_used=False
+        )
+
+    def is_valid(self):
+        return not self.is_used and timezone.now() <= self.expires_at

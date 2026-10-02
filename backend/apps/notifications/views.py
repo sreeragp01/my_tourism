@@ -104,3 +104,36 @@ class ProximityCheckView(APIView):
         )
 
         return Response(result, status=status.HTTP_200_OK)
+
+
+class SendNotificationView(APIView):
+    """
+    Creates and dispatches an in-app and push notification for the authenticated user.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        title = request.data.get('title', 'KeraLink Live Alert')
+        message = request.data.get('message', 'Your live Kerala itinerary has been updated.')
+        notif_type = request.data.get('notification_type', 'SCHEDULE_UPDATE')
+        data = request.data.get('data', {})
+
+        notif = NotificationService.send_notification(
+            user=request.user,
+            title=title,
+            message=message,
+            notification_type=notif_type,
+            data=data
+        )
+
+        if notif:
+            return Response({
+                'success': True,
+                'message': 'Notification sent successfully',
+                'data': NotificationSerializer(notif).data
+            }, status=status.HTTP_201_CREATED)
+        else:
+            return Response({
+                'success': False,
+                'message': 'Notification was suppressed by user preferences'
+            }, status=status.HTTP_200_OK)

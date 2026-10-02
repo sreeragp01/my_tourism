@@ -3,6 +3,7 @@ import '../../../core/errors/api_exception.dart';
 import '../data/auth_repository.dart';
 import 'register_screen.dart';
 import 'server_settings_dialog.dart';
+import 'forgot_password_dialog.dart';
 import '../../main/presentation/main_nav_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -73,6 +74,38 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showServerSettingsDialog() {
     ServerSettingsDialog.show(context, widget.authRepository.apiClient);
+  }
+
+  void _showForgotPasswordDialog() {
+    ForgotPasswordDialog.show(
+      context,
+      authRepository: widget.authRepository,
+      initialEmail: _emailController.text,
+      onResetSuccess: (email, newPassword) {
+        setState(() {
+          _emailController.text = email;
+          _passwordController.text = newPassword;
+          _errorMessage = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Color(0xFF10B981),
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white, size: 20),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Password reset successfully! You can now tap Sign In.',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -247,7 +280,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
 
-                  const SizedBox(height: 26),
+                  const SizedBox(height: 8),
+
+                  // Forgot Password Button
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _showForgotPasswordDialog,
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(50, 30),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text(
+                        'Forgot Password?',
+                        style: TextStyle(
+                          color: Color(0xFFD4AF37),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
 
                   // Sign In Button
                   SizedBox(
