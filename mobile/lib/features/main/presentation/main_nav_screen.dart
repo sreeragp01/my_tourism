@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/secure_token_storage.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/presentation/login_screen.dart';
 import '../../home/data/destination_repository.dart';
@@ -37,36 +38,37 @@ class _MainNavScreenState extends State<MainNavScreen> {
   late final ExperienceRepository _expRepo;
   late final SearchRepository _searchRepo;
   late final CompanionRepository _compRepo;
+  late final ApiClient _apiClient;
 
   @override
   void initState() {
     super.initState();
     final storage = widget.authRepository?.storage ?? SecureTokenStorage();
-    final client = widget.authRepository?.apiClient ??
+    _apiClient = widget.authRepository?.apiClient ??
         ApiClient(
           config: AppConfig.fromEnvironment(),
           storage: storage,
         );
 
     _destRepo = widget.destinationRepository ??
-        DestinationRepository(apiClient: client, storage: storage);
+        DestinationRepository(apiClient: _apiClient, storage: storage);
 
     _expRepo = widget.experienceRepository ??
-        ExperienceRepository(apiClient: client);
+        ExperienceRepository(apiClient: _apiClient);
 
-    _searchRepo = SearchRepository(apiClient: client);
-    _compRepo = CompanionRepository(apiClient: client);
+    _searchRepo = SearchRepository(apiClient: _apiClient);
+    _compRepo = CompanionRepository(apiClient: _apiClient);
   }
 
   Future<void> _handleLogout() async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF142B20),
-        title: const Text('Sign Out', style: TextStyle(color: Colors.white)),
+        backgroundColor: AppTheme.surfaceTeal,
+        title: const Text('Sign Out', style: TextStyle(color: AppTheme.textCream)),
         content: const Text(
           'Are you sure you want to sign out of your KeraLink account?',
-          style: TextStyle(color: Color(0xFFC5D8CD)),
+          style: TextStyle(color: AppTheme.textMuted),
         ),
         actions: [
           TextButton(
@@ -74,7 +76,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
             child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE11D48)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.emergencyRed),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('Sign Out', style: TextStyle(color: Colors.white)),
           ),
@@ -94,6 +96,24 @@ class _MainNavScreenState extends State<MainNavScreen> {
     }
   }
 
+  void _openSafetyHub() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const SafetyHubScreen(),
+      ),
+    );
+  }
+
+  void _openExploreAll() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ExploreKeralaScreen(experienceRepository: _expRepo),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final userName = (widget.authRepository?.currentUser?.firstName != null &&
@@ -106,63 +126,63 @@ class _MainNavScreenState extends State<MainNavScreen> {
         userName: userName,
         destinationRepository: _destRepo,
         searchRepository: _searchRepo,
-        onOpenPlanner: () => setState(() => _currentIndex = 2),
+        onOpenPlanner: () => setState(() => _currentIndex = 1),
         onOpenCompanion: () => setState(() => _currentIndex = 3),
+        onOpenSafety: _openSafetyHub,
+        onOpenExplore: _openExploreAll,
         onLogout: widget.authRepository != null ? _handleLogout : null,
       ),
-      ExploreKeralaScreen(experienceRepository: _expRepo),
       const AIPlannerScreen(),
-      LiveCompanionScreen(repository: _compRepo, userName: userName),
       const MyTripsScreen(),
-      const SafetyHubScreen(),
+      LiveCompanionScreen(repository: _compRepo, userName: userName),
     ];
 
     return Scaffold(
+      backgroundColor: AppTheme.midnightTeal,
       body: IndexedStack(
         index: _currentIndex,
         children: screens,
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        backgroundColor: const Color(0xFF142B20),
-        indicatorColor: const Color(0xFF10B981).withValues(alpha: 0.25),
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined, color: Colors.white70),
-            selectedIcon: Icon(Icons.home, color: Color(0xFF10B981)),
-            label: 'Discover',
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: AppTheme.surfaceTeal,
+          border: Border(
+            top: BorderSide(color: AppTheme.borderTeal, width: 0.8),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.explore_outlined, color: Colors.white70),
-            selectedIcon: Icon(Icons.explore, color: Color(0xFF10B981)),
-            label: 'Explore',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.auto_awesome_outlined, color: Colors.white70),
-            selectedIcon: Icon(Icons.auto_awesome, color: Color(0xFFD4AF37)),
-            label: 'AI Plan',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.forum_outlined, color: Colors.white70),
-            selectedIcon: Icon(Icons.forum, color: Color(0xFF10B981)),
-            label: 'Companion',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.confirmation_number_outlined, color: Colors.white70),
-            selectedIcon: Icon(Icons.confirmation_number, color: Color(0xFF10B981)),
-            label: 'My Trips',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.shield_outlined, color: Colors.white70),
-            selectedIcon: Icon(Icons.shield, color: Color(0xFFE11D48)),
-            label: 'Safety',
-          ),
-        ],
+        ),
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          backgroundColor: AppTheme.surfaceTeal,
+          indicatorColor: AppTheme.oceanTeal.withValues(alpha: 0.25),
+          elevation: 0,
+          onDestinationSelected: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.explore_outlined, color: AppTheme.textMuted),
+              selectedIcon: Icon(Icons.explore, color: AppTheme.sunsetGold),
+              label: 'Explore',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.calendar_month_outlined, color: AppTheme.textMuted),
+              selectedIcon: Icon(Icons.calendar_month, color: AppTheme.sunsetGold),
+              label: 'Plan',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.confirmation_number_outlined, color: AppTheme.textMuted),
+              selectedIcon: Icon(Icons.confirmation_number, color: AppTheme.sunsetGold),
+              label: 'My Trips',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.forum_outlined, color: AppTheme.textMuted),
+              selectedIcon: Icon(Icons.forum, color: AppTheme.sunsetGold),
+              label: 'AI Guide',
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../data/transport_repository.dart';
 import '../models/transport_models.dart';
 import 'cab_pass_screen.dart';
@@ -244,10 +245,10 @@ class _CabBookingScreenState extends State<CabBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const bgDark = Color(0xFF0D1F17);
-    const cardBg = Color(0xFF142B20);
-    const primaryEmerald = Color(0xFF10B981);
-    const textCream = Color(0xFFF7F3E8);
+    const bgDark = AppTheme.midnightTeal;
+    const cardBg = AppTheme.surfaceTeal;
+    const primaryEmerald = AppTheme.oceanTeal;
+    const textCream = AppTheme.textCream;
 
     return Scaffold(
       backgroundColor: bgDark,

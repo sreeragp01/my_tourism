@@ -4,6 +4,7 @@ import 'package:keralink_mobile/core/network/api_client.dart';
 import 'package:keralink_mobile/core/storage/secure_token_storage.dart';
 import 'package:keralink_mobile/features/auth/data/auth_repository.dart';
 import 'package:keralink_mobile/features/auth/presentation/splash_screen.dart';
+import 'core/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,17 +30,7 @@ class KeraLinkApp extends StatelessWidget {
     return MaterialApp(
       title: 'KeraLink Tourism',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: const Color(0xFF142B20),
-        scaffoldBackgroundColor: const Color(0xFF0D1F17),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF10B981),
-          secondary: Color(0xFFD4AF37),
-          surface: Color(0xFF142B20),
-        ),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.theme,
       home: SplashScreen(authRepository: authRepository),
     );
   }
