@@ -1,12 +1,35 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+from django.utils import timezone
+from django.conf import settings
+from django.db import connection
+
+def health_check(request):
+    db_status = "healthy"
+    try:
+        connection.ensure_connection()
+    except Exception as e:
+        db_status = f"unhealthy: {str(e)}"
+    
+    return JsonResponse({
+        "status": "ok",
+        "service": "keralink-tourism-api",
+        "version": "1.0.0",
+        "timestamp": timezone.now().isoformat(),
+        "database": db_status,
+        "environment": "production" if not getattr(settings, 'DEBUG', True) else "development",
+    })
 
 urlpatterns = [
+    path('healthz/', health_check, name='healthz'),
+    path('api/v1/health/', health_check, name='health-check'),
     path('admin/', admin.site.urls),
 
     # API v1 Group
     path('api/v1/auth/', include('apps.accounts.urls')),
     path('api/v1/destinations/', include('apps.destinations.urls')),
+    path('api/v1/circuits/', include('apps.destinations.circuit_urls')),
     path('api/v1/experiences/', include('apps.experiences.urls')),
     path('api/v1/accommodations/', include('apps.accommodations.urls')),
     path('api/v1/inventory/', include('apps.inventory.urls')),

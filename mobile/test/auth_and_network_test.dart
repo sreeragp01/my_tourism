@@ -376,4 +376,75 @@ void main() {
       expect(await storage.getUserData(), isNull);
     });
   });
+
+  group('Server Connectivity & Persistence Tests', () {
+    test('Storage saves and retrieves custom base URL', () async {
+      final storage = InMemoryTokenStorage();
+      expect(await storage.getCustomBaseUrl(), isNull);
+
+      await storage.saveCustomBaseUrl('http://192.168.220.40:8000/api/v1');
+      expect(await storage.getCustomBaseUrl(), 'http://192.168.220.40:8000/api/v1');
+
+      await storage.saveCustomBaseUrl(null);
+      expect(await storage.getCustomBaseUrl(), isNull);
+    });
+
+    test('ApiClient.init() restores custom base URL from storage', () async {
+      const config = AppConfig(environment: AppEnvironment.development);
+      final storage = InMemoryTokenStorage();
+      await storage.saveCustomBaseUrl('http://192.168.220.40:8000/api/v1');
+
+      final client = ApiClient(config: config, storage: storage);
+      expect(client.baseUrl, config.apiBaseUrl);
+
+      await client.init();
+      expect(client.baseUrl, 'http://192.168.220.40:8000/api/v1');
+    });
+
+    test('ApiClient.setCustomBaseUrl updates URL and persists to storage', () async {
+      const config = AppConfig(environment: AppEnvironment.development);
+      final storage = InMemoryTokenStorage();
+      final client = ApiClient(config: config, storage: storage);
+
+      client.setCustomBaseUrl('http://10.0.2.2:8000/api/v1/');
+      expect(client.baseUrl, 'http://10.0.2.2:8000/api/v1');
+      expect(await storage.getCustomBaseUrl(), 'http://10.0.2.2:8000/api/v1');
+    });
+
+    test('ApiClient.checkHealth returns true on 200 health response', () async {
+      const config = AppConfig(environment: AppEnvironment.development);
+      final storage = InMemoryTokenStorage();
+      final client = ApiClient(
+        config: config,
+        storage: storage,
+        httpClient: MockClient((req) async {
+          if (req.url.path.contains('/health/')) {
+            return http.Response('{"status": "ok"}', 200);
+          }
+          return http.Response('Not Found', 404);
+        }),
+      );
+
+      final isHealthy = await client.checkHealth('http://127.0.0.1:8000/api/v1');
+      expect(isHealthy, isTrue);
+    });
+
+    test('ApiClient.checkHealth returns false on network failure', () async {
+      const config = AppConfig(environment: AppEnvironment.development);
+      final storage = InMemoryTokenStorage();
+      final client = ApiClient(
+        config: config,
+        storage: storage,
+        httpClient: MockClient((_) async => throw Exception('Network error')),
+      );
+
+      final isHealthy = await client.checkHealth('http://10.0.2.2:8000/api/v1');
+      expect(isHealthy, isFalse);
+    });
+
+    test('candidateBaseUrls includes Wi-Fi LAN IP in development', () {
+      const config = AppConfig(environment: AppEnvironment.development);
+      expect(config.candidateBaseUrls, anyElement(contains('192.168.220.40')));
+    });
+  });
 }

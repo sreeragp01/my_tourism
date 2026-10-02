@@ -29,8 +29,38 @@ class ApiClient {
   String? _activeBaseUrl;
   String get baseUrl => _activeBaseUrl ?? config.apiBaseUrl;
 
-  void setCustomBaseUrl(String url) {
+  Future<void> init() async {
+    try {
+      final stored = await storage.getCustomBaseUrl();
+      if (stored != null && stored.trim().isNotEmpty) {
+        _activeBaseUrl = stored.trim();
+      }
+    } catch (_) {}
+  }
+
+  void setCustomBaseUrl(String url, {bool persist = true}) {
     _activeBaseUrl = url.endsWith('/') ? url.substring(0, url.length - 1) : url;
+    if (persist) {
+      storage.saveCustomBaseUrl(_activeBaseUrl);
+    }
+  }
+
+  /// Probes the server health endpoint to test connectivity
+  Future<bool> checkHealth([String? targetUrl]) async {
+    final target = (targetUrl ?? baseUrl).trim();
+    final clean = target.endsWith('/') ? target.substring(0, target.length - 1) : target;
+    try {
+      final uri = Uri.parse('$clean/health/');
+      final res = await _httpClient.get(uri).timeout(const Duration(milliseconds: 2500));
+      if (res.statusCode == 200) return true;
+    } catch (_) {}
+    try {
+      final uri = Uri.parse('$clean/auth/login/');
+      final res = await _httpClient.get(uri).timeout(const Duration(milliseconds: 2500));
+      return res.statusCode < 500;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<dynamic> get(
@@ -188,18 +218,20 @@ class ApiClient {
 
       return response;
     } on TimeoutException {
-      if (config.isDevelopment && _activeBaseUrl == null) {
+      if (_activeBaseUrl == null) {
         final fallback = await _probeFallbackCandidates(cleanEndpoint, method, requestHeaders, body);
         if (fallback != null) return fallback;
       }
-      throw const TimeoutException();
+      throw TimeoutException(
+        message: 'Connection timed out connecting to $baseUrl. If running on a physical phone, tap Server Settings to set your PC\'s Wi-Fi IP (e.g. http://192.168.220.40:8000/api/v1) or run "adb reverse tcp:8000 tcp:8000".',
+      );
     } on SocketException catch (e) {
-      if (config.isDevelopment && _activeBaseUrl == null) {
+      if (_activeBaseUrl == null) {
         final fallback = await _probeFallbackCandidates(cleanEndpoint, method, requestHeaders, body);
         if (fallback != null) return fallback;
       }
       throw NetworkException(
-        message: 'Unable to connect to server at $baseUrl (${e.message.isNotEmpty ? e.message : "Connection refused"}). Ensure Django backend is running on port 8000.',
+        message: 'Unable to connect to server at $baseUrl (${e.message.isNotEmpty ? e.message : "Connection refused"}). Ensure Django backend is running on 0.0.0.0:8000 and phone is on the same Wi-Fi.',
       );
     } catch (e) {
       if (e is ApiException) rethrow;
@@ -221,21 +253,22 @@ class ApiClient {
         final bodyString = body != null ? jsonEncode(body) : null;
         switch (method) {
           case 'GET':
-            altResponse = await _httpClient.get(altUri, headers: requestHeaders).timeout(const Duration(seconds: 3));
+            altResponse = await _httpClient.get(altUri, headers: requestHeaders).timeout(const Duration(milliseconds: 2500));
             break;
           case 'POST':
-            altResponse = await _httpClient.post(altUri, headers: requestHeaders, body: bodyString).timeout(const Duration(seconds: 3));
+            altResponse = await _httpClient.post(altUri, headers: requestHeaders, body: bodyString).timeout(const Duration(milliseconds: 2500));
             break;
           case 'PUT':
-            altResponse = await _httpClient.put(altUri, headers: requestHeaders, body: bodyString).timeout(const Duration(seconds: 3));
+            altResponse = await _httpClient.put(altUri, headers: requestHeaders, body: bodyString).timeout(const Duration(milliseconds: 2500));
             break;
           case 'DELETE':
-            altResponse = await _httpClient.delete(altUri, headers: requestHeaders).timeout(const Duration(seconds: 3));
+            altResponse = await _httpClient.delete(altUri, headers: requestHeaders).timeout(const Duration(milliseconds: 2500));
             break;
           default:
             continue;
         }
         _activeBaseUrl = candidate;
+        storage.saveCustomBaseUrl(candidate);
         return altResponse;
       } catch (_) {
         continue;

@@ -12,6 +12,8 @@ abstract class ISecureTokenStorage {
   Future<void> clearTokens();
   Future<String?> getUserData();
   Future<void> saveUserData(String jsonString);
+  Future<String?> getCustomBaseUrl();
+  Future<void> saveCustomBaseUrl(String? url);
   Future<void> clearAll();
 }
 
@@ -22,9 +24,24 @@ class SecureTokenStorage implements ISecureTokenStorage {
   static const String _keyRefreshToken = 'kl_refresh_token';
   static const String _keyRefreshExpiresAt = 'kl_refresh_expires_at';
   static const String _keyUserData = 'kl_user_data';
+  static const String _keyBaseUrl = 'kl_api_base_url';
 
   SecureTokenStorage([FlutterSecureStorage? storage])
       : _storage = storage ?? const FlutterSecureStorage();
+
+  @override
+  Future<String?> getCustomBaseUrl() async {
+    return _storage.read(key: _keyBaseUrl);
+  }
+
+  @override
+  Future<void> saveCustomBaseUrl(String? url) async {
+    if (url == null || url.trim().isEmpty) {
+      await _storage.delete(key: _keyBaseUrl);
+    } else {
+      await _storage.write(key: _keyBaseUrl, value: url.trim());
+    }
+  }
 
   @override
   Future<String?> getAccessToken() async {
@@ -116,6 +133,18 @@ class InMemoryTokenStorage implements ISecureTokenStorage {
   @override
   Future<void> saveUserData(String jsonString) async {
     _data['user'] = jsonString;
+  }
+
+  @override
+  Future<String?> getCustomBaseUrl() async => _data['base_url'];
+
+  @override
+  Future<void> saveCustomBaseUrl(String? url) async {
+    if (url == null || url.trim().isEmpty) {
+      _data.remove('base_url');
+    } else {
+      _data['base_url'] = url.trim();
+    }
   }
 
   @override

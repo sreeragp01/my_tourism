@@ -507,34 +507,32 @@ class Command(BaseCommand):
             },
         ]
 
+        slots_to_create = []
         for exp in experiences_data:
             Experience.objects.update_or_create(id=exp["id"], defaults=exp)
 
             # Generate slots for next 30 days
             for day_offset in range(0, 30):
                 slot_date = today + timedelta(days=day_offset)
-                ExperienceSlot.objects.get_or_create(
+                slots_to_create.append(ExperienceSlot(
                     experience_id=exp["id"],
                     date=slot_date,
                     start_time="09:00",
-                    defaults={
-                        "end_time": "12:00",
-                        "total_capacity": exp["max_group_size"],
-                        "booked_capacity": 1 if day_offset == 0 else 0,
-                        "held_capacity": 0,
-                    }
-                )
-                ExperienceSlot.objects.get_or_create(
+                    end_time="12:00",
+                    total_capacity=exp["max_group_size"],
+                    booked_capacity=1 if day_offset == 0 else 0,
+                    held_capacity=0,
+                ))
+                slots_to_create.append(ExperienceSlot(
                     experience_id=exp["id"],
                     date=slot_date,
                     start_time="15:30",
-                    defaults={
-                        "end_time": "18:00",
-                        "total_capacity": exp["max_group_size"],
-                        "booked_capacity": 0,
-                        "held_capacity": 0,
-                    }
-                )
+                    end_time="18:00",
+                    total_capacity=exp["max_group_size"],
+                    booked_capacity=0,
+                    held_capacity=0,
+                ))
+        ExperienceSlot.objects.bulk_create(slots_to_create, ignore_conflicts=True)
 
         self.stdout.write(f"Seeded {len(experiences_data)} Experiences with 30-day capacity slots.")
 
@@ -660,6 +658,7 @@ class Command(BaseCommand):
             },
         ]
 
+        invs_to_create = []
         for acc in accommodations_data:
             rooms_list = acc.pop("rooms", [])
             Accommodation.objects.update_or_create(id=acc["id"], defaults=acc)
@@ -679,16 +678,15 @@ class Command(BaseCommand):
                 # Generate 30 days inventory
                 for day_offset in range(0, 30):
                     inv_date = today + timedelta(days=day_offset)
-                    RoomInventory.objects.get_or_create(
+                    invs_to_create.append(RoomInventory(
                         room_type=room_obj,
                         date=inv_date,
-                        defaults={
-                            "total_rooms": 5,
-                            "booked_rooms": 1 if day_offset in [0, 1] else 0,
-                            "held_rooms": 0,
-                        }
-                    )
+                        total_rooms=5,
+                        booked_rooms=1 if day_offset in [0, 1] else 0,
+                        held_rooms=0,
+                    ))
 
+        RoomInventory.objects.bulk_create(invs_to_create, ignore_conflicts=True)
         self.stdout.write(f"Seeded {len(accommodations_data)} Accommodations with 30-day room inventories.")
 
         # =========================================================================

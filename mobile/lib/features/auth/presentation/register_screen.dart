@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../core/errors/api_exception.dart';
 import '../data/auth_repository.dart';
+import 'server_settings_dialog.dart';
 import '../../main/presentation/main_nav_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -73,9 +75,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _errorMessage = e.message;
       });
     } catch (e) {
-      setState(() {
-        _errorMessage = 'Registration failed. Please check your details and try again.';
-      });
+      final msg = e.toString();
+      if (msg.contains('timed out') || msg.contains('TimeoutException')) {
+        setState(() {
+          _errorMessage = 'Connection timed out connecting to ${widget.authRepository.apiClient.baseUrl}. If on a physical phone, tap "Configure Server IP" below to select your PC\'s Wi-Fi LAN address or USB ADB.';
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Registration failed ($msg). Please check network and try again.';
+        });
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -83,6 +92,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
         });
       }
     }
+  }
+
+  Future<void> _handleDemoRegister() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final email = _emailController.text.trim().isNotEmpty ? _emailController.text.trim() : 'traveler@keralink.travel';
+    final firstName = _firstNameController.text.trim().isNotEmpty ? _firstNameController.text.trim() : 'Kerala';
+    final lastName = _lastNameController.text.trim().isNotEmpty ? _lastNameController.text.trim() : 'Explorer';
+
+    await widget.authRepository.storage.saveTokens(
+      accessToken: 'demo_offline_access_token',
+      refreshToken: 'demo_offline_refresh_token',
+      expiresAt: DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+    );
+    await widget.authRepository.storage.saveUserData(
+      jsonEncode({
+        'id': 'demo-usr-${DateTime.now().millisecondsSinceEpoch}',
+        'email': email,
+        'first_name': firstName,
+        'last_name': lastName,
+        'roles': ['CUSTOMER'],
+        'created_at': DateTime.now().toIso8601String(),
+      }),
+    );
+    await widget.authRepository.checkSession();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => MainNavScreen(authRepository: widget.authRepository),
+      ),
+      (route) => false,
+    );
   }
 
   @override
@@ -96,6 +138,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.dns_outlined, color: Color(0xFF10B981), size: 20),
+            tooltip: 'Server Connection Settings',
+            onPressed: () => ServerSettingsDialog.show(context, widget.authRepository.apiClient),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -130,16 +179,54 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: const Color(0xFFE11D48).withValues(alpha: 0.4)),
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.error_outline, color: Color(0xFFE11D48), size: 18),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: const TextStyle(fontSize: 12, color: Colors.white),
-                          ),
+                        Row(
+                          children: [
+                            const Icon(Icons.error_outline, color: Color(0xFFE11D48), size: 18),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: const TextStyle(fontSize: 12, color: Colors.white),
+                              ),
+                            ),
+                          ],
                         ),
+                        if (_errorMessage!.contains('timed out') ||
+                            _errorMessage!.contains('connect') ||
+                            _errorMessage!.contains('Connection') ||
+                            _errorMessage!.contains('server') ||
+                            _errorMessage!.contains('network')) ...[
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () => ServerSettingsDialog.show(context, widget.authRepository.apiClient),
+                                icon: const Icon(Icons.tune, size: 15, color: Color(0xFFD4AF37)),
+                                label: const Text(
+                                  'Configure Server',
+                                  style: TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: _handleDemoRegister,
+                                icon: const Icon(Icons.explore_outlined, size: 14, color: Color(0xFF10B981)),
+                                label: const Text(
+                                  'Continue in Demo Mode',
+                                  style: TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Color(0xFF10B981), width: 0.8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -259,6 +346,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0D1F17)),
                           )
                         : const Text('Create Account'),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Guest / Offline Mode Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: OutlinedButton.icon(
+                    onPressed: _handleDemoRegister,
+                    icon: const Icon(Icons.explore_outlined, size: 18, color: Color(0xFF10B981)),
+                    label: const Text(
+                      'Explore in Offline Demo Mode',
+                      style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: const Color(0xFF10B981).withValues(alpha: 0.6)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
                   ),
                 ),
               ],

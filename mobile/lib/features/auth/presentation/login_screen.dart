@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/errors/api_exception.dart';
 import '../data/auth_repository.dart';
 import 'register_screen.dart';
+import 'server_settings_dialog.dart';
 import '../../main/presentation/main_nav_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -71,78 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showServerSettingsDialog() {
-    final controller = TextEditingController(text: widget.authRepository.apiClient.baseUrl);
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF142B20),
-        title: const Text('Server Connection Settings', style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 16)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Select or enter the Django backend URL:',
-              style: TextStyle(color: Color(0xFFC5D8CD), fontSize: 12),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: const Color(0xFF0D1F17),
-                hintText: 'http://192.168.x.x:8000/api/v1',
-                hintStyle: const TextStyle(color: Colors.white30, fontSize: 12),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text('Presets:', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                _presetChip(controller, 'Emulator', 'http://10.0.2.2:8000/api/v1'),
-                _presetChip(controller, 'Wi-Fi LAN', 'http://192.168.220.40:8000/api/v1'),
-                _presetChip(controller, 'Localhost', 'http://127.0.0.1:8000/api/v1'),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: const Color(0xFF0D1F17)),
-            onPressed: () {
-              if (controller.text.trim().isNotEmpty) {
-                widget.authRepository.apiClient.setCustomBaseUrl(controller.text.trim());
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Server set to ${controller.text.trim()}'),
-                    backgroundColor: const Color(0xFF10B981),
-                  ),
-                );
-              }
-              Navigator.pop(ctx);
-            },
-            child: const Text('Save & Apply'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _presetChip(TextEditingController controller, String label, String url) {
-    return ActionChip(
-      backgroundColor: const Color(0xFF1B382B),
-      label: Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF10B981))),
-      onPressed: () => controller.text = url,
-    );
+    ServerSettingsDialog.show(context, widget.authRepository.apiClient);
   }
 
   @override

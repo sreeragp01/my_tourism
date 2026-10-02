@@ -1,14 +1,8 @@
 import React from 'react';
 import { useAppStore } from '../../stores/useAppStore';
 import {
-  Sparkles,
   MapPin,
-  Clock,
-  Car,
-  ChevronRight,
   Sliders,
-  DollarSign,
-  ShieldCheck,
   Leaf,
   RefreshCw,
   Umbrella,
@@ -17,9 +11,7 @@ import {
   ArrowRight,
   CloudRain,
   Sun,
-  AlertTriangle,
 } from 'lucide-react';
-import { ItineraryDay } from '../../types/contracts';
 import { httpAdapter } from '../../adapters/httpAdapter';
 
 export const ItineraryDetailsView: React.FC = () => {
@@ -37,7 +29,23 @@ export const ItineraryDetailsView: React.FC = () => {
   const [costBreakdownOpen, setCostBreakdownOpen] = React.useState(false);
   const [dayWeather, setDayWeather] = React.useState<any>(null);
 
-  if (!currentPlan) {
+  const currentVersion = currentPlan?.currentVersion;
+  const days = currentVersion?.itineraryDays;
+  const activeDayCandidate = days?.find((d) => d.dayNumber === selectedDayNumber) || days?.[0];
+
+  React.useEffect(() => {
+    if (!activeDayCandidate) return;
+    let isMounted = true;
+    const destSlug = activeDayCandidate.destinationId?.toLowerCase() || 'munnar';
+    httpAdapter.getDestinationWeather(destSlug).then((data) => {
+      if (isMounted) setDayWeather(data);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [activeDayCandidate]);
+
+  if (!currentPlan || !currentVersion || !days || !activeDayCandidate) {
     return (
       <div className="p-8 text-center space-y-4">
         <p className="text-sm text-gray-500">No active itinerary generated yet.</p>
@@ -51,21 +59,7 @@ export const ItineraryDetailsView: React.FC = () => {
     );
   }
 
-  const currentVersion = currentPlan.currentVersion;
-  const days = currentVersion.itineraryDays;
-  const activeDay = days.find((d) => d.dayNumber === selectedDayNumber) || days[0];
-
-  React.useEffect(() => {
-    if (!activeDay) return;
-    let isMounted = true;
-    const destSlug = activeDay.destinationId?.toLowerCase() || 'munnar';
-    httpAdapter.getDestinationWeather(destSlug).then((data) => {
-      if (isMounted) setDayWeather(data);
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, [activeDay]);
+  const activeDay = activeDayCandidate;
 
   const handleBookNow = async () => {
     await createBooking({
