@@ -61,6 +61,7 @@ urlpatterns = [
     path('api/v1/provider/', include('apps.organizations.urls')),
     path('api/v1/audit/', include('apps.audit.urls')),
     path('api/v1/search/', include('apps.search.urls')),
+    path('api/v1/packages/', include('apps.packages.urls')),
 
     # Wave D: Live Trip Experience Engine
     path('api/v1/location/', include('apps.location.urls')),

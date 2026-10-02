@@ -183,7 +183,30 @@ class AICompanionOrchestrator:
     @classmethod
     def _generate_expert_travel_response(cls, lower: str, raw_query: str, destination: str, trip_day: int) -> Dict[str, Any]:
         """Comprehensive semantic domain engine providing authoritative Kerala travel insights."""
-        dest_title = destination.replace('_', ' ').title()
+        # 0. Tour Packages & Local Tour Operator Marketplace Inquiries
+        if any(w in lower for w in ['package', 'packages', 'tour company', 'tour companies', 'tour operator', 'operators', 'honeymoon package', 'family package', 'best package', 'book a package', 'agency', 'agencies']):
+            content = (
+                "🌟 **Verified Kerala Tour Packages & Operator Marketplace:**\n\n"
+                "We connect travelers directly with authentic, DTPC & Kerala Tourism accredited local tour operators with zero middleman markups:\n\n"
+                "1. **3D/2N Munnar Cloud Mist & Kolukkumalai Sunrise** (₹8,499/person)\n"
+                "   • *Operator*: Munnar Highland Holidays (DTPC Idukki Accredited)\n"
+                "   • *Highlights*: 4x4 rugged jeep safari to 7,130 ft, private tea factory tasting, valley resort.\n\n"
+                "2. **2D/1N Alleppey Royal Houseboat & Village Canoe Cruise** (₹7,499/person)\n"
+                "   • *Operator*: Great Backwaters Tourism Co. (Kerala Tourism Diamond Badge)\n"
+                "   • *Highlights*: Private luxury Kettuvallam, live chef Karimeen Pollichathu, sunset canoe.\n\n"
+                "3. **4D/3N Wayanad Wilderness, Bamboo Rafting & Treehouse** (₹11,999/person)\n"
+                "   • *Operator*: Wayanad Eco-Guides Collective (Approved Ecotourism Collective)\n"
+                "   • *Highlights*: Rainforest canopy treehouse, river bamboo raft, Muthanga elephant safari.\n\n"
+                "4. **5D/4N Complete Classical Kerala Grand Tour** (₹16,999/person)\n"
+                "   • *Operator*: Voyages Kerala Heritage Expeditions (IATO & Kerala Tourism Accredited)\n"
+                "   • *Highlights*: Fort Kochi Kathakali, Munnar tea hills, Alleppey overnight houseboat.\n\n"
+                "5. **3D/2N Varkala Cliff Waves & Jatayu Earth Center** (₹6,999/person)\n"
+                "   • *Operator*: South Coast Odyssey Guides (DTPC Partner)\n"
+                "   • *Highlights*: Red cliff ocean resort, Jatayu mega sculpture cable car, Munroe canoe.\n\n"
+                "📲 *Direct Connect*: Tap any package to open instant WhatsApp chat or call the local operator directly!"
+            )
+            suggestions = ["View All Packages", "Chat on WhatsApp", "Munnar 3D2N Details"]
+            return {"content": content, "suggestions": suggestions}
 
         # A. Travel logistics, routes, durations & distances (Checked before destination keywords)
         if any(w in lower for w in ['how long', 'how far', 'distance', 'travel time', 'reach', 'route', 'kochi to', 'munnar to', 'airport to', 'drive from', 'hours to', 'taxi fare', 'train to', 'how to get']):

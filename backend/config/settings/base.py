@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'apps.events',        # Dedicated Transactional Outbox & Event Dispatcher
     'apps.audit',         # Immutable Security & Compliance Audit Log
     'apps.search',        # Unified Tourism Search & Discovery Engine
+    'apps.packages',      # Verified Tour Packages & Local Operator Marketplace
     
     # Wave D: Live Trip Experience Engine
     'apps.location',

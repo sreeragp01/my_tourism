@@ -5,6 +5,8 @@ import 'destination_details_screen.dart';
 import '../../search/data/search_repository.dart';
 import '../../search/presentation/search_discovery_screen.dart';
 import '../../maps/presentation/live_map_screen.dart';
+import '../../packages/presentation/packages_screen.dart';
+import '../../packages/data/package_repository.dart';
 
 class HomeDiscoverScreen extends StatefulWidget {
   final String userName;
@@ -130,6 +132,23 @@ class _HomeDiscoverScreenState extends State<HomeDiscoverScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            key: const Key('appbar_packages_btn'),
+            icon: const Icon(Icons.luggage_outlined, color: Color(0xFF10B981)),
+            tooltip: 'Tour Packages',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PackagesScreen(
+                    repository: PackageRepository(
+                      apiClient: widget.destinationRepository.apiClient,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.map_outlined, color: Color(0xFF10B981)),
             tooltip: 'Live Corridor Map',
@@ -342,6 +361,106 @@ class _HomeDiscoverScreenState extends State<HomeDiscoverScreen> {
                         );
                       },
                       child: const Text('View', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Tour Packages & Local Operators Marketplace Banner
+              Container(
+                margin: const EdgeInsets.only(top: 14),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1A382B), Color(0xFF142B20)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.luggage, color: Color(0xFF10B981), size: 28),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 7,
+                                height: 7,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF10B981),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Text(
+                                'OPERATOR MARKETPLACE',
+                                style: TextStyle(
+                                  color: Color(0xFF10B981),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Verified Tour Packages',
+                            style: TextStyle(
+                              color: Color(0xFFF7F3E8),
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Direct DTPC company packages with zero markup',
+                            style: TextStyle(color: Color(0xFFC5D8CD), fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton(
+                      key: const Key('explore_packages_banner_btn'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: const Color(0xFF0D1F17),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PackagesScreen(
+                              repository: PackageRepository(
+                                apiClient: widget.destinationRepository.apiClient,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text('Explore', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                     ),
                   ],
                 ),
