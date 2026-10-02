@@ -21,7 +21,26 @@ def health_check(request):
         "environment": "production" if not getattr(settings, 'DEBUG', True) else "development",
     })
 
+def root_view(request):
+    return JsonResponse({
+        "service": "KeraLink Experiential Tourism Platform API",
+        "status": "online",
+        "version": "1.0.0",
+        "health": "/api/v1/health/",
+        "docs": "/api/docs/",
+        "endpoints": {
+            "destinations": "/api/v1/destinations/",
+            "circuits": "/api/v1/circuits/",
+            "experiences": "/api/v1/experiences/",
+            "accommodations": "/api/v1/accommodations/",
+            "trips": "/api/v1/trips/",
+            "search": "/api/v1/search/",
+            "admin": "/admin/",
+        }
+    })
+
 urlpatterns = [
+    path('', root_view, name='root-view'),
     path('healthz/', health_check, name='healthz'),
     path('api/v1/health/', health_check, name='health-check'),
     path('admin/', admin.site.urls),
