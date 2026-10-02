@@ -125,7 +125,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 title: const Text('Waypoint Proximity Triggers', style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 14)),
                 subtitle: const Text('500m approach and 200m arrival notifications', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11)),
                 value: true,
-                activeColor: const Color(0xFF10B981),
+                activeTrackColor: const Color(0xFF10B981),
                 onChanged: (v) {},
               ),
               SwitchListTile(
@@ -133,7 +133,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 title: const Text('Weather & Monsoon Advisories', style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 14)),
                 subtitle: const Text('Ghat road cautions & rain-sheltered alternatives', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11)),
                 value: true,
-                activeColor: const Color(0xFF10B981),
+                activeTrackColor: const Color(0xFF10B981),
                 onChanged: (v) {},
               ),
               SwitchListTile(
@@ -141,7 +141,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 title: const Text('Emergency & Safety Alerts', style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 14)),
                 subtitle: const Text('Tourist police and critical road alerts', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11)),
                 value: true,
-                activeColor: const Color(0xFF10B981),
+                activeTrackColor: const Color(0xFF10B981),
                 onChanged: (v) {},
               ),
               const SizedBox(height: 10),
@@ -248,7 +248,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: color.withOpacity(0.15),
+                                      color: color.withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Icon(iconData, color: color, size: 20),

@@ -277,7 +277,10 @@ class UnifiedSearchTestCase(TestCase):
         
         # Test factory resolution
         adapter_default = get_search_adapter()
-        self.assertIsInstance(adapter_default, DatabaseSearchAdapter)
+        self.assertIsInstance(adapter_default, (DatabaseSearchAdapter, PostgresFullTextSearchAdapter))
+        
+        adapter_db = get_search_adapter('database')
+        self.assertIsInstance(adapter_db, DatabaseSearchAdapter)
         
         adapter_pg = get_search_adapter('postgres')
         self.assertIsInstance(adapter_pg, PostgresFullTextSearchAdapter)

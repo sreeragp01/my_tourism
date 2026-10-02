@@ -34,7 +34,7 @@ class ProximityBanner extends StatelessWidget {
         border: Border.all(color: primaryColor, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.2),
+            color: primaryColor.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -46,7 +46,7 @@ class ProximityBanner extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.15),
+              color: primaryColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(

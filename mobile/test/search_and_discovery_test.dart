@@ -157,13 +157,13 @@ void main() {
     });
 
     test('SearchResults.append concatenates paginated results correctly', () {
-      final page1 = SearchResults(
+      const page1 = SearchResults(
         query: 'munnar',
         totalCount: 3,
         page: 1,
         pageSize: 2,
         hasNext: true,
-        destinations: const [
+        destinations: [
           Destination(
             id: 'munnar',
             name: 'Munnar',
@@ -179,13 +179,13 @@ void main() {
         ],
       );
 
-      final page2 = SearchResults(
+      const page2 = SearchResults(
         query: 'munnar',
         totalCount: 3,
         page: 2,
         pageSize: 2,
         hasNext: false,
-        destinations: const [
+        destinations: [
           Destination(
             id: 'alleppey',
             name: 'Alleppey',

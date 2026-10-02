@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../ai_planner/models/itinerary_models.dart';
 import '../../inventory/models/inventory_hold_models.dart';
 import '../data/trips_repository.dart';
-import '../models/trip_models.dart';
 import 'trip_detail_screen.dart';
 
 class BookingCheckoutSheet extends StatefulWidget {
@@ -34,7 +33,6 @@ class _BookingCheckoutSheetState extends State<BookingCheckoutSheet> {
 
   static const Color bgDark = Color(0xFF0D1F17);
   static const Color surfaceDark = Color(0xFF142B20);
-  static const Color cardDark = Color(0xFF1B382B);
   static const Color emerald = Color(0xFF10B981);
   static const Color gold = Color(0xFFD4AF37);
   static const Color textPrimary = Color(0xFFF7F3E8);

@@ -224,7 +224,7 @@ class ApiClient {
         final fallback = await _probeFallbackCandidates(cleanEndpoint, method, requestHeaders, body);
         if (fallback != null) return fallback;
       }
-      throw TimeoutException(
+      throw const TimeoutException(
         message: 'Connection timed out connecting to KeraLink server. Please check your internet connection and try again.',
       );
     } on SocketException catch (e) {

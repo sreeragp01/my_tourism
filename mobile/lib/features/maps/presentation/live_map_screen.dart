@@ -95,6 +95,16 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
             },
           ),
         ],
+        bottom: _isLoading
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(2),
+                child: LinearProgressIndicator(
+                  backgroundColor: Color(0xFF142B20),
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                  minHeight: 2,
+                ),
+              )
+            : null,
       ),
       body: Stack(
         children: [
@@ -116,12 +126,12 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFF1F2937).withOpacity(0.92),
+                color: const Color(0xFF1F2937).withValues(alpha: 0.92),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -195,7 +205,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
                         label: const Text('Nearby Spots', style: TextStyle(color: Color(0xFFF7F3E8), fontWeight: FontWeight.bold)),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Color(0xFF2D5A43)),
-                          backgroundColor: const Color(0xFF142B20).withOpacity(0.9),
+                          backgroundColor: const Color(0xFF142B20).withValues(alpha: 0.9),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
@@ -221,7 +231,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF142B20).withOpacity(0.95),
+                    color: const Color(0xFF142B20).withValues(alpha: 0.95),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: const Color(0xFF2D5A43)),
                   ),
@@ -245,9 +255,22 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
                           ),
                         ],
                       ),
-                      const Text(
-                        'Elevation: 1,532m',
-                        style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_routeResult != null)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 6.0),
+                              child: Text(
+                                '${_routeResult!.distanceKm.toStringAsFixed(0)}km •',
+                                style: const TextStyle(color: Color(0xFF10B981), fontSize: 11),
+                              ),
+                            ),
+                          const Text(
+                            'Elevation: 1,532m',
+                            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -277,7 +300,7 @@ class _KeralaCorridorMapPainter extends CustomPainter {
 
     // Grid lines representing geographical grid
     final gridPaint = Paint()
-      ..color = const Color(0xFF142B20).withOpacity(0.5)
+      ..color = const Color(0xFF142B20).withValues(alpha: 0.5)
       ..strokeWidth = 1.0;
 
     for (double x = 0; x < size.width; x += 40) {
@@ -313,7 +336,7 @@ class _KeralaCorridorMapPainter extends CustomPainter {
 
     // Draw route glow
     final glowPaint = Paint()
-      ..color = const Color(0xFF10B981).withOpacity(0.25)
+      ..color = const Color(0xFF10B981).withValues(alpha: 0.25)
       ..strokeWidth = 8.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -338,7 +361,7 @@ class _KeralaCorridorMapPainter extends CustomPainter {
     if (isCurrent) {
       // Pulsing traveler radar ring
       final radarPaint = Paint()
-        ..color = const Color(0xFF10B981).withOpacity(0.3)
+        ..color = const Color(0xFF10B981).withValues(alpha: 0.3)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(pos, 16.0, radarPaint);
 

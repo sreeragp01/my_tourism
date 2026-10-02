@@ -179,7 +179,7 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF2A1C0E),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.5)),
+                      border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

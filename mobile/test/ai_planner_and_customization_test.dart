@@ -211,7 +211,7 @@ class MockAIPlannerRepository implements IAIPlannerRepository {
         totalPrice: 45475,
       ),
       if (versionCounter >= 2)
-        PlanVersionSummary(
+        const PlanVersionSummary(
           version: 2,
           changeReason: 'Monsoon Weather Adaptation',
           createdAt: '2026-09-06T12:05:00Z',

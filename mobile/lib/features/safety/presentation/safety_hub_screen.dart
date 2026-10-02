@@ -18,11 +18,9 @@ class SafetyHubScreen extends StatefulWidget {
 
 class _SafetyHubScreenState extends State<SafetyHubScreen> {
   TripShareResult? _activeShareToken;
-  bool _isSosActive = false;
   String? _lastSosAlertId;
 
   Future<void> _triggerSos() async {
-    setState(() => _isSosActive = true);
     if (widget.repository != null) {
       try {
         final alert = await widget.repository!.triggerSos(
@@ -221,7 +219,7 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
               border: Border.all(color: const Color(0xFFE11D48), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFE11D48).withOpacity(0.3),
+                  color: const Color(0xFFE11D48).withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -417,7 +415,7 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: (h['color'] as Color).withOpacity(0.15),
+                      color: (h['color'] as Color).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(h['icon'] as IconData, color: h['color'] as Color, size: 22),
@@ -444,7 +442,7 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0D1F17),
                       foregroundColor: h['color'] as Color,
-                      side: BorderSide(color: (h['color'] as Color).withOpacity(0.5)),
+                      side: BorderSide(color: (h['color'] as Color).withValues(alpha: 0.5)),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),

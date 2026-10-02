@@ -340,7 +340,7 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
                     const SizedBox(width: 8),
                     Text(
                       'AI Companion is verifying live data...',
-                      style: TextStyle(color: const Color(0xFF9CA3AF).withOpacity(0.8), fontSize: 11),
+                      style: TextStyle(color: const Color(0xFF9CA3AF).withValues(alpha: 0.8), fontSize: 11),
                     ),
                   ],
                 ),
