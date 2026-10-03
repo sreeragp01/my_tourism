@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../data/experience_repository.dart';
 import '../models/experience_model.dart';
 import '../../maps/presentation/live_map_screen.dart';
@@ -67,17 +68,17 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: AppTheme.midnightTeal,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF142B20),
+        backgroundColor: AppTheme.surfaceTeal,
         elevation: 0,
         title: const Text(
           'Explore Kerala',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCream),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.map_outlined, color: Color(0xFF10B981)),
+            icon: const Icon(Icons.map_outlined, color: AppTheme.oceanTeal),
             tooltip: 'Live Corridor Map',
             onPressed: () {
               Navigator.push(
@@ -93,7 +94,7 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
           // Filter Bar
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: const Color(0xFF142B20),
+            color: AppTheme.surfaceTeal,
             child: Column(
               children: [
                 // Category Chips
@@ -114,10 +115,10 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
-                            color: selected ? const Color(0xFF10B981) : const Color(0xFF0D1F17),
+                            color: selected ? AppTheme.oceanTeal : AppTheme.midnightTeal,
                             borderRadius: BorderRadius.circular(18),
                             border: Border.all(
-                              color: selected ? const Color(0xFF10B981) : Colors.white12,
+                              color: selected ? AppTheme.oceanTeal : AppTheme.borderTeal,
                             ),
                           ),
                           child: Text(
@@ -125,7 +126,7 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: selected ? const Color(0xFF0D1F17) : Colors.white70,
+                              color: selected ? AppTheme.midnightTeal : AppTheme.textMuted,
                             ),
                           ),
                         ),
@@ -140,13 +141,13 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.umbrella_outlined, color: Color(0xFFD4AF37), size: 16),
+                        const Icon(Icons.umbrella_outlined, color: AppTheme.sunsetGold, size: 16),
                         const SizedBox(width: 6),
                         Text(
                           'Monsoon Safe (Sheltered)',
                           style: TextStyle(
                             fontSize: 12,
-                            color: _rainFriendlyOnly ? const Color(0xFFD4AF37) : Colors.white70,
+                            color: _rainFriendlyOnly ? AppTheme.sunsetGold : AppTheme.textMuted,
                             fontWeight: _rainFriendlyOnly ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
@@ -154,10 +155,10 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                     ),
                     Switch(
                       value: _rainFriendlyOnly,
-                      activeThumbColor: const Color(0xFFD4AF37),
-                      activeTrackColor: const Color(0xFFD4AF37).withValues(alpha: 0.3),
-                      inactiveThumbColor: Colors.white38,
-                      inactiveTrackColor: Colors.white10,
+                      activeThumbColor: AppTheme.sunsetGold,
+                      activeTrackColor: AppTheme.sunsetGold.withValues(alpha: 0.3),
+                      inactiveThumbColor: AppTheme.textSubtle,
+                      inactiveTrackColor: AppTheme.borderTeal,
                       onChanged: (v) {
                         setState(() => _rainFriendlyOnly = v);
                         _loadExperiences();
@@ -181,7 +182,7 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
   Widget _buildContent() {
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+        child: CircularProgressIndicator(color: AppTheme.sunsetGold),
       );
     }
 
@@ -192,12 +193,12 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.cloud_off_outlined, color: Color(0xFFE11D48), size: 48),
+              const Icon(Icons.cloud_off_outlined, color: AppTheme.emergencyRed, size: 48),
               const SizedBox(height: 12),
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 13),
+                style: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
@@ -205,8 +206,8 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                 icon: const Icon(Icons.refresh, size: 16),
                 label: const Text('Try Again'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF142B20),
-                  foregroundColor: const Color(0xFFF7F3E8),
+                  backgroundColor: AppTheme.surfaceTeal,
+                  foregroundColor: AppTheme.textCream,
                 ),
               ),
             ],
@@ -224,12 +225,12 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
             const SizedBox(height: 12),
             const Text(
               'No experiences found for this filter',
-              style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 15, fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppTheme.textCream, fontSize: 15, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 6),
             const Text(
               'Try changing category or turning off Monsoon Safe mode',
-              style: TextStyle(color: Color(0xFFC5D8CD), fontSize: 12),
+              style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 16),
             TextButton(
@@ -240,7 +241,7 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                 });
                 _loadExperiences();
               },
-              child: const Text('Reset Filters', style: TextStyle(color: Color(0xFFD4AF37))),
+              child: const Text('Reset Filters', style: TextStyle(color: AppTheme.sunsetGold)),
             ),
           ],
         ),
@@ -256,9 +257,9 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
         return Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: const Color(0xFF142B20),
+            color: AppTheme.surfaceTeal,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            border: Border.all(color: AppTheme.borderTeal),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,7 +273,7 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
                       height: 160,
-                      color: const Color(0xFF1C3A2D),
+                      color: AppTheme.surfaceElevated,
                       child: const Icon(Icons.photo, size: 40, color: Colors.white24),
                     ),
                   ),
@@ -282,7 +283,7 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF144032).withValues(alpha: 0.9),
+                        color: AppTheme.surfaceElevated.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -290,7 +291,7 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                         style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFD4AF37),
+                          color: AppTheme.sunsetGold,
                         ),
                       ),
                     ),
@@ -302,19 +303,19 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.9),
+                          color: AppTheme.oceanTeal.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.umbrella, size: 12, color: Color(0xFF0D1F17)),
+                            Icon(Icons.umbrella, size: 12, color: AppTheme.midnightTeal),
                             SizedBox(width: 4),
                             Text(
                               'RAIN SAFE',
                               style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF0D1F17),
+                                color: AppTheme.midnightTeal,
                               ),
                             ),
                           ],
@@ -333,19 +334,19 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.star, size: 14, color: Color(0xFFD4AF37)),
+                            const Icon(Icons.star, size: 14, color: AppTheme.sunsetGold),
                             const SizedBox(width: 4),
                             Text(
                               '${exp.rating}',
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: AppTheme.textCream,
                               ),
                             ),
                             Text(
                               ' (${exp.reviewCount})',
-                              style: const TextStyle(fontSize: 11, color: Colors.white38),
+                              style: const TextStyle(fontSize: 11, color: AppTheme.textSubtle),
                             ),
                           ],
                         ),
@@ -354,7 +355,7 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFD4AF37),
+                            color: AppTheme.sunsetGold,
                           ),
                         ),
                       ],
@@ -365,7 +366,7 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppTheme.textCream,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -373,16 +374,16 @@ class _ExploreKeralaScreenState extends State<ExploreKeralaScreen> {
                       exp.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, color: Color(0xFFC5D8CD)),
+                      style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        const Icon(Icons.person_outline, size: 14, color: Color(0xFF10B981)),
+                        const Icon(Icons.person_outline, size: 14, color: AppTheme.oceanTeal),
                         const SizedBox(width: 6),
                         Text(
                           '${exp.hostName} • ${exp.hostRole}',
-                          style: const TextStyle(fontSize: 11, color: Color(0xFF10B981)),
+                          style: const TextStyle(fontSize: 11, color: AppTheme.oceanTeal),
                         ),
                       ],
                     ),

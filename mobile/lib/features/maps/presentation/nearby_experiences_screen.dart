@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../models/map_models.dart';
 import '../data/map_repository.dart';
 
@@ -118,13 +119,13 @@ class _NearbyExperiencesScreenState extends State<NearbyExperiencesScreen> {
     const categories = ['ALL', 'CULTURE', 'NATURE', 'FOOD'];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: AppTheme.midnightTeal,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF142B20),
+        backgroundColor: AppTheme.surfaceTeal,
         elevation: 0,
         title: const Text(
           'Nearby Spots & Experiences',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCream),
         ),
       ),
       body: Column(
@@ -145,14 +146,14 @@ class _NearbyExperiencesScreenState extends State<NearbyExperiencesScreen> {
                   label: Text(
                     cat,
                     style: TextStyle(
-                      color: isSelected ? const Color(0xFF0D1F17) : const Color(0xFFD1D5DB),
+                      color: isSelected ? AppTheme.midnightTeal : AppTheme.textMuted,
                       fontSize: 12,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   selected: isSelected,
-                  selectedColor: const Color(0xFF10B981),
-                  backgroundColor: const Color(0xFF142B20),
+                  selectedColor: AppTheme.oceanTeal,
+                  backgroundColor: AppTheme.surfaceTeal,
                   onSelected: (selected) {
                     if (selected) {
                       setState(() => _selectedCategory = cat);
@@ -167,12 +168,12 @@ class _NearbyExperiencesScreenState extends State<NearbyExperiencesScreen> {
           // Content List
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)))
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.oceanTeal))
                 : _places.isEmpty
                     ? const Center(
                         child: Text(
                           'No nearby activities in this category.',
-                          style: TextStyle(color: Color(0xFF9CA3AF)),
+                          style: TextStyle(color: AppTheme.textMuted),
                         ),
                       )
                     : ListView.builder(
@@ -182,11 +183,11 @@ class _NearbyExperiencesScreenState extends State<NearbyExperiencesScreen> {
                           final place = _places[index];
                           return Card(
                             key: Key('nearby_card_${place.id}'),
-                            color: const Color(0xFF142B20),
+                            color: AppTheme.surfaceTeal,
                             margin: const EdgeInsets.only(bottom: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
-                              side: const BorderSide(color: Color(0xFF2D5A43)),
+                              side: const BorderSide(color: AppTheme.borderTeal),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(14),
@@ -199,22 +200,22 @@ class _NearbyExperiencesScreenState extends State<NearbyExperiencesScreen> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF0D1F17),
+                                          color: AppTheme.midnightTeal,
                                           borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(color: const Color(0xFF2D5A43)),
+                                          border: Border.all(color: AppTheme.borderTeal),
                                         ),
                                         child: Text(
                                           place.category,
-                                          style: const TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 10, fontWeight: FontWeight.bold),
                                         ),
                                       ),
                                       Row(
                                         children: [
-                                          const Icon(Icons.near_me_outlined, size: 14, color: Color(0xFF9CA3AF)),
+                                          const Icon(Icons.near_me_outlined, size: 14, color: AppTheme.textMuted),
                                           const SizedBox(width: 4),
                                           Text(
                                             '${place.distanceKm} km away',
-                                            style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                                            style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
                                           ),
                                         ],
                                       ),
@@ -224,7 +225,7 @@ class _NearbyExperiencesScreenState extends State<NearbyExperiencesScreen> {
                                   Text(
                                     place.title,
                                     style: const TextStyle(
-                                      color: Color(0xFFF7F3E8),
+                                      color: AppTheme.textCream,
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -232,28 +233,29 @@ class _NearbyExperiencesScreenState extends State<NearbyExperiencesScreen> {
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      const Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
+                                      const Icon(Icons.star, color: AppTheme.sunsetGold, size: 16),
                                       const SizedBox(width: 4),
                                       Text(
                                         place.rating.toString(),
-                                        style: const TextStyle(color: Color(0xFFF7F3E8), fontSize: 12, fontWeight: FontWeight.bold),
+                                        style: const TextStyle(color: AppTheme.textCream, fontSize: 12, fontWeight: FontWeight.bold),
                                       ),
                                       const SizedBox(width: 12),
                                       if (place.rainFriendly)
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFF064E3B),
+                                            color: AppTheme.oceanTeal.withValues(alpha: 0.15),
                                             borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(color: AppTheme.oceanTeal.withValues(alpha: 0.3)),
                                           ),
                                           child: const Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Icon(Icons.umbrella_outlined, size: 12, color: Color(0xFF34D399)),
+                                              Icon(Icons.umbrella_outlined, size: 12, color: AppTheme.oceanTeal),
                                               SizedBox(width: 4),
                                               Text(
                                                 'Rain-Friendly',
-                                                style: TextStyle(color: Color(0xFF34D399), fontSize: 10, fontWeight: FontWeight.w600),
+                                                style: TextStyle(color: AppTheme.oceanTeal, fontSize: 10, fontWeight: FontWeight.w600),
                                               ),
                                             ],
                                           ),
@@ -263,7 +265,7 @@ class _NearbyExperiencesScreenState extends State<NearbyExperiencesScreen> {
                                         Text(
                                           '₹${place.pricePerPerson!.toInt()}/person',
                                           style: const TextStyle(
-                                            color: Color(0xFF10B981),
+                                            color: AppTheme.sunsetGold,
                                             fontWeight: FontWeight.bold,
                                             fontSize: 13,
                                           ),

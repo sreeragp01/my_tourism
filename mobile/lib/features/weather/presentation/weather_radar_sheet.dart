@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../models/weather_models.dart';
 import '../data/weather_repository.dart';
 
@@ -20,7 +21,7 @@ class WeatherRadarSheet extends StatefulWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF142B20),
+      backgroundColor: AppTheme.surfaceTeal,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -91,7 +92,7 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
         child: _isLoading
             ? const SizedBox(
                 height: 250,
-                child: Center(child: CircularProgressIndicator(color: Color(0xFF10B981))),
+                child: Center(child: CircularProgressIndicator(color: AppTheme.oceanTeal)),
               )
             : Column(
                 mainAxisSize: MainAxisSize.min,
@@ -103,7 +104,7 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2D5A43),
+                        color: AppTheme.borderTeal,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -119,12 +120,12 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                         children: [
                           Text(
                             _report?.destination ?? 'Munnar Hills',
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCream),
                           ),
                           const SizedBox(height: 2),
                           const Text(
                             'Live Monsoon & Mountain Intelligence',
-                            style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+                            style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                           ),
                         ],
                       ),
@@ -132,20 +133,27 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           color: _report?.risk.riskLevel == 'UNSAFE'
-                              ? const Color(0xFF881337)
+                              ? AppTheme.emergencyRed.withValues(alpha: 0.2)
                               : _report?.risk.riskLevel == 'CAUTION'
-                                  ? const Color(0xFF78350F)
-                                  : const Color(0xFF064E3B),
+                                  ? AppTheme.sunsetGold.withValues(alpha: 0.2)
+                                  : AppTheme.oceanTeal.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _report?.risk.riskLevel == 'UNSAFE'
+                                ? AppTheme.emergencyRed
+                                : _report?.risk.riskLevel == 'CAUTION'
+                                    ? AppTheme.sunsetGold
+                                    : AppTheme.oceanTeal,
+                          ),
                         ),
                         child: Text(
                           _report?.risk.riskLevel ?? 'CAUTION',
                           style: TextStyle(
                             color: _report?.risk.riskLevel == 'UNSAFE'
-                                ? const Color(0xFFF87171)
+                                ? AppTheme.emergencyRed
                                 : _report?.risk.riskLevel == 'CAUTION'
-                                    ? const Color(0xFFFBBF24)
-                                    : const Color(0xFF34D399),
+                                    ? AppTheme.sunsetGold
+                                    : AppTheme.oceanTeal,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
@@ -159,9 +167,9 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0D1F17),
+                      color: AppTheme.midnightTeal,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF2D5A43)),
+                      border: Border.all(color: AppTheme.borderTeal),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -172,12 +180,12 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                             const SizedBox(height: 6),
                             Text(
                               '${_report?.temperatureCelsius ?? 19}°C',
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.textCream),
                             ),
-                            const Text('Current Temp', style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF))),
+                            const Text('Current Temp', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                           ],
                         ),
-                        Container(width: 1, height: 50, color: const Color(0xFF2D5A43)),
+                        Container(width: 1, height: 50, color: AppTheme.borderTeal),
                         Column(
                           children: [
                             const Icon(Icons.water_drop, color: Color(0xFF60A5FA), size: 32),
@@ -186,19 +194,19 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                               '${_report?.rainProbabilityPercent ?? 75}%',
                               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF60A5FA)),
                             ),
-                            const Text('Rain Risk', style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF))),
+                            const Text('Rain Risk', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                           ],
                         ),
-                        Container(width: 1, height: 50, color: const Color(0xFF2D5A43)),
+                        Container(width: 1, height: 50, color: AppTheme.borderTeal),
                         Column(
                           children: [
-                            const Icon(Icons.terrain, color: Color(0xFFF59E0B), size: 32),
+                            const Icon(Icons.terrain, color: AppTheme.sunsetGold, size: 32),
                             const SizedBox(height: 6),
                             Text(
                               (_report?.risk.isGhatCorridor ?? true) ? 'Ghat' : 'Coast',
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFFF59E0B)),
+                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.sunsetGold),
                             ),
-                            const Text('Terrain Profile', style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF))),
+                            const Text('Terrain Profile', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
                           ],
                         ),
                       ],
@@ -210,9 +218,9 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1F2937),
+                      color: AppTheme.surfaceElevated,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF374151)),
+                      border: Border.all(color: AppTheme.borderTeal),
                     ),
                     child: Row(
                       children: [
@@ -221,7 +229,7 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                         Expanded(
                           child: Text(
                             _report?.risk.advisory ?? 'Moderate rainfall active in mountain corridors.',
-                            style: const TextStyle(color: Color(0xFFD1D5DB), fontSize: 12, height: 1.4),
+                            style: const TextStyle(color: AppTheme.textCream, fontSize: 12, height: 1.4),
                           ),
                         ),
                       ],
@@ -234,32 +242,32 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0D251C),
+                        color: AppTheme.surfaceElevated,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF10B981)),
+                        border: Border.all(color: AppTheme.oceanTeal),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Row(
                             children: [
-                              Icon(Icons.umbrella, color: Color(0xFF10B981), size: 18),
+                              Icon(Icons.umbrella, color: AppTheme.oceanTeal, size: 18),
                               SizedBox(width: 6),
                               Text(
                                 'Recommended Rain Alternative',
-                                style: TextStyle(color: Color(0xFF10B981), fontSize: 13, fontWeight: FontWeight.bold),
+                                style: TextStyle(color: AppTheme.oceanTeal, fontSize: 13, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
                           const SizedBox(height: 6),
                           const Text(
                             'Lockhart Historic Tea Museum & Cupping Masterclass',
-                            style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 14, fontWeight: FontWeight.bold),
+                            style: TextStyle(color: AppTheme.textCream, fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 2),
                           const Text(
                             '100% sheltered colonial stone factory masterclass overlooking misty valleys.',
-                            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                            style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
                           ),
                           const SizedBox(height: 10),
                           SizedBox(
@@ -267,8 +275,8 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                             child: ElevatedButton(
                               key: const Key('apply_rain_alternative_btn'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF10B981),
-                                foregroundColor: const Color(0xFF0D1F17),
+                                backgroundColor: AppTheme.oceanTeal,
+                                foregroundColor: AppTheme.midnightTeal,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                               onPressed: () {
@@ -276,7 +284,7 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Rain alternative applied to Day 2 schedule!'),
-                                    backgroundColor: Color(0xFF10B981),
+                                    backgroundColor: AppTheme.oceanTeal,
                                   ),
                                 );
                               },
@@ -294,7 +302,7 @@ class _WeatherRadarSheetState extends State<WeatherRadarSheet> {
                     width: double.infinity,
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Close Radar', style: TextStyle(color: Color(0xFF9CA3AF))),
+                      child: const Text('Close Radar', style: TextStyle(color: AppTheme.textMuted)),
                     ),
                   ),
                 ],

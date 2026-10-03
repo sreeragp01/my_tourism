@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:keralink_mobile/core/config/app_config.dart';
 import 'package:keralink_mobile/core/network/api_client.dart';
 import 'package:keralink_mobile/core/storage/secure_token_storage.dart';
+import 'package:keralink_mobile/core/theme/app_theme.dart';
 import '../data/ai_planner_repository.dart';
 import '../models/itinerary_models.dart';
 import 'itinerary_builder_screen.dart';
@@ -94,7 +95,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('AI Extracted: ${_durationDays.toInt()} Days · $_month · $_travelStyle style'),
-          backgroundColor: const Color(0xFF10B981),
+          backgroundColor: AppTheme.oceanTeal,
           duration: const Duration(seconds: 2),
         ),
       );
@@ -159,10 +160,10 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const bgDark = Color(0xFF0D1F17);
-    const surfaceDark = Color(0xFF142B20);
-    const emerald = Color(0xFF10B981);
-    const gold = Color(0xFFD4AF37);
+    const bgDark = AppTheme.midnightTeal;
+    const surfaceDark = AppTheme.surfaceTeal;
+    const emerald = AppTheme.oceanTeal;
+    const gold = AppTheme.sunsetGold;
 
     return Scaffold(
       backgroundColor: bgDark,
@@ -171,7 +172,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
         elevation: 0,
         title: const Text(
           'AI Travel Architect',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCream),
         ),
       ),
       body: SingleChildScrollView(
@@ -199,7 +200,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFF7F3E8),
+                            color: AppTheme.textCream,
                           ),
                         ),
                       ),
@@ -304,7 +305,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                     children: [
                       const Text(
                         'Duration',
-                        style: TextStyle(fontSize: 13, color: Color(0xFFC5D8CD)),
+                        style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
                       ),
                       Text(
                         '${_durationDays.toInt()} Days',
@@ -329,7 +330,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                   // Travel Style Selector
                   const Text(
                     'Travel Style',
-                    style: TextStyle(fontSize: 13, color: Color(0xFFC5D8CD)),
+                    style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -397,13 +398,13 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF144032)),
+                              child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.midnightTeal),
                             )
                           : const Icon(Icons.bolt, size: 18),
                       label: Text(_isGenerating ? 'Synthesizing Authoritative Route...' : 'Generate Plan'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: gold,
-                        foregroundColor: const Color(0xFF144032),
+                        foregroundColor: AppTheme.midnightTeal,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         textStyle: const TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -522,7 +523,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFFF7F3E8),
+                      color: AppTheme.textCream,
                     ),
                   ),
                   Row(
@@ -589,7 +590,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                       children: [
                         Text(
                           '${_generatedPlan!.durationDays} Days · ${_generatedPlan!.travelStyle}',
-                          style: const TextStyle(fontSize: 12, color: Color(0xFFC5D8CD)),
+                          style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                         ),
                         Text(
                           '₹${_generatedPlan!.pricing.total.toStringAsFixed(0)}',
@@ -705,7 +706,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                                     d.themeTitle,
                                     style: const TextStyle(
                                       fontSize: 11,
-                                      color: Color(0xFFC5D8CD),
+                                      color: AppTheme.textMuted,
                                     ),
                                   ),
                                 ],
@@ -734,7 +735,7 @@ class _AIPlannerScreenState extends State<AIPlannerScreen> {
                         label: const Text('Open Day-by-Day Itinerary Builder'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: emerald,
-                          foregroundColor: const Color(0xFF0D1F17),
+                          foregroundColor: AppTheme.midnightTeal,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           textStyle: const TextStyle(fontWeight: FontWeight.bold),
                         ),

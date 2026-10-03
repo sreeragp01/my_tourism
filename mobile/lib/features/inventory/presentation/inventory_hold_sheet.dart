@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:keralink_mobile/core/config/app_config.dart';
 import 'package:keralink_mobile/core/network/api_client.dart';
 import 'package:keralink_mobile/core/storage/secure_token_storage.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../ai_planner/models/itinerary_models.dart';
 import '../../trips/data/trips_repository.dart';
 import '../../trips/presentation/booking_checkout_sheet.dart';
@@ -37,12 +38,12 @@ class _InventoryHoldSheetState extends State<InventoryHoldSheet> {
   int _secondsRemaining = 15 * 60;
 
   // Theme Constants
-  static const Color bgDark = Color(0xFF0D1F17);
-  static const Color surfaceDark = Color(0xFF142B20);
-  static const Color emerald = Color(0xFF10B981);
-  static const Color gold = Color(0xFFD4AF37);
-  static const Color textPrimary = Color(0xFFF7F3E8);
-  static const Color textMuted = Color(0xFFC5D8CD);
+  static const Color bgDark = AppTheme.midnightTeal;
+  static const Color surfaceDark = AppTheme.surfaceTeal;
+  static const Color emerald = AppTheme.oceanTeal;
+  static const Color gold = AppTheme.sunsetGold;
+  static const Color textPrimary = AppTheme.textCream;
+  static const Color textMuted = AppTheme.textMuted;
 
   @override
   void initState() {
@@ -133,7 +134,7 @@ class _InventoryHoldSheetState extends State<InventoryHoldSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Your 15-minute inventory hold has expired.'),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppTheme.emergencyRed,
           ),
         );
       }
@@ -221,7 +222,7 @@ class _InventoryHoldSheetState extends State<InventoryHoldSheet> {
       if (!mounted) return;
       setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to extend hold: $e'), backgroundColor: Colors.redAccent),
+        SnackBar(content: Text('Failed to extend hold: $e'), backgroundColor: AppTheme.emergencyRed),
       );
     }
   }
@@ -364,7 +365,7 @@ class _InventoryHoldSheetState extends State<InventoryHoldSheet> {
                       ),
                       IconButton(
                         key: const Key('inventory_release_hold_btn'),
-                        icon: const Icon(Icons.cancel_outlined, color: Colors.redAccent),
+                        icon: const Icon(Icons.cancel_outlined, color: AppTheme.emergencyRed),
                         tooltip: 'Release Hold',
                         onPressed: _loading ? null : _releaseHold,
                       ),
@@ -379,13 +380,13 @@ class _InventoryHoldSheetState extends State<InventoryHoldSheet> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.redAccent.withValues(alpha: 0.15),
+                    color: AppTheme.emergencyRed.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.redAccent),
+                    border: Border.all(color: AppTheme.emergencyRed),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: Colors.redAccent, size: 18),
+                      const Icon(Icons.error_outline, color: AppTheme.emergencyRed, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -439,7 +440,7 @@ class _InventoryHoldSheetState extends State<InventoryHoldSheet> {
                         decoration: BoxDecoration(
                           color: bgDark,
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.white12),
+                          border: Border.all(color: AppTheme.borderTeal),
                         ),
                         child: Row(
                           children: [
@@ -479,16 +480,16 @@ class _InventoryHoldSheetState extends State<InventoryHoldSheet> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: isAvail ? emerald.withValues(alpha: 0.15) : Colors.redAccent.withValues(alpha: 0.15),
+                                color: isAvail ? emerald.withValues(alpha: 0.15) : AppTheme.emergencyRed.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: isAvail ? emerald : Colors.redAccent),
+                                border: Border.all(color: isAvail ? emerald : AppTheme.emergencyRed),
                               ),
                               child: Text(
                                 isAvail ? (isRoom ? 'Available' : '${avail?.availableCapacity ?? 4} spots left') : 'Sold Out',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  color: isAvail ? emerald : Colors.redAccent,
+                                  color: isAvail ? emerald : AppTheme.emergencyRed,
                                 ),
                               ),
                             ),

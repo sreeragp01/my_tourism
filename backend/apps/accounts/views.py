@@ -5,7 +5,10 @@ from django.conf import settings
 from django.utils import timezone
 from rest_framework import status, views, permissions
 from rest_framework.response import Response
-from .models import User, UserSession, RefreshTokenFamily, RefreshToken, PasswordResetOTP, EmailVerificationOTP
+from .models import (
+    User, UserProfile, UserSession, RefreshTokenFamily, RefreshToken, PasswordResetOTP,
+    EmailVerificationOTP, default_profile_badges, default_offline_packages
+)
 from .serializers import (
     UserSerializer, UserSessionSerializer, RegisterSerializer, LoginSerializer,
     TokenRefreshSerializer, PasswordResetRequestSerializer, PasswordResetVerifySerializer,
@@ -271,3 +274,104 @@ class VerifyEmailOTPView(views.APIView):
             'success': True,
             'message': 'Email successfully verified!'
         }, status=status.HTTP_200_OK)
+
+
+class UserProfileView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        user = request.user if request.user and request.user.is_authenticated else None
+        if user:
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            user_data = UserSerializer(user).data
+        else:
+            user_data = {
+                'id': 'd0a1b2c3-4d5e-6f7a-8b9c-0d1e2f3a4b5c',
+                'email': 'sreerag@keralink.travel',
+                'first_name': 'Sreerag',
+                'last_name': 'P.',
+                'phone': '+91 98765 43210',
+                'avatar_url': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+                'is_email_verified': True,
+                'is_phone_verified': True,
+                'roles': ['CUSTOMER'],
+                'profile': {
+                    'emergency_contact_name': 'Ananya S. (Sister)',
+                    'emergency_contact_phone': '+91 94471 23456',
+                    'blood_group': 'O+ Positive',
+                    'medical_notes': 'No major allergies. Carries mild asthma inhaler.',
+                    'dietary_preference': 'Traditional Kerala Sadya (Veg)',
+                    'travel_pace': 'Balanced (2-3 stops/day)',
+                    'accessibility_required': False,
+                    'eco_score': 92,
+                    'eco_tier': 'Backwater Guardian',
+                    'trips_completed': 3,
+                    'ev_miles': 142,
+                    'carbon_offset_kg': 58.4,
+                    'badges': default_profile_badges(),
+                    'offline_packages': default_offline_packages(),
+                }
+            }
+
+        return Response({
+            'success': True,
+            'data': user_data
+        }, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        user = request.user if request.user and request.user.is_authenticated else None
+        if user:
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            for field in ['first_name', 'last_name', 'phone', 'avatar_url']:
+                if field in request.data:
+                    setattr(user, field, request.data[field])
+            user.save()
+
+            prof_data = request.data.get('profile', request.data)
+            profile_fields = [
+                'emergency_contact_name', 'emergency_contact_phone', 'blood_group', 'medical_notes',
+                'dietary_preference', 'travel_pace', 'accessibility_required', 'offline_packages'
+            ]
+            for field in profile_fields:
+                if field in prof_data:
+                    setattr(profile, field, prof_data[field])
+                elif field in request.data:
+                    setattr(profile, field, request.data[field])
+            profile.save()
+
+            data = UserSerializer(user).data
+        else:
+            data = {
+                'id': 'd0a1b2c3-4d5e-6f7a-8b9c-0d1e2f3a4b5c',
+                'email': 'sreerag@keralink.travel',
+                'first_name': request.data.get('first_name', 'Sreerag'),
+                'last_name': request.data.get('last_name', 'P.'),
+                'phone': request.data.get('phone', '+91 98765 43210'),
+                'avatar_url': request.data.get('avatar_url', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'),
+                'is_email_verified': True,
+                'is_phone_verified': True,
+                'roles': ['CUSTOMER'],
+                'profile': {
+                    'emergency_contact_name': request.data.get('emergency_contact_name', 'Ananya S. (Sister)'),
+                    'emergency_contact_phone': request.data.get('emergency_contact_phone', '+91 94471 23456'),
+                    'blood_group': request.data.get('blood_group', 'O+ Positive'),
+                    'medical_notes': request.data.get('medical_notes', 'No major allergies. Carries mild asthma inhaler.'),
+                    'dietary_preference': request.data.get('dietary_preference', 'Traditional Kerala Sadya (Veg)'),
+                    'travel_pace': request.data.get('travel_pace', 'Balanced (2-3 stops/day)'),
+                    'accessibility_required': request.data.get('accessibility_required', False),
+                    'eco_score': 92,
+                    'eco_tier': 'Backwater Guardian',
+                    'trips_completed': 3,
+                    'ev_miles': 142,
+                    'carbon_offset_kg': 58.4,
+                    'badges': default_profile_badges(),
+                    'offline_packages': request.data.get('offline_packages', default_offline_packages()),
+                }
+            }
+
+        return Response({
+            'success': True,
+            'message': 'Profile updated successfully',
+            'data': data
+        }, status=status.HTTP_200_OK)
+

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../data/ai_planner_repository.dart';
 import '../models/itinerary_models.dart';
 
@@ -17,6 +18,14 @@ class ItineraryDetailsScreen extends StatefulWidget {
 }
 
 class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
+  // Theme Constants (Option B: Coastal Twilight Teal & Golden Sunset)
+  static const Color bgDark = AppTheme.midnightTeal;
+  static const Color surfaceDark = AppTheme.surfaceTeal;
+  static const Color emerald = AppTheme.oceanTeal;
+  static const Color gold = AppTheme.sunsetGold;
+  static const Color textPrimary = AppTheme.textCream;
+  static const Color textMuted = AppTheme.textMuted;
+
   late AIPlan _currentPlan;
   int _selectedDayIndex = 0;
   bool _isProcessingAction = false;
@@ -51,7 +60,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Plan updated to v${updatedPlan.version}: Monsoon adaptation applied!'),
-          backgroundColor: const Color(0xFF10B981),
+          backgroundColor: emerald,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -74,11 +83,11 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF142B20),
-        title: const Text('Remove Activity?', style: TextStyle(color: Colors.white)),
+        backgroundColor: surfaceDark,
+        title: const Text('Remove Activity?', style: TextStyle(color: textPrimary)),
         content: Text(
           'Do you want to remove "$title" from Day $dayNumber? A new plan version will be created.',
-          style: const TextStyle(color: Color(0xFFC5D8CD)),
+          style: const TextStyle(color: textMuted),
         ),
         actions: [
           TextButton(
@@ -138,7 +147,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
 
       showModalBottomSheet(
         context: context,
-        backgroundColor: const Color(0xFF142B20),
+        backgroundColor: surfaceDark,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -154,7 +163,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                   children: [
                     const Text(
                       'Itinerary Versions',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textPrimary),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.white54),
@@ -164,7 +173,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                 ),
                 const SizedBox(height: 10),
                 if (versions.isEmpty)
-                  const Text('Only version 1 is currently active.', style: TextStyle(color: Colors.white70))
+                  const Text('Only version 1 is currently active.', style: TextStyle(color: textMuted))
                 else
                   Flexible(
                     child: ListView.builder(
@@ -176,35 +185,35 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF10B981).withValues(alpha: 0.2) : const Color(0xFF0D1F17),
+                            color: isSelected ? emerald.withValues(alpha: 0.2) : bgDark,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFF10B981) : Colors.white10,
+                              color: isSelected ? emerald : AppTheme.borderTeal,
                             ),
                           ),
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: isSelected ? const Color(0xFF10B981) : Colors.white12,
+                              backgroundColor: isSelected ? emerald : AppTheme.surfaceElevated,
                               child: Text(
                                 'v${v.version}',
                                 style: TextStyle(
-                                  color: isSelected ? const Color(0xFF0D1F17) : Colors.white,
+                                  color: isSelected ? bgDark : textPrimary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                             title: Text(
                               v.changeReason,
-                              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                              style: const TextStyle(color: textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
                             ),
                             subtitle: Text(
                               '₹${v.totalPrice.toStringAsFixed(0)}',
-                              style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
+                              style: const TextStyle(color: gold, fontSize: 12),
                             ),
                             trailing: isSelected
                                 ? const Chip(
-                                    label: Text('Current', style: TextStyle(fontSize: 10, color: Colors.white)),
-                                    backgroundColor: Color(0xFF10B981),
+                                    label: Text('Current', style: TextStyle(fontSize: 10, color: textPrimary)),
+                                    backgroundColor: emerald,
                                   )
                                 : TextButton(
                                     onPressed: () async {
@@ -219,7 +228,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                                         });
                                       }
                                     },
-                                    child: const Text('View', style: TextStyle(color: Color(0xFF10B981))),
+                                    child: const Text('View', style: TextStyle(color: emerald)),
                                   ),
                           ),
                         );
@@ -246,27 +255,27 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
         : (activeDays.isNotEmpty ? activeDays.first : null);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: bgDark,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF142B20),
+        backgroundColor: surfaceDark,
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               _currentPlan.title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary),
             ),
             Text(
               '${_currentPlan.durationDays} Days / ${_currentPlan.travelStyle}',
-              style: const TextStyle(fontSize: 11, color: Color(0xFFC5D8CD)),
+              style: const TextStyle(fontSize: 11, color: textMuted),
             ),
           ],
         ),
         actions: [
           IconButton(
             key: const Key('itinerary_versions_button'),
-            icon: const Icon(Icons.history, color: Color(0xFFD4AF37)),
+            icon: const Icon(Icons.history, color: gold),
             tooltip: 'Version History',
             onPressed: _showVersionsSheet,
           ),
@@ -277,11 +286,11 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const CircularProgressIndicator(color: Color(0xFF10B981)),
+                  const CircularProgressIndicator(color: emerald),
                   const SizedBox(height: 16),
                   Text(
                     _statusMessage ?? 'Processing...',
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: const TextStyle(color: textPrimary, fontSize: 14),
                   ),
                 ],
               ),
@@ -293,7 +302,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                   // Version & Rain adaptation banner
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    color: const Color(0xFF142B20),
+                    color: surfaceDark,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -303,16 +312,16 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                  color: emerald.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFF10B981)),
+                                  border: Border.all(color: emerald),
                                 ),
                                 child: Text(
                                   'Version v${_currentPlan.version}',
                                   style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF10B981),
+                                    color: emerald,
                                   ),
                                 ),
                               ),
@@ -321,7 +330,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                                 Expanded(
                                   child: Text(
                                     _currentPlan.changeReason!,
-                                    style: const TextStyle(fontSize: 11, color: Colors.white70),
+                                    style: const TextStyle(fontSize: 11, color: textMuted),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -331,10 +340,10 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                         const SizedBox(width: 8),
                         OutlinedButton.icon(
                           key: const Key('itinerary_rain_substitute_btn'),
-                          icon: const Icon(Icons.beach_access, size: 14, color: Color(0xFFD4AF37)),
-                          label: const Text('Rain Mode', style: TextStyle(fontSize: 11, color: Color(0xFFD4AF37))),
+                          icon: const Icon(Icons.beach_access, size: 14, color: gold),
+                          label: const Text('Rain Mode', style: TextStyle(fontSize: 11, color: gold)),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFFD4AF37)),
+                            side: const BorderSide(color: gold),
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           ),
                           onPressed: currentDay != null
@@ -356,15 +365,15 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                             margin: const EdgeInsets.only(right: 8),
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF142B20),
+                              color: surfaceDark,
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.white12),
+                              border: Border.all(color: AppTheme.borderTeal),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.place, size: 12, color: Color(0xFF10B981)),
+                                const Icon(Icons.place, size: 12, color: emerald),
                                 const SizedBox(width: 4),
-                                Text(dest, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                Text(dest, style: const TextStyle(color: textPrimary, fontSize: 12)),
                               ],
                             ),
                           );
@@ -390,10 +399,10 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                               margin: const EdgeInsets.only(right: 8),
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFF10B981) : const Color(0xFF142B20),
+                                color: isSelected ? emerald : surfaceDark,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: isSelected ? const Color(0xFF10B981) : Colors.white12,
+                                  color: isSelected ? emerald : AppTheme.borderTeal,
                                 ),
                               ),
                               child: Center(
@@ -402,7 +411,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected ? const Color(0xFF0D1F17) : Colors.white,
+                                    color: isSelected ? bgDark : textPrimary,
                                   ),
                                 ),
                               ),
@@ -421,13 +430,13 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF142B20),
+                          color: surfaceDark,
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.white10),
+                          border: Border.all(color: AppTheme.borderTeal),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.explore, color: Color(0xFFD4AF37), size: 20),
+                            const Icon(Icons.explore, color: gold, size: 20),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Column(
@@ -436,7 +445,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                                   Text(
                                     currentDay.destinationName,
                                     style: const TextStyle(
-                                      color: Color(0xFFD4AF37),
+                                      color: gold,
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 0.5,
@@ -445,7 +454,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                                   Text(
                                     currentDay.themeTitle,
                                     style: const TextStyle(
-                                      color: Colors.white,
+                                      color: textPrimary,
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -492,17 +501,17 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD4AF37),
-                          foregroundColor: const Color(0xFF144032),
+                          backgroundColor: gold,
+                          foregroundColor: bgDark,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                               content: Text(
-                                'Locking inventory hold for ${_currentPlan.durationDays}-day itinerary. Moving to Phase 6...',
+                                'Locking inventory hold for itinerary. Moving to Phase 6...',
                               ),
-                              backgroundColor: const Color(0xFF10B981),
+                              backgroundColor: emerald,
                             ),
                           );
                         },
@@ -522,11 +531,11 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
     IconData icon;
     switch (event.type) {
       case 'EXPERIENCE':
-        badgeColor = const Color(0xFF10B981);
+        badgeColor = emerald;
         icon = Icons.local_activity;
         break;
       case 'MEAL':
-        badgeColor = Colors.orangeAccent;
+        badgeColor = AppTheme.sunsetCoral;
         icon = Icons.restaurant;
         break;
       case 'STAY':
@@ -538,7 +547,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
         icon = Icons.directions_car;
         break;
       default:
-        badgeColor = Colors.white54;
+        badgeColor = textMuted;
         icon = Icons.event;
     }
 
@@ -546,9 +555,9 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF142B20),
+        color: surfaceDark,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: AppTheme.borderTeal),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -578,13 +587,13 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                   const SizedBox(width: 8),
                   Text(
                     '${event.startTime} - ${event.endTime}',
-                    style: const TextStyle(fontSize: 11, color: Colors.white60),
+                    style: const TextStyle(fontSize: 11, color: textMuted),
                   ),
                 ],
               ),
               if (event.type != 'STAY')
                 IconButton(
-                  icon: const Icon(Icons.close, size: 16, color: Colors.white38),
+                  icon: const Icon(Icons.close, size: 16, color: textMuted),
                   tooltip: 'Remove activity',
                   onPressed: () => _removeActivity(dayNumber, event.id, event.title),
                 ),
@@ -596,7 +605,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: textPrimary,
             ),
           ),
           const SizedBox(height: 6),
@@ -608,14 +617,14 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                   Icon(
                     event.rainFriendly ? Icons.beach_access : Icons.wb_sunny,
                     size: 13,
-                    color: event.rainFriendly ? const Color(0xFF10B981) : Colors.amber,
+                    color: event.rainFriendly ? emerald : gold,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     event.rainFriendly ? 'Rain Friendly' : 'Outdoor',
                     style: TextStyle(
                       fontSize: 11,
-                      color: event.rainFriendly ? const Color(0xFF10B981) : Colors.amber,
+                      color: event.rainFriendly ? emerald : gold,
                     ),
                   ),
                 ],
@@ -626,7 +635,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFD4AF37),
+                    color: gold,
                   ),
                 ),
             ],
@@ -641,9 +650,9 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF142B20),
+        color: surfaceDark,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
+        border: Border.all(color: gold.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -653,12 +662,12 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
             children: [
               const Text(
                 'Authoritative Pricing',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textPrimary),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                  color: gold.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
@@ -666,7 +675,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
                   style: TextStyle(
                     fontSize: 9,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFD4AF37),
+                    color: gold,
                   ),
                 ),
               ),
@@ -676,26 +685,26 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
           _buildPriceRow('Overnight Stays', pricing.staysSubtotal),
           _buildPriceRow('Experiential Activities', pricing.experiencesSubtotal),
           _buildPriceRow('Dedicated Chauffeur Transport', pricing.transportSubtotal),
-          const Divider(color: Colors.white12, height: 16),
+          const Divider(color: AppTheme.borderTeal, height: 16),
           _buildPriceRow('Subtotal', pricing.subtotal, isMuted: false),
           _buildPriceRow('GST (${pricing.gstRatePercent.toStringAsFixed(0)}%)', pricing.gstAmount),
           _buildPriceRow('Platform Fee (${pricing.platformFeePercent.toStringAsFixed(0)}%)', pricing.platformFee),
           if (pricing.discount > 0)
             _buildPriceRow('Special Discount', -pricing.discount, isDiscount: true),
-          const Divider(color: Colors.white24, height: 20),
+          const Divider(color: AppTheme.borderTeal, height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 'Total Package Price',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textPrimary),
               ),
               Text(
                 '₹${pricing.total.toStringAsFixed(0)}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFD4AF37),
+                  color: gold,
                 ),
               ),
             ],
@@ -715,7 +724,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: isMuted ? const Color(0xFFC5D8CD) : Colors.white,
+              color: isMuted ? textMuted : textPrimary,
             ),
           ),
           Text(
@@ -723,7 +732,7 @@ class _ItineraryDetailsScreenState extends State<ItineraryDetailsScreen> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: isMuted ? FontWeight.normal : FontWeight.bold,
-              color: isDiscount ? const Color(0xFF10B981) : (isMuted ? const Color(0xFFC5D8CD) : Colors.white),
+              color: isDiscount ? emerald : (isMuted ? textMuted : textPrimary),
             ),
           ),
         ],

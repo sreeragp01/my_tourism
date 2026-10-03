@@ -17,6 +17,7 @@ class HomeDiscoverScreen extends StatefulWidget {
   final VoidCallback onOpenCompanion;
   final VoidCallback? onOpenSafety;
   final VoidCallback? onOpenExplore;
+  final VoidCallback? onOpenProfile;
   final VoidCallback? onLogout;
   final DestinationRepository destinationRepository;
   final SearchRepository? searchRepository;
@@ -28,6 +29,7 @@ class HomeDiscoverScreen extends StatefulWidget {
     required this.onOpenCompanion,
     this.onOpenSafety,
     this.onOpenExplore,
+    this.onOpenProfile,
     this.onLogout,
     required this.destinationRepository,
     this.searchRepository,
@@ -167,6 +169,26 @@ class _HomeDiscoverScreenState extends State<HomeDiscoverScreen> {
           ],
         ),
         actions: [
+          // Traveler Profile Avatar Button
+          if (widget.onOpenProfile != null)
+            IconButton(
+              key: const Key('appbar_profile_btn'),
+              icon: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppTheme.sunsetGold, width: 1.5),
+                  color: AppTheme.surfaceTeal,
+                ),
+                child: const Icon(
+                  Icons.person,
+                  color: AppTheme.sunsetGold,
+                  size: 16,
+                ),
+              ),
+              tooltip: 'Traveler Profile',
+              onPressed: widget.onOpenProfile,
+            ),
           // Emergency SOS Shield Button in Top Bar
           IconButton(
             key: const Key('appbar_safety_btn'),

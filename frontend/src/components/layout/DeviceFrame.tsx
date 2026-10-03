@@ -22,6 +22,7 @@ export const DeviceFrame: React.FC<DeviceFrameProps> = ({ children }) => {
     { label: '6. Live Companion', screen: 'COMPANION' },
     { label: '6b. Safety Center', screen: 'SAFETY' },
     { label: '7. My Trips Pass', screen: 'MY_TRIPS' },
+    { label: '8. Profile & Passport', screen: 'PROFILE', badge: 'New' },
   ];
 
   const hideBottomNav = activeScreen === 'LANDING' || activeScreen === 'ONBOARDING' || activeScreen === 'AI_GENERATING';

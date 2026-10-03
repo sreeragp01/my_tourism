@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../models/notification_models.dart';
 import '../data/notification_repository.dart';
 
@@ -100,7 +101,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('All notifications marked as read.'),
-          backgroundColor: Color(0xFF10B981),
+          backgroundColor: AppTheme.oceanTeal,
         ),
       );
     }
@@ -109,7 +110,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void _showPreferencesSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF142B20),
+      backgroundColor: AppTheme.surfaceTeal,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (context, setSheetState) => SingleChildScrollView(
@@ -118,37 +119,37 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Notification Preferences', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8))),
+              const Text('Notification Preferences', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textCream)),
               const SizedBox(height: 16),
               SwitchListTile(
                 key: const Key('pref_proximity_switch'),
-                title: const Text('Waypoint Proximity Triggers', style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 14)),
-                subtitle: const Text('500m approach and 200m arrival notifications', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11)),
+                title: const Text('Waypoint Proximity Triggers', style: TextStyle(color: AppTheme.textCream, fontSize: 14)),
+                subtitle: const Text('500m approach and 200m arrival notifications', style: TextStyle(color: AppTheme.textMuted, fontSize: 11)),
                 value: true,
-                activeTrackColor: const Color(0xFF10B981),
+                activeTrackColor: AppTheme.oceanTeal,
                 onChanged: (v) {},
               ),
               SwitchListTile(
                 key: const Key('pref_weather_switch'),
-                title: const Text('Weather & Monsoon Advisories', style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 14)),
-                subtitle: const Text('Ghat road cautions & rain-sheltered alternatives', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11)),
+                title: const Text('Weather & Monsoon Advisories', style: TextStyle(color: AppTheme.textCream, fontSize: 14)),
+                subtitle: const Text('Ghat road cautions & rain-sheltered alternatives', style: TextStyle(color: AppTheme.textMuted, fontSize: 11)),
                 value: true,
-                activeTrackColor: const Color(0xFF10B981),
+                activeTrackColor: AppTheme.oceanTeal,
                 onChanged: (v) {},
               ),
               SwitchListTile(
                 key: const Key('pref_safety_switch'),
-                title: const Text('Emergency & Safety Alerts', style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 14)),
-                subtitle: const Text('Tourist police and critical road alerts', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11)),
+                title: const Text('Emergency & Safety Alerts', style: TextStyle(color: AppTheme.textCream, fontSize: 14)),
+                subtitle: const Text('Tourist police and critical road alerts', style: TextStyle(color: AppTheme.textMuted, fontSize: 11)),
                 value: true,
-                activeTrackColor: const Color(0xFF10B981),
+                activeTrackColor: AppTheme.oceanTeal,
                 onChanged: (v) {},
               ),
               const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: const Color(0xFF0D1F17)),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.oceanTeal, foregroundColor: AppTheme.midnightTeal),
                   onPressed: () => Navigator.pop(ctx),
                   child: const Text('Save Preferences', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
@@ -167,23 +168,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         : _notifications.where((n) => n.type == _selectedFilter).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: AppTheme.midnightTeal,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF142B20),
+        backgroundColor: AppTheme.surfaceTeal,
         elevation: 0,
         title: const Text(
           'Live Trip Notifications',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCream),
         ),
         actions: [
           IconButton(
             key: const Key('notification_prefs_btn'),
-            icon: const Icon(Icons.tune, color: Color(0xFF10B981)),
+            icon: const Icon(Icons.tune, color: AppTheme.oceanTeal),
             onPressed: _showPreferencesSheet,
           ),
           IconButton(
             key: const Key('mark_all_read_btn'),
-            icon: const Icon(Icons.done_all, color: Color(0xFF9CA3AF)),
+            icon: const Icon(Icons.done_all, color: AppTheme.textMuted),
             onPressed: _markAllRead,
           ),
         ],
@@ -213,12 +214,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           // List
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)))
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.oceanTeal))
                 : filtered.isEmpty
                     ? const Center(
                         child: Text(
                           'No notifications found.',
-                          style: TextStyle(color: Color(0xFF9CA3AF)),
+                          style: TextStyle(color: AppTheme.textMuted),
                         ),
                       )
                     : ListView.builder(
@@ -231,12 +232,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
                           return Card(
                             key: Key('notif_card_${n.id}'),
-                            color: const Color(0xFF142B20),
+                            color: AppTheme.surfaceTeal,
                             margin: const EdgeInsets.only(bottom: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                               side: BorderSide(
-                                color: n.isRead ? const Color(0xFF2D5A43) : const Color(0xFF10B981),
+                                color: n.isRead ? AppTheme.borderTeal : AppTheme.oceanTeal,
                                 width: n.isRead ? 1.0 : 1.5,
                               ),
                             ),
@@ -265,18 +266,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                               n.type.replaceAll('_', ' '),
                                               style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
                                             ),
-                                            Text(n.createdAt, style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11)),
+                                            Text(n.createdAt, style: const TextStyle(color: AppTheme.textSubtle, fontSize: 11)),
                                           ],
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
                                           n.title,
-                                          style: const TextStyle(color: Color(0xFFF7F3E8), fontSize: 14, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(color: AppTheme.textCream, fontSize: 14, fontWeight: FontWeight.bold),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
                                           n.message,
-                                          style: const TextStyle(color: Color(0xFFD1D5DB), fontSize: 12, height: 1.4),
+                                          style: const TextStyle(color: AppTheme.textMuted, fontSize: 12, height: 1.4),
                                         ),
                                       ],
                                     ),
@@ -287,7 +288,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                       width: 8,
                                       height: 8,
                                       decoration: const BoxDecoration(
-                                        color: Color(0xFF10B981),
+                                        color: AppTheme.oceanTeal,
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -311,14 +312,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       label: Text(
         label ?? filterKey,
         style: TextStyle(
-          color: isSelected ? const Color(0xFF0D1F17) : const Color(0xFFD1D5DB),
+          color: isSelected ? AppTheme.midnightTeal : AppTheme.textMuted,
           fontSize: 11,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
       ),
       selected: isSelected,
-      selectedColor: const Color(0xFF10B981),
-      backgroundColor: const Color(0xFF142B20),
+      selectedColor: AppTheme.oceanTeal,
+      backgroundColor: AppTheme.surfaceTeal,
       onSelected: (selected) {
         if (selected) setState(() => _selectedFilter = filterKey);
       },
@@ -343,15 +344,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Color _colorForType(String type) {
     switch (type) {
       case 'PROXIMITY':
-        return const Color(0xFF10B981);
+        return AppTheme.oceanTeal;
       case 'WEATHER_ALERT':
         return const Color(0xFF38BDF8);
       case 'SAFETY_ALERT':
-        return const Color(0xFFE11D48);
+        return AppTheme.emergencyRed;
       case 'TRIP_MILESTONE':
         return const Color(0xFFA855F7);
       default:
-        return const Color(0xFFF59E0B);
+        return AppTheme.sunsetGold;
     }
   }
 }

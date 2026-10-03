@@ -39,6 +39,85 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
+
+def default_profile_badges():
+    return [
+        {
+            'id': 'munnar_mist',
+            'title': 'Munnar Mist Explorer',
+            'icon': 'mountain',
+            'description': 'Navigated high-altitude tea trails of Lockhart Valley',
+            'earned_at': '2026-08-15',
+        },
+        {
+            'id': 'backwater_guardian',
+            'title': 'Backwater Guardian',
+            'icon': 'anchor',
+            'description': 'Completed zero-plastic solar houseboat journey in Kumarakom',
+            'earned_at': '2026-09-02',
+        },
+        {
+            'id': 'spice_route',
+            'title': 'Spice Route Trekker',
+            'icon': 'leaf',
+            'description': 'Supported organic cardamom farmers in Thekkady',
+            'earned_at': '2026-09-20',
+        },
+    ]
+
+
+def default_offline_packages():
+    return [
+        {
+            'id': 'pkg_munnar',
+            'name': 'Munnar & Lockhart Valley Corridor',
+            'size': '42 MB',
+            'is_downloaded': True,
+            'includes': 'Ghat route topo, offline SOS checkpoints, nearest CHC clinics',
+        },
+        {
+            'id': 'pkg_wayanad',
+            'name': 'Wayanad Ghat & Forest Pass',
+            'size': '38 MB',
+            'is_downloaded': False,
+            'includes': 'Thamarassery Churam hairpin map, wildlife sanctuary emergency contacts',
+        },
+    ]
+
+
+class UserProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    
+    # In Case of Emergency (ICE)
+    emergency_contact_name = models.CharField(max_length=150, blank=True, default='Ananya S. (Sister)')
+    emergency_contact_phone = models.CharField(max_length=50, blank=True, default='+91 94471 23456')
+    blood_group = models.CharField(max_length=20, blank=True, default='O+ Positive')
+    medical_notes = models.TextField(blank=True, default='No major allergies. Carries mild asthma inhaler.')
+    
+    # AI Architect & Experience Preferences
+    dietary_preference = models.CharField(max_length=100, blank=True, default='Traditional Kerala Sadya (Veg)')
+    travel_pace = models.CharField(max_length=100, blank=True, default='Balanced (2-3 stops/day)')
+    accessibility_required = models.BooleanField(default=False)
+    
+    # Eco-Tourism Passport
+    eco_score = models.IntegerField(default=92)
+    eco_tier = models.CharField(max_length=100, default='Backwater Guardian')
+    trips_completed = models.IntegerField(default=3)
+    ev_miles = models.IntegerField(default=142)
+    carbon_offset_kg = models.FloatField(default=58.4)
+    badges = models.JSONField(default=default_profile_badges, blank=True)
+    
+    # Offline Ghat Corridors
+    offline_packages = models.JSONField(default=default_offline_packages, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Profile of {self.user.email}"
+
+
 class UserSession(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sessions')

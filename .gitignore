@@ -1,3 +1,19 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.env
+backend/.env
+frontend/.env.local
+*.pem
+*.p12
+*.key
+*.jks
+*.keystore
+key.properties
+google-services.json
+GoogleService-Info.plist
+
 # Python / Django
 __pycache__/
 *.py[cod]
@@ -12,12 +28,18 @@ ENV/
 db.sqlite3
 local_settings.py
 *.log
-.env
-*.env
-backend/.env
 staticfiles/
 backend/staticfiles/
-frontend/.env.local
+media/
+backend/media/
+*.sql
+*.dump
+
+# Local Scripts
+run_backend.bat
+run_backend.ps1
+backend/run_backend.bat
+backend/run_backend.ps1
 
 # Node / Frontend
 frontend/node_modules/
@@ -32,6 +54,7 @@ yarn-error.log*
 
 # Flutter / Mobile
 *.apk
+*.aab
 mobile/.dart_tool/
 mobile/.flutter-plugins
 mobile/.flutter-plugins-dependencies
@@ -53,3 +76,7 @@ mobile/ios/Flutter/Flutter.podspec
 *.swo
 .DS_Store
 Thumbs.db
+
+# Internal Documentation & Audits
+*_AUDIT.md
+docs/internal/

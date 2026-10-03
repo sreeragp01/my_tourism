@@ -46,6 +46,39 @@ export type UserRole =
   | 'ADMIN'
   | 'SUPER_ADMIN';
 
+export interface BadgeItem {
+  id: string;
+  title: string;
+  icon: string;
+  description: string;
+  earnedAt: string;
+}
+
+export interface OfflinePackageItem {
+  id: string;
+  name: string;
+  size: string;
+  isDownloaded: boolean;
+  includes: string;
+}
+
+export interface UserProfileData {
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  bloodGroup: string;
+  medicalNotes: string;
+  dietaryPreference: string;
+  travelPace: string;
+  accessibilityRequired: boolean;
+  ecoScore: number;
+  ecoTier: string;
+  tripsCompleted: number;
+  evMiles: number;
+  carbonOffsetKg: number;
+  badges: BadgeItem[];
+  offlinePackages: OfflinePackageItem[];
+}
+
 export interface User {
   id: UUID;
   email: string;
@@ -57,6 +90,7 @@ export interface User {
   isPhoneVerified: boolean;
   roles: UserRole[];
   organizationId?: UUID;
+  profile?: UserProfileData;
   createdAt: ISODateTimeString;
 }
 

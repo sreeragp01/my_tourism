@@ -1,10 +1,22 @@
 from rest_framework import serializers
-from .models import User, UserSession, RefreshTokenFamily, RefreshToken
+from .models import User, UserProfile, UserSession, RefreshTokenFamily, RefreshToken
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = [
+            'emergency_contact_name', 'emergency_contact_phone', 'blood_group', 'medical_notes',
+            'dietary_preference', 'travel_pace', 'accessibility_required',
+            'eco_score', 'eco_tier', 'trips_completed', 'ev_miles', 'carbon_offset_kg',
+            'badges', 'offline_packages'
+        ]
 
 class UserSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer(read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'email', 'phone', 'first_name', 'last_name', 'avatar_url', 'is_email_verified', 'is_phone_verified', 'roles', 'created_at']
+        fields = ['id', 'email', 'phone', 'first_name', 'last_name', 'avatar_url', 'is_email_verified', 'is_phone_verified', 'roles', 'profile', 'created_at']
         read_only_fields = ['id', 'is_email_verified', 'is_phone_verified', 'created_at']
 
 class UserSessionSerializer(serializers.ModelSerializer):

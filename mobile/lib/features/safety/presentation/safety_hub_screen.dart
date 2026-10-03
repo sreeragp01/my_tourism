@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../models/safety_models.dart';
 import '../data/safety_repository.dart';
 
@@ -38,18 +39,18 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF142B20),
+        backgroundColor: AppTheme.surfaceTeal,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFE11D48), width: 1.5),
+          side: const BorderSide(color: AppTheme.emergencyRed, width: 1.5),
         ),
         title: const Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Color(0xFFE11D48), size: 28),
+            Icon(Icons.warning_amber_rounded, color: AppTheme.emergencyRed, size: 28),
             SizedBox(width: 8),
             Text(
               'Emergency Alert Sent',
-              style: TextStyle(color: Color(0xFFF7F3E8), fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ],
         ),
@@ -59,19 +60,19 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
           children: [
             const Text(
               'Your GPS location (10.0889°N, 77.0595°E - Lockhart Valley) has been transmitted to Kerala Tourist Police and National Emergency Services.',
-              style: TextStyle(color: Color(0xFFD1D5DB), fontSize: 13, height: 1.4),
+              style: TextStyle(color: AppTheme.textMuted, fontSize: 13, height: 1.4),
             ),
             if (_lastSosAlertId != null) ...[
               const SizedBox(height: 10),
               Text(
                 'Alert Reference: ${_lastSosAlertId!.substring(0, 8)}...',
-                style: const TextStyle(color: Color(0xFF10B981), fontSize: 12, fontFamily: 'monospace'),
+                style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 12, fontFamily: 'monospace'),
               ),
             ],
             const SizedBox(height: 12),
             const Text(
               'Immediate Action: Dial 112 directly below or wait in safe shelter.',
-              style: TextStyle(color: Color(0xFFF59E0B), fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(color: AppTheme.sunsetGold, fontSize: 12, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -79,19 +80,19 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
           TextButton(
             key: const Key('dismiss_sos_dialog_btn'),
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Dismiss', style: TextStyle(color: Color(0xFF9CA3AF))),
+            child: const Text('Dismiss', style: TextStyle(color: AppTheme.textMuted)),
           ),
           ElevatedButton.icon(
             key: const Key('call_112_btn'),
             icon: const Icon(Icons.phone, size: 16, color: Colors.white),
             label: const Text('Call 112 Now', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE11D48)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.emergencyRed),
             onPressed: () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Dialing National Emergency SOS 112...'),
-                  backgroundColor: Color(0xFFE11D48),
+                  backgroundColor: AppTheme.emergencyRed,
                 ),
               );
             },
@@ -129,7 +130,7 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Temporary family share link generated (valid 24h).'),
-          backgroundColor: Color(0xFF10B981),
+          backgroundColor: AppTheme.oceanTeal,
         ),
       );
     }
@@ -147,7 +148,7 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Trip share link has been revoked.'),
-          backgroundColor: Color(0xFFF59E0B),
+          backgroundColor: AppTheme.sunsetGold,
         ),
       );
     }
@@ -160,21 +161,21 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
         'title': 'National Emergency & Police',
         'number': '112',
         'type': 'Immediate Dispatch (Toll-Free 24x7)',
-        'color': const Color(0xFFE11D48),
+        'color': AppTheme.emergencyRed,
         'icon': Icons.emergency,
       },
       {
         'title': 'Kerala Tourist Police Helpline',
         'number': '1800-425-4747',
         'type': 'Tourist Assistance & Protection',
-        'color': const Color(0xFF10B981),
+        'color': AppTheme.oceanTeal,
         'icon': Icons.shield_outlined,
       },
       {
         'title': 'Women Safety Helpline (Mitra)',
         'number': '181',
         'type': 'Rapid Response Support',
-        'color': const Color(0xFFF59E0B),
+        'color': AppTheme.sunsetGold,
         'icon': Icons.support_agent,
       },
       {
@@ -188,19 +189,19 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
         'title': 'Highway Police Patrol',
         'number': '9846100100',
         'type': 'NH66 & Munnar Ghat NH85 Patrol',
-        'color': const Color(0xFF8B5CF6),
+        'color': AppTheme.sunsetCoral,
         'icon': Icons.directions_car_outlined,
       },
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: AppTheme.midnightTeal,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF142B20),
+        backgroundColor: AppTheme.surfaceTeal,
         elevation: 0,
         title: const Text(
           'Safety & Emergency Hub',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCream),
         ),
       ),
       body: ListView(
@@ -216,10 +217,10 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE11D48), width: 1.5),
+              border: Border.all(color: AppTheme.emergencyRed, width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFE11D48).withValues(alpha: 0.3),
+                  color: AppTheme.emergencyRed.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -232,7 +233,7 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFE11D48),
+                        color: AppTheme.emergencyRed,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.sos, color: Colors.white, size: 28),
@@ -267,7 +268,7 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
                       style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE11D48),
+                      backgroundColor: AppTheme.emergencyRed,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
@@ -283,46 +284,46 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF142B20),
+              color: AppTheme.surfaceTeal,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFF2D5A43)),
+              border: Border.all(color: AppTheme.borderTeal),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.share_location, color: Color(0xFF10B981), size: 22),
+                    const Icon(Icons.share_location, color: AppTheme.oceanTeal, size: 22),
                     const SizedBox(width: 8),
                     const Text(
                       'Family Live Trip Sharing',
-                      style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 15, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: AppTheme.textCream, fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0D1F17),
+                        color: AppTheme.midnightTeal,
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFF2D5A43)),
+                        border: Border.all(color: AppTheme.borderTeal),
                       ),
-                      child: const Text('24H TOKEN', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                      child: const Text('24H TOKEN', style: TextStyle(color: AppTheme.oceanTeal, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'Share sanitized live trip progress with family without sharing payment info, personal phone, or credentials.',
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12, height: 1.4),
+                  style: TextStyle(color: AppTheme.textMuted, fontSize: 12, height: 1.4),
                 ),
                 const SizedBox(height: 12),
                 if (_activeShareToken == null) ...[
                   ElevatedButton.icon(
                     key: const Key('generate_share_link_btn'),
-                    icon: const Icon(Icons.link, size: 18, color: Color(0xFF0D1F17)),
-                    label: const Text('Generate Family Share Link', style: TextStyle(color: Color(0xFF0D1F17), fontWeight: FontWeight.bold)),
+                    icon: const Icon(Icons.link, size: 18, color: AppTheme.midnightTeal),
+                    label: const Text('Generate Family Share Link', style: TextStyle(color: AppTheme.midnightTeal, fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
+                      backgroundColor: AppTheme.oceanTeal,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: _createShareLink,
@@ -331,25 +332,25 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0D1F17),
+                      color: AppTheme.midnightTeal,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFF10B981)),
+                      border: Border.all(color: AppTheme.oceanTeal),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 16),
+                            const Icon(Icons.check_circle, color: AppTheme.oceanTeal, size: 16),
                             const SizedBox(width: 6),
                             const Text(
                               'Active Share Link',
-                              style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: AppTheme.oceanTeal, fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                             const Spacer(),
                             Text(
                               'Token: ${_activeShareToken!.token.substring(0, 8)}...',
-                              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11, fontFamily: 'monospace'),
+                              style: const TextStyle(color: AppTheme.textMuted, fontSize: 11, fontFamily: 'monospace'),
                             ),
                           ],
                         ),
@@ -360,17 +361,17 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
                               child: OutlinedButton(
                                 key: const Key('copy_share_link_btn'),
                                 style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Color(0xFF2D5A43)),
+                                  side: const BorderSide(color: AppTheme.borderTeal),
                                 ),
                                 onPressed: () {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('Share URL copied to clipboard.'),
-                                      backgroundColor: Color(0xFF10B981),
+                                      backgroundColor: AppTheme.oceanTeal,
                                     ),
                                   );
                                 },
-                                child: const Text('Copy Link', style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 12)),
+                                child: const Text('Copy Link', style: TextStyle(color: AppTheme.textCream, fontSize: 12)),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -378,7 +379,7 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
                               child: ElevatedButton(
                                 key: const Key('revoke_share_link_btn'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF881337),
+                                  backgroundColor: AppTheme.emergencyRed,
                                 ),
                                 onPressed: _revokeShareLink,
                                 child: const Text('Revoke Link', style: TextStyle(color: Colors.white, fontSize: 12)),
@@ -398,7 +399,7 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
           // Verified Helplines Directory
           const Text(
             'Official Kerala Tourism Helplines',
-            style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 15, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppTheme.textCream, fontSize: 15, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           for (final h in helplines) ...[
@@ -406,9 +407,9 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFF142B20),
+                color: AppTheme.surfaceTeal,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF2D5A43)),
+                border: Border.all(color: AppTheme.borderTeal),
               ),
               child: Row(
                 children: [
@@ -427,12 +428,12 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
                       children: [
                         Text(
                           h['title'] as String,
-                          style: const TextStyle(color: Color(0xFFF7F3E8), fontSize: 14, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: AppTheme.textCream, fontSize: 14, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           h['type'] as String,
-                          style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                          style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
                         ),
                       ],
                     ),
@@ -440,7 +441,7 @@ class _SafetyHubScreenState extends State<SafetyHubScreen> {
                   ElevatedButton(
                     key: Key('call_btn_${h['number']}'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0D1F17),
+                      backgroundColor: AppTheme.midnightTeal,
                       foregroundColor: h['color'] as Color,
                       side: BorderSide(color: (h['color'] as Color).withValues(alpha: 0.5)),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

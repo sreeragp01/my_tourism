@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../models/search_result_model.dart';
 import '../data/search_repository.dart';
 import '../../home/models/destination_model.dart';
@@ -156,7 +157,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
   void _showRadiusFilterModal() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF142B20),
+      backgroundColor: AppTheme.surfaceTeal,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -177,7 +178,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                     children: [
                       const Text(
                         'Geographic Proximity & Radius',
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: AppTheme.textCream, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       if (tempHub != null)
                         TextButton(
@@ -186,14 +187,14 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                               tempHub = null;
                             });
                           },
-                          child: const Text('Reset', style: TextStyle(color: Color(0xFFE11D48), fontSize: 13)),
+                          child: const Text('Reset', style: TextStyle(color: AppTheme.emergencyRed, fontSize: 13)),
                         ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     'Select a Kerala tourism hub to filter destinations, stays, and activities by radius:',
-                    style: TextStyle(color: Color(0xFF8BA699), fontSize: 12),
+                    style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
                   ),
                   const SizedBox(height: 16),
                   Wrap(
@@ -204,10 +205,10 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                       return ChoiceChip(
                         selected: isSelected,
                         label: Text(hub),
-                        selectedColor: const Color(0xFF10B981),
-                        backgroundColor: const Color(0xFF0D1F17),
+                        selectedColor: AppTheme.oceanTeal,
+                        backgroundColor: AppTheme.midnightTeal,
                         labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : const Color(0xFFC5D8CD),
+                          color: isSelected ? Colors.white : AppTheme.textMuted,
                           fontWeight: FontWeight.w600,
                         ),
                         onSelected: (selected) {
@@ -222,8 +223,8 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Radius Distance:', style: TextStyle(color: Colors.white, fontSize: 13)),
-                      Text('${tempRadius.toInt()} km', style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 14)),
+                      const Text('Radius Distance:', style: TextStyle(color: AppTheme.textCream, fontSize: 13)),
+                      Text('${tempRadius.toInt()} km', style: const TextStyle(color: AppTheme.oceanTeal, fontWeight: FontWeight.bold, fontSize: 14)),
                     ],
                   ),
                   Slider(
@@ -231,8 +232,8 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                     min: 10,
                     max: 100,
                     divisions: 9,
-                    activeColor: const Color(0xFF10B981),
-                    inactiveColor: Colors.white12,
+                    activeColor: AppTheme.oceanTeal,
+                    inactiveColor: AppTheme.borderTeal,
                     onChanged: tempHub == null
                         ? null
                         : (val) {
@@ -262,7 +263,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                         _performSearch();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: AppTheme.oceanTeal,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -281,7 +282,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
   void _showExperienceDetail(BuildContext context, Experience exp) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF142B20),
+      backgroundColor: AppTheme.surfaceTeal,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -319,7 +320,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                         height: 200,
-                        color: const Color(0xFF1F3D2F),
+                        color: AppTheme.surfaceElevated,
                         child: const Icon(Icons.local_activity, color: Colors.white54, size: 48),
                       ),
                     ),
@@ -330,12 +331,12 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                          color: AppTheme.oceanTeal.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           exp.category,
-                          style: const TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                       if (exp.rainFriendly) ...[
@@ -360,45 +361,45 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                   const SizedBox(height: 12),
                   Text(
                     exp.title,
-                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: AppTheme.textCream, fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.star, color: Color(0xFFD4AF37), size: 16),
+                      const Icon(Icons.star, color: AppTheme.sunsetGold, size: 16),
                       const SizedBox(width: 4),
-                      Text('${exp.rating}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      Text(' (${exp.reviewCount} reviews)', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                      Text('${exp.rating}', style: const TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold)),
+                      Text(' (${exp.reviewCount} reviews)', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
                       const Spacer(),
-                      Text('₹${exp.pricePerPerson.toStringAsFixed(0)}', style: const TextStyle(color: Color(0xFF10B981), fontSize: 20, fontWeight: FontWeight.bold)),
-                      const Text(' / person', style: TextStyle(color: Colors.white60, fontSize: 12)),
+                      Text('₹${exp.pricePerPerson.toStringAsFixed(0)}', style: const TextStyle(color: AppTheme.sunsetGold, fontSize: 20, fontWeight: FontWeight.bold)),
+                      const Text(' / person', style: TextStyle(color: AppTheme.textSubtle, fontSize: 12)),
                     ],
                   ),
-                  const Divider(color: Colors.white12, height: 28),
-                  const Text('About Experience', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                  const Divider(color: AppTheme.borderTeal, height: 28),
+                  const Text('About Experience', style: TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 15)),
                   const SizedBox(height: 6),
-                  Text(exp.description, style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 13, height: 1.5)),
+                  Text(exp.description, style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, height: 1.5)),
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      const Icon(Icons.schedule, color: Color(0xFF10B981), size: 16),
+                      const Icon(Icons.schedule, color: AppTheme.oceanTeal, size: 16),
                       const SizedBox(width: 6),
-                      Text('Duration: ${exp.durationHours} hours', style: const TextStyle(color: Colors.white, fontSize: 13)),
+                      Text('Duration: ${exp.durationHours} hours', style: const TextStyle(color: AppTheme.textCream, fontSize: 13)),
                       const SizedBox(width: 20),
-                      const Icon(Icons.group, color: Color(0xFF10B981), size: 16),
+                      const Icon(Icons.group, color: AppTheme.oceanTeal, size: 16),
                       const SizedBox(width: 6),
-                      Text('Max ${exp.maxGroupSize} guests', style: const TextStyle(color: Colors.white, fontSize: 13)),
+                      Text('Max ${exp.maxGroupSize} guests', style: const TextStyle(color: AppTheme.textCream, fontSize: 13)),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(Icons.location_on, color: Color(0xFFD4AF37), size: 16),
+                      const Icon(Icons.location_on, color: AppTheme.sunsetGold, size: 16),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           'Meeting Point: ${exp.meetingPoint}',
-                          style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 12),
+                          style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
                         ),
                       ),
                     ],
@@ -406,9 +407,9 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(Icons.person, color: Color(0xFF10B981), size: 16),
+                      const Icon(Icons.person, color: AppTheme.oceanTeal, size: 16),
                       const SizedBox(width: 6),
-                      Text('Host: ${exp.hostName} (${exp.hostRole})', style: const TextStyle(color: Colors.white, fontSize: 13)),
+                      Text('Host: ${exp.hostName} (${exp.hostRole})', style: const TextStyle(color: AppTheme.textCream, fontSize: 13)),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -421,12 +422,12 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('Selected "${exp.title}" — ready for Itinerary Builder (Wave B)'),
-                            backgroundColor: const Color(0xFF10B981),
+                            backgroundColor: AppTheme.oceanTeal,
                           ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: AppTheme.oceanTeal,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -445,7 +446,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
   void _showAccommodationDetail(BuildContext context, Accommodation acc) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF142B20),
+      backgroundColor: AppTheme.surfaceTeal,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -483,7 +484,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                         height: 200,
-                        color: const Color(0xFF1F3D2F),
+                        color: AppTheme.surfaceElevated,
                         child: const Icon(Icons.hotel, color: Colors.white54, size: 48),
                       ),
                     ),
@@ -495,25 +496,25 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                          color: AppTheme.oceanTeal.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           acc.type.replaceAll('_', ' '),
-                          style: const TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                          color: AppTheme.sunsetGold.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.eco, size: 13, color: Color(0xFFD4AF37)),
+                            const Icon(Icons.eco, size: 13, color: AppTheme.sunsetGold),
                             const SizedBox(width: 4),
-                            Text('Eco Score: ${acc.ecoGreenScore}/100', style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text('Eco Score: ${acc.ecoGreenScore}/100', style: const TextStyle(color: AppTheme.sunsetGold, fontSize: 12, fontWeight: FontWeight.bold)),
                           ],
                         ),
                       ),
@@ -522,44 +523,44 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                   const SizedBox(height: 12),
                   Text(
                     acc.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: AppTheme.textCream, fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     acc.tagline,
-                    style: const TextStyle(color: Color(0xFF8BA699), fontSize: 13),
+                    style: const TextStyle(color: AppTheme.textMuted, fontSize: 13),
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       ...List.generate(
                         acc.starRating,
-                        (_) => const Icon(Icons.star, color: Color(0xFFD4AF37), size: 16),
+                        (_) => const Icon(Icons.star, color: AppTheme.sunsetGold, size: 16),
                       ),
                       const SizedBox(width: 8),
-                      Text('${acc.starRating} Star Rated', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text('${acc.starRating} Star Rated', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
                       const Spacer(),
-                      Text('₹${acc.basePricePerNight.toStringAsFixed(0)}', style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 20, fontWeight: FontWeight.bold)),
-                      const Text(' / night', style: TextStyle(color: Colors.white60, fontSize: 12)),
+                      Text('₹${acc.basePricePerNight.toStringAsFixed(0)}', style: const TextStyle(color: AppTheme.sunsetGold, fontSize: 20, fontWeight: FontWeight.bold)),
+                      const Text(' / night', style: TextStyle(color: AppTheme.textSubtle, fontSize: 12)),
                     ],
                   ),
-                  const Divider(color: Colors.white12, height: 28),
-                  const Text('Description', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                  const Divider(color: AppTheme.borderTeal, height: 28),
+                  const Text('Description', style: TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 15)),
                   const SizedBox(height: 6),
-                  Text(acc.description, style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 13, height: 1.5)),
+                  Text(acc.description, style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, height: 1.5)),
                   if (acc.amenities.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    const Text('Amenities & Highlights', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                    const Text('Amenities & Highlights', style: TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 15)),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: acc.amenities.map((amenity) {
                         return Chip(
-                          label: Text(amenity, style: const TextStyle(color: Colors.white, fontSize: 11)),
-                          backgroundColor: const Color(0xFF0D1F17),
+                          label: Text(amenity, style: const TextStyle(color: AppTheme.textCream, fontSize: 11)),
+                          backgroundColor: AppTheme.midnightTeal,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          side: const BorderSide(color: Colors.white12),
+                          side: const BorderSide(color: AppTheme.borderTeal),
                         );
                       }).toList(),
                     ),
@@ -574,12 +575,12 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('Selected "${acc.name}" — ready for Itinerary Builder (Wave B)'),
-                            backgroundColor: const Color(0xFF10B981),
+                            backgroundColor: AppTheme.oceanTeal,
                           ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: AppTheme.oceanTeal,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -598,7 +599,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
   void _showAttractionDetail(BuildContext context, Attraction att) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF142B20),
+      backgroundColor: AppTheme.surfaceTeal,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -636,7 +637,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                         height: 200,
-                        color: const Color(0xFF1F3D2F),
+                        color: AppTheme.surfaceElevated,
                         child: const Icon(Icons.photo_camera, color: Colors.white54, size: 48),
                       ),
                     ),
@@ -647,12 +648,12 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                          color: AppTheme.oceanTeal.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           att.category,
-                          style: const TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                       if (att.rainFriendly) ...[
@@ -677,35 +678,35 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                   const SizedBox(height: 12),
                   Text(
                     att.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: AppTheme.textCream, fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.schedule, color: Color(0xFF10B981), size: 16),
+                      const Icon(Icons.schedule, color: AppTheme.oceanTeal, size: 16),
                       const SizedBox(width: 6),
-                      Text('${att.openingTime} - ${att.closingTime}', style: const TextStyle(color: Colors.white, fontSize: 13)),
+                      Text('${att.openingTime} - ${att.closingTime}', style: const TextStyle(color: AppTheme.textCream, fontSize: 13)),
                       const Spacer(),
                       Text(
                         att.entryFee > 0 ? '₹${att.entryFee.toStringAsFixed(0)} entry' : 'Free Entry',
-                        style: const TextStyle(color: Color(0xFF10B981), fontSize: 16, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                  const Divider(color: Colors.white12, height: 28),
-                  const Text('Overview', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                  const Divider(color: AppTheme.borderTeal, height: 28),
+                  const Text('Overview', style: TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 15)),
                   const SizedBox(height: 6),
-                  Text(att.description, style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 13, height: 1.5)),
+                  Text(att.description, style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, height: 1.5)),
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      const Icon(Icons.timer_outlined, color: Color(0xFFD4AF37), size: 16),
+                      const Icon(Icons.timer_outlined, color: AppTheme.sunsetGold, size: 16),
                       const SizedBox(width: 6),
-                      Text('Typical Duration: ${att.typicalDurationMins} mins', style: const TextStyle(color: Colors.white, fontSize: 13)),
+                      Text('Typical Duration: ${att.typicalDurationMins} mins', style: const TextStyle(color: AppTheme.textCream, fontSize: 13)),
                       const SizedBox(width: 16),
-                      const Icon(Icons.people_outline, color: Color(0xFFD4AF37), size: 16),
+                      const Icon(Icons.people_outline, color: AppTheme.sunsetGold, size: 16),
                       const SizedBox(width: 6),
-                      Text('Crowd: ${att.crowdProfile}', style: const TextStyle(color: Colors.white, fontSize: 13)),
+                      Text('Crowd: ${att.crowdProfile}', style: const TextStyle(color: AppTheme.textCream, fontSize: 13)),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -718,12 +719,12 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('Added "${att.name}" to trip destination bucket'),
-                            backgroundColor: const Color(0xFF10B981),
+                            backgroundColor: AppTheme.oceanTeal,
                           ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: AppTheme.oceanTeal,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -741,10 +742,10 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
 
   @override
   Widget build(BuildContext context) {
-    const bgDark = Color(0xFF0D1F17);
-    const surfaceDark = Color(0xFF142B20);
-    const emerald = Color(0xFF10B981);
-    const gold = Color(0xFFD4AF37);
+    const bgDark = AppTheme.midnightTeal;
+    const surfaceDark = AppTheme.surfaceTeal;
+    const emerald = AppTheme.oceanTeal;
+    const gold = AppTheme.sunsetGold;
 
     return Scaffold(
       backgroundColor: bgDark,
@@ -936,7 +937,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
   Widget _buildBody() {
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF10B981)),
+        child: CircularProgressIndicator(color: AppTheme.oceanTeal),
       );
     }
 
@@ -947,12 +948,12 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, color: Color(0xFFE11D48), size: 48),
+              const Icon(Icons.error_outline, color: AppTheme.emergencyRed, size: 48),
               const SizedBox(height: 12),
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 14),
+                style: const TextStyle(color: AppTheme.textMuted, fontSize: 14),
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
@@ -960,7 +961,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                 icon: const Icon(Icons.refresh),
                 label: const Text('Retry Search'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
+                  backgroundColor: AppTheme.oceanTeal,
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -977,12 +978,12 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.search_off, color: Colors.white38, size: 56),
+              const Icon(Icons.search_off, color: AppTheme.textSubtle, size: 56),
               const SizedBox(height: 12),
               const Text(
                 'No matching tourism experiences found',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppTheme.textCream,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -991,7 +992,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
               const Text(
                 'Try searching for "Munnar", "Tea", "Kayaking", or toggle off Monsoon Safe to see all activities.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF8BA699), fontSize: 13),
+                style: TextStyle(color: AppTheme.textMuted, fontSize: 13),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -1009,8 +1010,8 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                   _performSearch();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF142B20),
-                  foregroundColor: const Color(0xFF10B981),
+                  backgroundColor: AppTheme.surfaceTeal,
+                  foregroundColor: AppTheme.oceanTeal,
                 ),
                 child: const Text('Reset All Filters'),
               ),
@@ -1062,14 +1063,14 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Center(
         child: _isLoadingMore
-            ? const CircularProgressIndicator(color: Color(0xFF10B981))
+            ? const CircularProgressIndicator(color: AppTheme.oceanTeal)
             : OutlinedButton.icon(
                 onPressed: _loadMore,
                 icon: const Icon(Icons.arrow_downward, size: 16),
                 label: const Text('Load More Results'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF10B981),
-                  side: const BorderSide(color: Color(0xFF10B981)),
+                  foregroundColor: AppTheme.oceanTeal,
+                  side: const BorderSide(color: AppTheme.oceanTeal),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
@@ -1087,7 +1088,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
           Text(
             '$title ($count)',
             style: const TextStyle(
-              color: Colors.white,
+              color: AppTheme.textCream,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -1097,7 +1098,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
             child: const Text(
               'See All',
               style: TextStyle(
-                color: Color(0xFF10B981),
+                color: AppTheme.oceanTeal,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -1113,7 +1114,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(32.0),
-          child: Text('No destinations match this criteria.', style: TextStyle(color: Colors.white54)),
+          child: Text('No destinations match this criteria.', style: TextStyle(color: AppTheme.textMuted)),
         ),
       );
     }
@@ -1129,9 +1130,12 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
         }
         final d = list[idx];
         return Card(
-          color: const Color(0xFF142B20),
+          color: AppTheme.surfaceTeal,
           margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(color: AppTheme.borderTeal),
+          ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: () {
@@ -1149,7 +1153,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                   errorBuilder: (_, __, ___) => Container(
                     width: 100,
                     height: 90,
-                    color: const Color(0xFF1F3D2F),
+                    color: AppTheme.surfaceElevated,
                     child: const Icon(Icons.landscape, color: Colors.white54),
                   ),
                 ),
@@ -1164,32 +1168,32 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                           children: [
                             Text(
                               d.name,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                              style: const TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 15),
                             ),
                             if (d.distanceKm != null)
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                  color: AppTheme.oceanTeal.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   '${d.distanceKm!.toStringAsFixed(1)} km',
-                                  style: const TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 10, fontWeight: FontWeight.bold),
                                 ),
                               ),
                           ],
                         ),
                         Text(
                           d.district,
-                          style: const TextStyle(color: Color(0xFF10B981), fontSize: 12),
+                          style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 12),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           d.tagline,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 11),
+                          style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
                         ),
                       ],
                     ),
@@ -1197,7 +1201,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                 ),
                 const Padding(
                   padding: EdgeInsets.only(right: 12.0),
-                  child: Icon(Icons.chevron_right, color: Colors.white38),
+                  child: Icon(Icons.chevron_right, color: AppTheme.textSubtle),
                 ),
               ],
             ),
@@ -1212,7 +1216,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(32.0),
-          child: Text('No experiences match this criteria.', style: TextStyle(color: Colors.white54)),
+          child: Text('No experiences match this criteria.', style: TextStyle(color: AppTheme.textMuted)),
         ),
       );
     }
@@ -1228,9 +1232,12 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
         }
         final exp = list[idx];
         return Card(
-          color: const Color(0xFF142B20),
+          color: AppTheme.surfaceTeal,
           margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(color: AppTheme.borderTeal),
+          ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: () => _showExperienceDetail(context, exp),
@@ -1252,7 +1259,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                           errorBuilder: (_, __, ___) => Container(
                             width: 80,
                             height: 75,
-                            color: const Color(0xFF1F3D2F),
+                            color: AppTheme.surfaceElevated,
                             child: const Icon(Icons.local_activity, color: Colors.white54),
                           ),
                         ),
@@ -1266,16 +1273,16 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                               exp.title,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                              style: const TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(Icons.star, color: Color(0xFFD4AF37), size: 14),
+                                const Icon(Icons.star, color: AppTheme.sunsetGold, size: 14),
                                 const SizedBox(width: 4),
-                                Text('${exp.rating}', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                Text('${exp.rating}', style: const TextStyle(color: AppTheme.textCream, fontSize: 12)),
                                 const SizedBox(width: 8),
-                                Text('${exp.durationHours}h duration', style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                                Text('${exp.durationHours}h duration', style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
                               ],
                             ),
                           ],
@@ -1308,7 +1315,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                       Text(
                         '₹${exp.pricePerPerson.toStringAsFixed(0)} / person',
                         style: const TextStyle(
-                          color: Color(0xFF10B981),
+                          color: AppTheme.sunsetGold,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
@@ -1329,7 +1336,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(32.0),
-          child: Text('No accommodations match this criteria.', style: TextStyle(color: Colors.white54)),
+          child: Text('No accommodations match this criteria.', style: TextStyle(color: AppTheme.textMuted)),
         ),
       );
     }
@@ -1345,9 +1352,12 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
         }
         final acc = list[idx];
         return Card(
-          color: const Color(0xFF142B20),
+          color: AppTheme.surfaceTeal,
           margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(color: AppTheme.borderTeal),
+          ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: () => _showAccommodationDetail(context, acc),
@@ -1361,7 +1371,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     height: 120,
-                    color: const Color(0xFF1F3D2F),
+                    color: AppTheme.surfaceElevated,
                     child: const Icon(Icons.hotel, color: Colors.white54, size: 36),
                   ),
                 ),
@@ -1376,18 +1386,18 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                           Expanded(
                             child: Text(
                               acc.name,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                              style: const TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 15),
                             ),
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                              color: AppTheme.oceanTeal.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               '${acc.ecoGreenScore} Eco',
-                              style: const TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold),
+                              style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 11, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
@@ -1397,7 +1407,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                         acc.tagline,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 12),
+                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -1405,11 +1415,11 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                         children: [
                           Text(
                             acc.type.replaceAll('_', ' '),
-                            style: const TextStyle(color: Colors.white54, fontSize: 11),
+                            style: const TextStyle(color: AppTheme.textSubtle, fontSize: 11),
                           ),
                           Text(
                             'From ₹${acc.basePricePerNight.toStringAsFixed(0)}/night',
-                            style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 13),
+                            style: const TextStyle(color: AppTheme.sunsetGold, fontWeight: FontWeight.bold, fontSize: 13),
                           ),
                         ],
                       ),
@@ -1429,7 +1439,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(32.0),
-          child: Text('No attractions match this criteria.', style: TextStyle(color: Colors.white54)),
+          child: Text('No attractions match this criteria.', style: TextStyle(color: AppTheme.textMuted)),
         ),
       );
     }
@@ -1445,9 +1455,12 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
         }
         final att = list[idx];
         return Card(
-          color: const Color(0xFF142B20),
+          color: AppTheme.surfaceTeal,
           margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(color: AppTheme.borderTeal),
+          ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: () => _showAttractionDetail(context, att),
@@ -1465,7 +1478,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                       errorBuilder: (_, __, ___) => Container(
                         width: 70,
                         height: 70,
-                        color: const Color(0xFF1F3D2F),
+                        color: AppTheme.surfaceElevated,
                         child: const Icon(Icons.photo_camera, color: Colors.white54),
                       ),
                     ),
@@ -1480,25 +1493,25 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                           children: [
                             Text(
                               att.name,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                              style: const TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                             if (att.distanceKm != null)
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                  color: AppTheme.oceanTeal.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   '${att.distanceKm!.toStringAsFixed(1)} km',
-                                  style: const TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 10, fontWeight: FontWeight.bold),
                                 ),
                               ),
                           ],
                         ),
                         Text(
                           '${att.category} • ${att.openingTime} - ${att.closingTime}',
-                          style: const TextStyle(color: Colors.white54, fontSize: 11),
+                          style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
                         ),
                         const SizedBox(height: 4),
                         Row(
@@ -1510,7 +1523,7 @@ class _SearchDiscoveryScreenState extends State<SearchDiscoveryScreen>
                               ),
                             Text(
                               att.entryFee > 0 ? 'Entry: ₹${att.entryFee.toStringAsFixed(0)}' : 'Free Entry',
-                              style: const TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold),
+                              style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 11, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),

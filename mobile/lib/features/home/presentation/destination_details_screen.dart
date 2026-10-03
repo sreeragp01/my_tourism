@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../models/destination_model.dart';
 import '../../maps/presentation/live_map_screen.dart';
 
@@ -15,14 +16,14 @@ class DestinationDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: AppTheme.midnightTeal,
       body: CustomScrollView(
         slivers: [
           // Hero Image Header
           SliverAppBar(
             expandedHeight: 280,
             pinned: true,
-            backgroundColor: const Color(0xFF142B20),
+            backgroundColor: AppTheme.surfaceTeal,
             leading: IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(6),
@@ -38,7 +39,7 @@ class DestinationDetailsScreen extends StatelessWidget {
               title: Text(
                 destination.name,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppTheme.textCream,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                   shadows: [Shadow(color: Colors.black87, blurRadius: 8)],
@@ -51,7 +52,7 @@ class DestinationDetailsScreen extends StatelessWidget {
                     destination.heroImage,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
-                      color: const Color(0xFF144032),
+                      color: AppTheme.surfaceElevated,
                       child: const Icon(Icons.landscape, size: 60, color: Colors.white24),
                     ),
                   ),
@@ -82,7 +83,7 @@ class DestinationDetailsScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                          color: AppTheme.oceanTeal.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
@@ -90,7 +91,7 @@ class DestinationDetailsScreen extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF10B981),
+                            color: AppTheme.oceanTeal,
                           ),
                         ),
                       ),
@@ -98,7 +99,7 @@ class DestinationDetailsScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                          color: AppTheme.sunsetGold.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
@@ -106,7 +107,7 @@ class DestinationDetailsScreen extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFD4AF37),
+                            color: AppTheme.sunsetGold,
                           ),
                         ),
                       ),
@@ -121,7 +122,7 @@ class DestinationDetailsScreen extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFFF7F3E8),
+                      color: AppTheme.textCream,
                       height: 1.3,
                     ),
                   ),
@@ -133,7 +134,7 @@ class DestinationDetailsScreen extends StatelessWidget {
                     destination.description,
                     style: const TextStyle(
                       fontSize: 13,
-                      color: Color(0xFFC5D8CD),
+                      color: AppTheme.textMuted,
                       height: 1.6,
                     ),
                   ),
@@ -147,7 +148,7 @@ class DestinationDetailsScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFFF7F3E8),
+                        color: AppTheme.textCream,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -158,13 +159,13 @@ class DestinationDetailsScreen extends StatelessWidget {
                         return Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF142B20),
+                            color: AppTheme.surfaceTeal,
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.white12),
+                            border: Border.all(color: AppTheme.borderTeal),
                           ),
                           child: Text(
                             tag,
-                            style: const TextStyle(fontSize: 11, color: Colors.white70),
+                            style: const TextStyle(fontSize: 11, color: AppTheme.textCream),
                           ),
                         );
                       }).toList(),
@@ -188,10 +189,10 @@ class DestinationDetailsScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      icon: const Icon(Icons.map_outlined, size: 18, color: Color(0xFF10B981)),
-                      label: Text('View ${destination.name} on Live Map', style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.map_outlined, size: 18, color: AppTheme.oceanTeal),
+                      label: Text('View ${destination.name} on Live Map', style: const TextStyle(color: AppTheme.oceanTeal, fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                        side: const BorderSide(color: AppTheme.oceanTeal, width: 1.5),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                     ),
@@ -211,8 +212,8 @@ class DestinationDetailsScreen extends StatelessWidget {
                       icon: const Icon(Icons.auto_awesome, size: 18),
                       label: Text('Plan Trip to ${destination.name}'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD4AF37),
-                        foregroundColor: const Color(0xFF0D1F17),
+                        backgroundColor: AppTheme.sunsetGold,
+                        foregroundColor: AppTheme.midnightTeal,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                       ),

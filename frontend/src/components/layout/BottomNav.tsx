@@ -1,16 +1,16 @@
 import React from 'react';
 import { useAppStore, ScreenId } from '../../stores/useAppStore';
-import { Home, Compass, Sparkles, Briefcase, User as UserIcon } from 'lucide-react';
+import { Home, Compass, Sparkles, Briefcase, Bot, User as UserIcon } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
   const { activeScreen, navigateTo } = useAppStore();
 
   const tabs: { screen: ScreenId; label: string; icon: React.ReactNode }[] = [
     { screen: 'HOME', label: 'Home', icon: <Home className="w-5 h-5" /> },
-    { screen: 'EXPLORE', label: 'Explore', icon: <Compass className="w-5 h-5" /> },
     { screen: 'AI_PLANNER', label: 'AI Planner', icon: <Sparkles className="w-5 h-5" /> },
-    { screen: 'MY_TRIPS', label: 'Trips', icon: <Briefcase className="w-5 h-5" /> },
-    { screen: 'COMPANION', label: 'Companion', icon: <UserIcon className="w-5 h-5" /> },
+    { screen: 'MY_TRIPS', label: 'My Trips', icon: <Briefcase className="w-5 h-5" /> },
+    { screen: 'COMPANION', label: 'Companion', icon: <Bot className="w-5 h-5" /> },
+    { screen: 'PROFILE', label: 'Profile', icon: <UserIcon className="w-5 h-5" /> },
   ];
 
   return (

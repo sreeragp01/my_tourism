@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../data/auth_repository.dart';
 
 class ForgotPasswordDialog extends StatefulWidget {
@@ -133,10 +134,10 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: AppTheme.surfaceTeal,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFF1E3A2F)),
+        side: const BorderSide(color: AppTheme.borderTeal),
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: SingleChildScrollView(
@@ -151,10 +152,10 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF144032),
+                    color: AppTheme.surfaceElevated,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.lock_reset, color: Color(0xFFD4AF37), size: 24),
+                  child: const Icon(Icons.lock_reset, color: AppTheme.sunsetGold, size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -166,18 +167,18 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFF7F3E8),
+                          color: AppTheme.textCream,
                         ),
                       ),
                       Text(
                         _currentStep == 1 ? 'Step 1 of 2: Request OTP' : 'Step 2 of 2: Enter OTP & New Password',
-                        style: const TextStyle(fontSize: 12, color: Color(0xFFC5D8CD)),
+                        style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white54, size: 20),
+                  icon: const Icon(Icons.close, color: AppTheme.textMuted, size: 20),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -190,13 +191,13 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE11D48).withValues(alpha: 0.15),
+                  color: AppTheme.emergencyRed.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFE11D48).withValues(alpha: 0.4)),
+                  border: Border.all(color: AppTheme.emergencyRed.withValues(alpha: 0.4)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline, color: Color(0xFFE11D48), size: 16),
+                    const Icon(Icons.error_outline, color: AppTheme.emergencyRed, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(_errorMessage!, style: const TextStyle(fontSize: 12, color: Colors.white)),
@@ -211,13 +212,13 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  color: AppTheme.oceanTeal.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                  border: Border.all(color: AppTheme.oceanTeal.withValues(alpha: 0.4)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.check_circle_outline, color: Color(0xFF10B981), size: 16),
+                    const Icon(Icons.check_circle_outline, color: AppTheme.oceanTeal, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(_successMessage!, style: const TextStyle(fontSize: 12, color: Colors.white)),
@@ -231,22 +232,24 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
             if (_currentStep == 1) ...[
               const Text(
                 'Enter the email address registered with your KeraLink account. We will send a 6-digit verification code.',
-                style: TextStyle(fontSize: 13, color: Color(0xFFC5D8CD), height: 1.4),
+                style: TextStyle(fontSize: 13, color: AppTheme.textMuted, height: 1.4),
               ),
               const SizedBox(height: 16),
-              const Text('Email Address', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFF7F3E8))),
+              const Text('Email Address', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textCream)),
               const SizedBox(height: 6),
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: const TextStyle(color: AppTheme.textCream, fontSize: 14),
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: const Color(0xFF142B20),
+                  fillColor: AppTheme.midnightTeal,
                   hintText: 'name@example.com',
-                  hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
-                  prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF10B981), size: 18),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  hintStyle: const TextStyle(color: AppTheme.textSubtle, fontSize: 13),
+                  prefixIcon: const Icon(Icons.email_outlined, color: AppTheme.oceanTeal, size: 18),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderTeal)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.oceanTeal, width: 1.5)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderTeal)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -256,12 +259,12 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleRequestOtp,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD4AF37),
-                    foregroundColor: const Color(0xFF0D1F17),
+                    backgroundColor: AppTheme.sunsetGold,
+                    foregroundColor: AppTheme.midnightTeal,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isLoading
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0D1F17)))
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.midnightTeal))
                       : const Text('Send 6-Digit OTP', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
               ),
@@ -269,47 +272,51 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               // Step 2: OTP & New Password
               Text(
                 'Verification code sent to ${_emailController.text}. Enter the code and choose a new password.',
-                style: const TextStyle(fontSize: 12, color: Color(0xFFC5D8CD), height: 1.3),
+                style: const TextStyle(fontSize: 12, color: AppTheme.textMuted, height: 1.3),
               ),
               const SizedBox(height: 16),
 
-              const Text('6-Digit Verification OTP', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFF7F3E8))),
+              const Text('6-Digit Verification OTP', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textCream)),
               const SizedBox(height: 6),
               TextField(
                 controller: _otpController,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
-                style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 8),
+                style: const TextStyle(color: AppTheme.sunsetGold, fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 8),
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(
                   counterText: '',
                   filled: true,
-                  fillColor: const Color(0xFF142B20),
+                  fillColor: AppTheme.midnightTeal,
                   hintText: '••••••',
-                  hintStyle: const TextStyle(color: Colors.white30, fontSize: 16, letterSpacing: 4),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  hintStyle: const TextStyle(color: AppTheme.textSubtle, fontSize: 16, letterSpacing: 4),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderTeal)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.oceanTeal, width: 1.5)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderTeal)),
                 ),
               ),
 
               const SizedBox(height: 14),
 
-              const Text('New Password', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFF7F3E8))),
+              const Text('New Password', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.textCream)),
               const SizedBox(height: 6),
               TextField(
                 controller: _newPasswordController,
                 obscureText: _obscurePassword,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: const TextStyle(color: AppTheme.textCream, fontSize: 14),
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: const Color(0xFF142B20),
+                  fillColor: AppTheme.midnightTeal,
                   hintText: 'Minimum 8 characters',
-                  hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
-                  prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF10B981), size: 18),
+                  hintStyle: const TextStyle(color: AppTheme.textSubtle, fontSize: 13),
+                  prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.oceanTeal, size: 18),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.white38, size: 18),
+                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: AppTheme.textMuted, size: 18),
                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderTeal)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.oceanTeal, width: 1.5)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderTeal)),
                 ),
               ),
 
@@ -321,12 +328,12 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleVerifyAndReset,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppTheme.oceanTeal,
+                    foregroundColor: AppTheme.midnightTeal,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isLoading
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.midnightTeal))
                       : const Text('Verify & Save New Password', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
               ),
@@ -335,7 +342,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               Center(
                 child: TextButton(
                   onPressed: _isLoading ? null : () => setState(() => _currentStep = 1),
-                  child: const Text('Back to Step 1', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12)),
+                  child: const Text('Back to Step 1', style: TextStyle(color: AppTheme.sunsetGold, fontSize: 12)),
                 ),
               ),
             ],

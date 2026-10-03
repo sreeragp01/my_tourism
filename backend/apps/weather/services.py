@@ -79,6 +79,30 @@ class TravelWeatherValidator:
             'price_per_person': 800.0,
             'reason': 'Indoor air-conditioned heritage theatre with live traditional makeup demonstration.',
             'image': 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800'
+        },
+        'thekkady': {
+            'title': 'Kadathanadan Kalari Centre & Spice Gallery',
+            'category': 'CULTURE',
+            'rain_friendly': True,
+            'price_per_person': 750.0,
+            'reason': 'Sheltered amphitheatre for traditional Kerala martial arts and natural spice extraction tour.',
+            'image': 'https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?w=800'
+        },
+        'wayanad': {
+            'title': 'Wayanad Heritage Museum & Tribal Craft Pavilion',
+            'category': 'CULTURE',
+            'rain_friendly': True,
+            'price_per_person': 600.0,
+            'reason': 'Spacious indoor museum housing 2nd-century artifacts and tribal handloom workshops.',
+            'image': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800'
+        },
+        'varkala': {
+            'title': 'North Cliff Ayurvedic Rejuvenation & Herbal Bath',
+            'category': 'WELLNESS',
+            'rain_friendly': True,
+            'price_per_person': 1500.0,
+            'reason': 'Indoor sea-view wellness pavilion with authentic Abhyangam and herbal steam.',
+            'image': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800'
         }
     }
 

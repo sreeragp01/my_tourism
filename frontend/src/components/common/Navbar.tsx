@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   PhoneCall,
+  User,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -41,6 +42,7 @@ export const Navbar: React.FC = () => {
     { label: 'AI Trip Architect', screen: 'AI_PLANNER', icon: <Sparkles className="w-4 h-4 text-gold-DEFAULT" /> },
     { label: 'Live Companion', screen: 'COMPANION', icon: <Sparkles className="w-4 h-4 text-emerald-400" /> },
     { label: 'Safety & Help', screen: 'SAFETY', icon: <ShieldCheck className="w-4 h-4 text-rose-400" /> },
+    { label: 'Profile', screen: 'PROFILE', icon: <User className="w-4 h-4 text-[#D4AF37]" /> },
   ];
 
   const roles: { role: UserRole; label: string; icon: React.ReactNode }[] = [
@@ -153,6 +155,20 @@ export const Navbar: React.FC = () => {
               <span className="hidden sm:inline">Web Platform</span>
             </button>
           </div>
+
+          {/* Quick Profile Access Button */}
+          <button
+            onClick={() => navigateTo('PROFILE')}
+            title="My Profile & Passport"
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+              activeScreen === 'PROFILE'
+                ? 'bg-[#1ABC9C]/25 text-[#1ABC9C] border-[#1ABC9C]'
+                : 'bg-[#144032] text-[#F7F3E8] border-[#D4AF37]/30 hover:border-[#D4AF37]'
+            }`}
+          >
+            <User className="w-3.5 h-3.5 text-[#E5A93C]" />
+            <span className="hidden xl:inline">Profile</span>
+          </button>
 
           {/* Persona / RBAC Switcher Dropdown */}
           <div className="relative">

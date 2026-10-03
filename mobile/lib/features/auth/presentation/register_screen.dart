@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../core/errors/api_exception.dart';
+import '../../../core/theme/app_theme.dart';
 import '../data/auth_repository.dart';
 import '../../main/presentation/main_nav_screen.dart';
 
@@ -129,12 +130,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: AppTheme.midnightTeal,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.textCream, size: 18),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -151,13 +152,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFF7F3E8),
+                    color: AppTheme.textCream,
                   ),
                 ),
                 const SizedBox(height: 6),
                 const Text(
                   'Unlock bespoke Kerala itineraries and live travel assistance',
-                  style: TextStyle(fontSize: 12, color: Color(0xFFC5D8CD)),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                 ),
 
                 const SizedBox(height: 24),
@@ -167,13 +168,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE11D48).withValues(alpha: 0.15),
+                      color: AppTheme.emergencyRed.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFFE11D48).withValues(alpha: 0.4)),
+                      border: Border.all(color: AppTheme.emergencyRed.withValues(alpha: 0.4)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline, color: Color(0xFFE11D48), size: 18),
+                        const Icon(Icons.error_outline, color: AppTheme.emergencyRed, size: 18),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
@@ -194,11 +195,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('First Name', style: TextStyle(fontSize: 12, color: Color(0xFFF7F3E8))),
+                          const Text('First Name', style: TextStyle(fontSize: 12, color: AppTheme.textCream)),
                           const SizedBox(height: 6),
                           TextFormField(
                             controller: _firstNameController,
-                            style: const TextStyle(color: Colors.white, fontSize: 13),
+                            style: const TextStyle(color: AppTheme.textCream, fontSize: 13),
                             decoration: _inputDecoration('First name'),
                             validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                           ),
@@ -210,11 +211,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Last Name', style: TextStyle(fontSize: 12, color: Color(0xFFF7F3E8))),
+                          const Text('Last Name', style: TextStyle(fontSize: 12, color: AppTheme.textCream)),
                           const SizedBox(height: 6),
                           TextFormField(
                             controller: _lastNameController,
-                            style: const TextStyle(color: Colors.white, fontSize: 13),
+                            style: const TextStyle(color: AppTheme.textCream, fontSize: 13),
                             decoration: _inputDecoration('Last name'),
                             validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                           ),
@@ -227,12 +228,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 16),
 
                 // Email
-                const Text('Email Address', style: TextStyle(fontSize: 12, color: Color(0xFFF7F3E8))),
+                const Text('Email Address', style: TextStyle(fontSize: 12, color: AppTheme.textCream)),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: const TextStyle(color: AppTheme.textCream, fontSize: 13),
                   decoration: _inputDecoration('name@example.com'),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Please enter your email';
@@ -244,29 +245,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 16),
 
                 // Phone
-                const Text('Phone Number (Optional)', style: TextStyle(fontSize: 12, color: Color(0xFFF7F3E8))),
+                const Text('Phone Number (Optional)', style: TextStyle(fontSize: 12, color: AppTheme.textCream)),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: const TextStyle(color: AppTheme.textCream, fontSize: 13),
                   decoration: _inputDecoration('+91 98460 00000'),
                 ),
 
                 const SizedBox(height: 16),
 
                 // Password
-                const Text('Password (Min. 8 characters)', style: TextStyle(fontSize: 12, color: Color(0xFFF7F3E8))),
+                const Text('Password (Min. 8 characters)', style: TextStyle(fontSize: 12, color: AppTheme.textCream)),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: const TextStyle(color: AppTheme.textCream, fontSize: 13),
                   decoration: _inputDecoration('••••••••').copyWith(
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: Colors.white38,
+                        color: AppTheme.textMuted,
                         size: 18,
                       ),
                       onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
@@ -288,8 +289,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleRegister,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD4AF37),
-                      foregroundColor: const Color(0xFF0D1F17),
+                      backgroundColor: AppTheme.sunsetGold,
+                      foregroundColor: AppTheme.midnightTeal,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
@@ -297,7 +298,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0D1F17)),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.midnightTeal),
                           )
                         : const Text('Create Account'),
                   ),
@@ -311,13 +312,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   height: 46,
                   child: OutlinedButton.icon(
                     onPressed: _handleDemoRegister,
-                    icon: const Icon(Icons.explore_outlined, size: 18, color: Color(0xFF10B981)),
+                    icon: const Icon(Icons.explore_outlined, size: 18, color: AppTheme.oceanTeal),
                     label: const Text(
                       'Explore in Offline Demo Mode',
-                      style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(color: AppTheme.oceanTeal, fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: const Color(0xFF10B981).withValues(alpha: 0.6)),
+                      side: BorderSide(color: AppTheme.oceanTeal.withValues(alpha: 0.6)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                   ),
@@ -333,13 +334,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       filled: true,
-      fillColor: const Color(0xFF142B20),
+      fillColor: AppTheme.surfaceTeal,
       hintText: hint,
-      hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
+      hintStyle: const TextStyle(color: AppTheme.textSubtle, fontSize: 13),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppTheme.borderTeal),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppTheme.oceanTeal, width: 1.5),
+      ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(color: AppTheme.borderTeal),
       ),
     );
   }

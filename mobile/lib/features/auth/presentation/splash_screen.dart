@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../data/auth_repository.dart';
 import 'login_screen.dart';
 import '../../main/presentation/main_nav_screen.dart';
@@ -48,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A1D19),
+      backgroundColor: AppTheme.midnightTeal,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -58,10 +59,10 @@ class _SplashScreenState extends State<SplashScreen> {
               height: 88,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
+                border: Border.all(color: AppTheme.sunsetGold, width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                    color: AppTheme.oceanTeal.withValues(alpha: 0.25),
                     blurRadius: 20,
                     spreadRadius: 2,
                   ),
@@ -73,7 +74,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   'assets/images/app_logo.png',
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
-                    color: const Color(0xFF144032),
+                    color: AppTheme.surfaceTeal,
                     child: const Center(
                       child: Text('🌴', style: TextStyle(fontSize: 40)),
                     ),
@@ -87,7 +88,7 @@ class _SplashScreenState extends State<SplashScreen> {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFFF7F3E8),
+                color: AppTheme.textCream,
                 letterSpacing: 1.2,
               ),
             ),
@@ -96,7 +97,7 @@ class _SplashScreenState extends State<SplashScreen> {
               'God\'s Own Country • AI Travel Companion',
               style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFFC5D8CD),
+                color: AppTheme.textMuted,
                 letterSpacing: 0.5,
               ),
             ),
@@ -106,7 +107,7 @@ class _SplashScreenState extends State<SplashScreen> {
               height: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                color: Color(0xFFD4AF37),
+                color: AppTheme.sunsetGold,
               ),
             ),
           ],

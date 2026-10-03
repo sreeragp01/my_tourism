@@ -15,17 +15,21 @@ import '../../companion/data/companion_repository.dart';
 import '../../trips/presentation/my_trips_screen.dart';
 import '../../safety/presentation/safety_hub_screen.dart';
 import '../../search/data/search_repository.dart';
+import '../../profile/presentation/profile_screen.dart';
+import '../../profile/data/profile_repository.dart';
 
 class MainNavScreen extends StatefulWidget {
   final AuthRepository? authRepository;
   final DestinationRepository? destinationRepository;
   final ExperienceRepository? experienceRepository;
+  final IProfileRepository? profileRepository;
 
   const MainNavScreen({
     super.key,
     this.authRepository,
     this.destinationRepository,
     this.experienceRepository,
+    this.profileRepository,
   });
 
   @override
@@ -38,6 +42,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
   late final ExperienceRepository _expRepo;
   late final SearchRepository _searchRepo;
   late final CompanionRepository _compRepo;
+  late final IProfileRepository _profileRepo;
   late final ApiClient _apiClient;
 
   @override
@@ -58,6 +63,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
 
     _searchRepo = SearchRepository(apiClient: _apiClient);
     _compRepo = CompanionRepository(apiClient: _apiClient);
+    _profileRepo = widget.profileRepository ?? ProfileRepository(apiClient: _apiClient);
   }
 
   Future<void> _handleLogout() async {
@@ -130,11 +136,16 @@ class _MainNavScreenState extends State<MainNavScreen> {
         onOpenCompanion: () => setState(() => _currentIndex = 3),
         onOpenSafety: _openSafetyHub,
         onOpenExplore: _openExploreAll,
+        onOpenProfile: () => setState(() => _currentIndex = 4),
         onLogout: widget.authRepository != null ? _handleLogout : null,
       ),
       const AIPlannerScreen(),
       const MyTripsScreen(),
       LiveCompanionScreen(repository: _compRepo, userName: userName),
+      ProfileScreen(
+        repository: _profileRepo,
+        onLogout: widget.authRepository != null ? _handleLogout : null,
+      ),
     ];
 
     return Scaffold(
@@ -180,6 +191,11 @@ class _MainNavScreenState extends State<MainNavScreen> {
               icon: Icon(Icons.forum_outlined, color: AppTheme.textMuted),
               selectedIcon: Icon(Icons.forum, color: AppTheme.sunsetGold),
               label: 'AI Guide',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline_rounded, color: AppTheme.textMuted),
+              selectedIcon: Icon(Icons.person_rounded, color: AppTheme.sunsetGold),
+              label: 'Profile',
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import {
   User,
+  UserProfileData,
   Destination,
   Experience,
   Accommodation,
@@ -97,6 +98,54 @@ function mapAccommodation(a: any): Accommodation {
       features: r.features || [],
     })),
     explanation: a.explanation,
+  };
+}
+
+function mapUserProfile(prof: any): UserProfileData {
+  return {
+    emergencyContactName: prof?.emergency_contact_name || prof?.emergencyContactName || 'Ananya S. (Sister)',
+    emergencyContactPhone: prof?.emergency_contact_phone || prof?.emergencyContactPhone || '+91 94471 23456',
+    bloodGroup: prof?.blood_group || prof?.bloodGroup || 'O+ Positive',
+    medicalNotes: prof?.medical_notes || prof?.medicalNotes || 'No major allergies. Carries mild asthma inhaler.',
+    dietaryPreference: prof?.dietary_preference || prof?.dietaryPreference || 'Traditional Kerala Sadya (Veg)',
+    travelPace: prof?.travel_pace || prof?.travelPace || 'Balanced (2-3 stops/day)',
+    accessibilityRequired: prof?.accessibility_required ?? prof?.accessibilityRequired ?? false,
+    ecoScore: prof?.eco_score ?? prof?.ecoScore ?? 92,
+    ecoTier: prof?.eco_tier || prof?.ecoTier || 'Backwater Guardian',
+    tripsCompleted: prof?.trips_completed ?? prof?.tripsCompleted ?? 3,
+    evMiles: prof?.ev_miles ?? prof?.evMiles ?? 142,
+    carbonOffsetKg: prof?.carbon_offset_kg ?? prof?.carbonOffsetKg ?? 58.4,
+    badges: Array.isArray(prof?.badges) ? prof.badges.map((b: any) => ({
+      id: b.id || '',
+      title: b.title || '',
+      icon: b.icon || 'star',
+      description: b.description || '',
+      earnedAt: b.earned_at || b.earnedAt || '',
+    })) : [],
+    offlinePackages: Array.isArray(prof?.offline_packages) ? prof.offline_packages.map((p: any) => ({
+      id: p.id || '',
+      name: p.name || '',
+      size: p.size || '',
+      isDownloaded: p.is_downloaded ?? p.isDownloaded ?? false,
+      includes: p.includes || '',
+    })) : [],
+  };
+}
+
+function mapUser(raw: any): User {
+  const d = raw?.data || raw;
+  return {
+    id: d.id || 'd0a1b2c3-4d5e-6f7a-8b9c-0d1e2f3a4b5c',
+    email: d.email || 'sreerag@keralink.travel',
+    phone: d.phone || '+91 98765 43210',
+    firstName: d.first_name || d.firstName || 'Sreerag',
+    lastName: d.last_name || d.lastName || 'P.',
+    avatarUrl: d.avatar_url || d.avatarUrl,
+    isEmailVerified: d.is_email_verified ?? d.isEmailVerified ?? true,
+    isPhoneVerified: d.is_phone_verified ?? d.isPhoneVerified ?? true,
+    roles: d.roles || ['CUSTOMER'],
+    profile: mapUserProfile(d.profile || d),
+    createdAt: d.created_at || d.createdAt || new Date().toISOString(),
   };
 }
 
@@ -222,7 +271,51 @@ export class HttpKeraLinkAdapter {
   // User Profile & Roles
   // --------------------------------------------------------------------------
   async getCurrentUser(): Promise<User> {
+    try {
+      const res = await this.fetchWithAuth('/auth/me/');
+      if (res.ok) {
+        const json = await res.json();
+        return mapUser(json);
+      }
+    } catch (_) {}
     return mockBackend.getCurrentUser();
+  }
+
+  async updateUserProfile(payload: Partial<User & UserProfileData>): Promise<User> {
+    try {
+      const body: Record<string, any> = {};
+      if (payload.firstName !== undefined) body.first_name = payload.firstName;
+      if (payload.lastName !== undefined) body.last_name = payload.lastName;
+      if (payload.phone !== undefined) body.phone = payload.phone;
+      if (payload.avatarUrl !== undefined) body.avatar_url = payload.avatarUrl;
+      if (payload.emergencyContactName !== undefined) body.emergency_contact_name = payload.emergencyContactName;
+      if (payload.emergencyContactPhone !== undefined) body.emergency_contact_phone = payload.emergencyContactPhone;
+      if (payload.bloodGroup !== undefined) body.blood_group = payload.bloodGroup;
+      if (payload.medicalNotes !== undefined) body.medical_notes = payload.medicalNotes;
+      if (payload.dietaryPreference !== undefined) body.dietary_preference = payload.dietaryPreference;
+      if (payload.travelPace !== undefined) body.travel_pace = payload.travelPace;
+      if (payload.accessibilityRequired !== undefined) body.accessibility_required = payload.accessibilityRequired;
+      if (payload.offlinePackages !== undefined) {
+        body.offline_packages = payload.offlinePackages.map((p) => ({
+          id: p.id,
+          name: p.name,
+          size: p.size,
+          is_downloaded: p.isDownloaded,
+          includes: p.includes,
+        }));
+      }
+
+      const res = await this.fetchWithAuth('/auth/profile/', {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return mapUser(json);
+      }
+    } catch (_) {}
+
+    return mockBackend.updateUserProfile(payload);
   }
 
   async switchRole(role: User['roles'][0]): Promise<User> {
@@ -474,7 +567,8 @@ export class HttpKeraLinkAdapter {
   async sendCompanionMessage(
     message: string,
     currentDestination: string = 'munnar',
-    tripDay: number = 2
+    tripDay: number = 2,
+    bookingReference?: string
   ): Promise<CompanionMessage> {
     try {
       const res = await this.fetchWithAuth('/companion/chat/', {
@@ -482,7 +576,9 @@ export class HttpKeraLinkAdapter {
         body: JSON.stringify({
           query: message,
           current_destination: currentDestination,
+          destination_slug: currentDestination,
           trip_day: tripDay,
+          booking_reference: bookingReference,
           weather_condition: 'MIST_RAIN',
         }),
       });
@@ -497,7 +593,7 @@ export class HttpKeraLinkAdapter {
         };
       }
     } catch (e) {}
-    return mockBackend.sendCompanionMessage(message);
+    return mockBackend.sendCompanionMessage(message, currentDestination, tripDay, bookingReference);
   }
 
   // --------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../models/map_models.dart';
 import '../data/map_repository.dart';
 
@@ -70,17 +71,17 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: AppTheme.midnightTeal,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF142B20),
+        backgroundColor: AppTheme.surfaceTeal,
         elevation: 0,
         title: const Text(
           'Route & Transit Preview',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textCream),
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.oceanTeal))
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -88,22 +89,22 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF142B20),
+                    color: AppTheme.surfaceTeal,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFF2D5A43)),
+                    border: Border.all(color: AppTheme.borderTeal),
                   ),
                   child: Column(
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.trip_origin, color: Color(0xFF10B981), size: 20),
+                          const Icon(Icons.trip_origin, color: AppTheme.oceanTeal, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('ORIGIN', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 10, fontWeight: FontWeight.bold)),
-                                Text(widget.startLandmark, style: const TextStyle(color: Color(0xFFF7F3E8), fontSize: 14, fontWeight: FontWeight.w600)),
+                                const Text('ORIGIN', style: TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Text(widget.startLandmark, style: const TextStyle(color: AppTheme.textCream, fontSize: 14, fontWeight: FontWeight.w600)),
                               ],
                             ),
                           ),
@@ -115,20 +116,20 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
                           alignment: Alignment.centerLeft,
                           child: SizedBox(
                             height: 24,
-                            child: VerticalDivider(color: Color(0xFF2D5A43), thickness: 2),
+                            child: VerticalDivider(color: AppTheme.borderTeal, thickness: 2),
                           ),
                         ),
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.location_on, color: Color(0xFFE11D48), size: 22),
+                          const Icon(Icons.location_on, color: AppTheme.emergencyRed, size: 22),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('DESTINATION', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 10, fontWeight: FontWeight.bold)),
-                                Text(widget.destinationLandmark, style: const TextStyle(color: Color(0xFFF7F3E8), fontSize: 14, fontWeight: FontWeight.w600)),
+                                const Text('DESTINATION', style: TextStyle(color: AppTheme.textMuted, fontSize: 10, fontWeight: FontWeight.bold)),
+                                Text(widget.destinationLandmark, style: const TextStyle(color: AppTheme.textCream, fontSize: 14, fontWeight: FontWeight.w600)),
                               ],
                             ),
                           ),
@@ -147,7 +148,7 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
                         'Distance',
                         '${_route?.distanceKm ?? 128.4} km',
                         Icons.straighten,
-                        const Color(0xFF10B981),
+                        AppTheme.oceanTeal,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -165,7 +166,7 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
                         'Hairpin Turns',
                         '${_route?.hairpinsCount ?? 14} bends',
                         Icons.turn_sharp_right,
-                        const Color(0xFFF59E0B),
+                        AppTheme.sunsetGold,
                       ),
                     ),
                   ],
@@ -177,20 +178,20 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2A1C0E),
+                      color: AppTheme.surfaceTeal,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
+                      border: Border.all(color: AppTheme.sunsetGold.withValues(alpha: 0.5)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.shield_outlined, color: Color(0xFFF59E0B), size: 20),
+                            Icon(Icons.shield_outlined, color: AppTheme.sunsetGold, size: 20),
                             SizedBox(width: 8),
                             Text(
                               'Highland Ghat Driving Advisories',
-                              style: TextStyle(color: Color(0xFFF59E0B), fontSize: 14, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: AppTheme.sunsetGold, fontSize: 14, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -201,11 +202,11 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('• ', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 14)),
+                                const Text('• ', style: TextStyle(color: AppTheme.sunsetGold, fontSize: 14)),
                                 Expanded(
                                   child: Text(
                                     advisory,
-                                    style: const TextStyle(color: Color(0xFFF3F4F6), fontSize: 12, height: 1.4),
+                                    style: const TextStyle(color: AppTheme.textCream, fontSize: 12, height: 1.4),
                                   ),
                                 ),
                               ],
@@ -220,13 +221,13 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
                 // Action: Start Navigation
                 ElevatedButton.icon(
                   key: const Key('start_navigation_btn'),
-                  icon: const Icon(Icons.navigation, color: Color(0xFF0D1F17)),
+                  icon: const Icon(Icons.navigation, color: AppTheme.midnightTeal),
                   label: const Text(
                     'Begin Live Corridor Transit',
-                    style: TextStyle(color: Color(0xFF0D1F17), fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: AppTheme.midnightTeal, fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
+                    backgroundColor: AppTheme.oceanTeal,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -234,7 +235,7 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Transit active. Speed limit monitored at 30 km/h.'),
-                        backgroundColor: Color(0xFF10B981),
+                        backgroundColor: AppTheme.oceanTeal,
                       ),
                     );
                     Navigator.pop(context);
@@ -249,17 +250,17 @@ class _RoutePreviewScreenState extends State<RoutePreviewScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF142B20),
+        color: AppTheme.surfaceTeal,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2D5A43)),
+        border: Border.all(color: AppTheme.borderTeal),
       ),
       child: Column(
         children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(height: 6),
-          Text(value, style: const TextStyle(color: Color(0xFFF7F3E8), fontSize: 13, fontWeight: FontWeight.bold)),
+          Text(value, style: const TextStyle(color: AppTheme.textCream, fontSize: 13, fontWeight: FontWeight.bold)),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 10)),
+          Text(label, style: const TextStyle(color: AppTheme.textMuted, fontSize: 10)),
         ],
       ),
     );

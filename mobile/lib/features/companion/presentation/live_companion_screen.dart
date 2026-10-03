@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/secure_token_storage.dart';
@@ -79,11 +80,33 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
     });
     _scrollToBottom();
 
+    final lower = query.toLowerCase();
+
+    // Dynamically detect destination from query if mentioned
+    String detectedSlug = widget.destinationSlug;
+    if (lower.contains('kochi') || lower.contains('cochin')) {
+      detectedSlug = 'kochi';
+    } else if (lower.contains('munnar')) {
+      detectedSlug = 'munnar';
+    } else if (lower.contains('thekkady') || lower.contains('periyar')) {
+      detectedSlug = 'thekkady';
+    } else if (lower.contains('alappuzha') || lower.contains('alleppey')) {
+      detectedSlug = 'alappuzha';
+    } else if (lower.contains('wayanad')) {
+      detectedSlug = 'wayanad';
+    } else if (lower.contains('varkala')) {
+      detectedSlug = 'varkala';
+    } else if (lower.contains('kovalam')) {
+      detectedSlug = 'kovalam';
+    } else if (lower.contains('athirappilly')) {
+      detectedSlug = 'athirappilly';
+    }
+
     // 1. Try sending query to live cloud backend
     try {
       final reply = await _repository.sendQuery(
         query: query,
-        destinationSlug: widget.destinationSlug,
+        destinationSlug: detectedSlug,
         tripDay: widget.tripDay,
         bookingReference: widget.bookingReference,
       );
@@ -99,7 +122,6 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
 
     // 2. High-quality offline intelligence engine fallback
     await Future.delayed(const Duration(milliseconds: 50));
-    final lower = query.toLowerCase();
     CompanionMessage fallbackReply;
 
     if (lower.contains('driver') || lower.contains('rajesh') || lower.contains('chauffeur')) {
@@ -119,19 +141,27 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
         suggestions: ['Call Chauffeur Rajesh', 'Share live location', 'Route preview'],
       );
     } else if (lower.contains('weather') || lower.contains('radar') || lower.contains('rain')) {
-      fallbackReply = const CompanionMessage(
+      final destName = detectedSlug == 'munnar'
+          ? 'Munnar Hills'
+          : (detectedSlug == 'kochi'
+              ? 'Fort Kochi'
+              : (detectedSlug == 'alappuzha' ? 'Alappuzha Backwaters' : detectedSlug.toUpperCase()));
+      final temp = detectedSlug == 'munnar' ? 19 : (detectedSlug == 'wayanad' ? 22 : (detectedSlug == 'thekkady' ? 23 : 30));
+      final prob = detectedSlug == 'munnar' ? 75 : (detectedSlug == 'wayanad' ? 45 : 20);
+
+      fallbackReply = CompanionMessage(
         id: 'msg-weather',
         sender: 'ai',
-        text: '🌧️ Weather update for Munnar Hills: Currently 19°C with Mist Rain. Rain probability is 75%. Caution: Ghat road speed advisory 30 km/h in effect.',
+        text: '🌧️ Weather update for $destName: Currently $temp°C. Rain probability is $prob%.',
         timestamp: 'Just now',
         toolInvoked: 'get_weather',
         toolResult: {
-          'destination': 'Munnar Hills',
-          'temperature_celsius': 19,
+          'destination': destName,
+          'temperature_celsius': temp,
           'condition': 'MIST_RAIN',
-          'rain_probability_percent': 75,
+          'rain_probability_percent': prob,
         },
-        suggestions: ['Suggest rain alternative', 'View Ghat corridor map', 'Contact Driver'],
+        suggestions: const ['Suggest rain alternative', 'View Ghat corridor map', 'Contact Driver'],
       );
     } else if (lower.contains('alternative') || lower.contains('indoor') || lower.contains('rained out')) {
       fallbackReply = const CompanionMessage(
@@ -245,9 +275,9 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: AppTheme.midnightTeal,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF142B20),
+        backgroundColor: AppTheme.surfaceTeal,
         elevation: 0,
         title: Row(
           children: [
@@ -255,7 +285,7 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
               width: 10,
               height: 10,
               decoration: const BoxDecoration(
-                color: Color(0xFF10B981),
+                color: AppTheme.oceanTeal,
                 shape: BoxShape.circle,
               ),
             ),
@@ -265,11 +295,11 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
               children: [
                 const Text(
                   'KeraLink AI Companion',
-                  style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppTheme.textCream, fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   'Day ${widget.tripDay} · ${widget.destinationSlug.toUpperCase()} (Live Trip Engine)',
-                  style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                  style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
                 ),
               ],
             ),
@@ -278,13 +308,13 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
         actions: [
           IconButton(
             key: const Key('companion_call_police_btn'),
-            icon: const Icon(Icons.shield_outlined, color: Color(0xFF10B981)),
+            icon: const Icon(Icons.shield_outlined, color: AppTheme.oceanTeal),
             tooltip: 'Tourist Police 1800-425-4747',
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Calling Kerala Tourist Police: 1800-425-4747 (Toll-Free 24x7)'),
-                  backgroundColor: Color(0xFF10B981),
+                  backgroundColor: AppTheme.oceanTeal,
                 ),
               );
             },
@@ -296,15 +326,15 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
           // Safety Banner
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            color: const Color(0xFF1E3A2B),
+            color: AppTheme.surfaceElevated,
             child: const Row(
               children: [
-                Icon(Icons.verified, color: Color(0xFF10B981), size: 16),
+                Icon(Icons.verified, color: AppTheme.oceanTeal, size: 16),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Live Trip Engine Active · AI Actions strictly verified with zero hallucination',
-                    style: TextStyle(color: Color(0xFF34D399), fontSize: 11, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: AppTheme.oceanTeal, fontSize: 11, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -335,12 +365,12 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
                     const SizedBox(
                       width: 12,
                       height: 12,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF10B981)),
+                      child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.oceanTeal),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'AI Companion is verifying live data...',
-                      style: TextStyle(color: const Color(0xFF9CA3AF).withValues(alpha: 0.8), fontSize: 11),
+                      style: TextStyle(color: AppTheme.textMuted.withValues(alpha: 0.8), fontSize: 11),
                     ),
                   ],
                 ),
@@ -351,8 +381,8 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: const BoxDecoration(
-              color: Color(0xFF142B20),
-              border: Border(top: BorderSide(color: Color(0xFF2D5A43))),
+              color: AppTheme.surfaceTeal,
+              border: Border(top: BorderSide(color: AppTheme.borderTeal)),
             ),
             child: Row(
               children: [
@@ -360,24 +390,24 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
                   child: TextField(
                     key: const Key('companion_input_field'),
                     controller: _textController,
-                    style: const TextStyle(color: Color(0xFFF7F3E8), fontSize: 14),
+                    style: const TextStyle(color: AppTheme.textCream, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'Ask weather, driver contact, rain alternatives...',
-                      hintStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                      hintStyle: const TextStyle(color: AppTheme.textSubtle, fontSize: 13),
                       filled: true,
-                      fillColor: const Color(0xFF0D1F17),
+                      fillColor: AppTheme.midnightTeal,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(color: Color(0xFF2D5A43)),
+                        borderSide: const BorderSide(color: AppTheme.borderTeal),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(color: Color(0xFF2D5A43)),
+                        borderSide: const BorderSide(color: AppTheme.borderTeal),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(color: Color(0xFF10B981)),
+                        borderSide: const BorderSide(color: AppTheme.oceanTeal),
                       ),
                     ),
                     onSubmitted: _handleSend,
@@ -386,7 +416,7 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
                 const SizedBox(width: 8),
                 IconButton(
                   key: const Key('companion_send_btn'),
-                  icon: const Icon(Icons.send_rounded, color: Color(0xFF10B981)),
+                  icon: const Icon(Icons.send_rounded, color: AppTheme.oceanTeal),
                   onPressed: () => _handleSend(_textController.text),
                 ),
               ],
@@ -406,10 +436,10 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
         padding: const EdgeInsets.all(14),
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
         decoration: BoxDecoration(
-          color: isAi ? const Color(0xFF142B20) : const Color(0xFF1E3A2B),
+          color: isAi ? AppTheme.surfaceTeal : AppTheme.surfaceElevated,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isAi ? const Color(0xFF2D5A43) : const Color(0xFF10B981),
+            color: isAi ? AppTheme.borderTeal : AppTheme.oceanTeal,
           ),
         ),
         child: Column(
@@ -417,7 +447,7 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
           children: [
             Text(
               msg.text,
-              style: const TextStyle(color: Color(0xFFF7F3E8), fontSize: 13, height: 1.4),
+              style: const TextStyle(color: AppTheme.textCream, fontSize: 13, height: 1.4),
             ),
 
             // Tool Execution Cards
@@ -435,9 +465,9 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
                 children: msg.suggestions.map((s) {
                   return ActionChip(
                     key: Key('suggestion_chip_$s'),
-                    label: Text(s, style: const TextStyle(fontSize: 11, color: Color(0xFF10B981))),
-                    backgroundColor: const Color(0xFF0D1F17),
-                    side: const BorderSide(color: Color(0xFF2D5A43)),
+                    label: Text(s, style: const TextStyle(fontSize: 11, color: AppTheme.oceanTeal)),
+                    backgroundColor: AppTheme.midnightTeal,
+                    side: const BorderSide(color: AppTheme.borderTeal),
                     onPressed: () => _handleSend(s),
                   );
                 }).toList(),
@@ -455,44 +485,44 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
         key: const Key('tool_card_driver'),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF0D1F17),
+          color: AppTheme.midnightTeal,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFF10B981)),
+          border: Border.all(color: AppTheme.oceanTeal),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.directions_car, color: Color(0xFF10B981), size: 18),
+                const Icon(Icons.directions_car, color: AppTheme.oceanTeal, size: 18),
                 const SizedBox(width: 6),
                 Text(
                   result['driver_name']?.toString() ?? 'Rajesh Kumar',
-                  style: const TextStyle(color: Color(0xFFF7F3E8), fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
                 const Spacer(),
-                const Text('VERIFIED DRIVER', style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.bold)),
+                const Text('VERIFIED DRIVER', style: TextStyle(color: AppTheme.oceanTeal, fontSize: 9, fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 6),
             Text(
               '${result['vehicle_model']} • ${result['vehicle_number']}',
-              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+              style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
             ),
             const SizedBox(height: 8),
             ElevatedButton.icon(
               key: const Key('call_driver_btn'),
-              icon: const Icon(Icons.phone, size: 14, color: Color(0xFF0D1F17)),
-              label: const Text('Call Chauffeur Rajesh', style: TextStyle(color: Color(0xFF0D1F17), fontWeight: FontWeight.bold, fontSize: 11)),
+              icon: const Icon(Icons.phone, size: 14, color: AppTheme.midnightTeal),
+              label: const Text('Call Chauffeur Rajesh', style: TextStyle(color: AppTheme.midnightTeal, fontWeight: FontWeight.bold, fontSize: 11)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
+                backgroundColor: AppTheme.oceanTeal,
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Dialing ${result['phone']}...'), backgroundColor: const Color(0xFF10B981)),
+                  SnackBar(content: Text('Dialing ${result['phone']}...'), backgroundColor: AppTheme.oceanTeal),
                 );
               },
             ),
@@ -504,7 +534,7 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
         key: const Key('tool_card_weather'),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF0D1F17),
+          color: AppTheme.midnightTeal,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: const Color(0xFF38BDF8)),
         ),
@@ -516,7 +546,7 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
               children: [
                 Text(
                   '${result['temperature_celsius']}°C • ${result['destination']}',
-                  style: const TextStyle(color: Color(0xFFF7F3E8), fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 13),
                 ),
                 Text(
                   'Rain Probability: ${result['rain_probability_percent']}%',
@@ -533,32 +563,32 @@ class _LiveCompanionScreenState extends State<LiveCompanionScreen> {
         key: const Key('tool_card_rain_alternative'),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF0D1F17),
+          color: AppTheme.midnightTeal,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFF59E0B)),
+          border: Border.all(color: AppTheme.sunsetGold),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(Icons.umbrella, color: Color(0xFFF59E0B), size: 16),
+                Icon(Icons.umbrella, color: AppTheme.sunsetGold, size: 16),
                 SizedBox(width: 6),
                 Text(
                   'Indoor Rain Alternative',
-                  style: TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 12),
+                  style: TextStyle(color: AppTheme.sunsetGold, fontWeight: FontWeight.bold, fontSize: 12),
                 ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
               result['alternative_title']?.toString() ?? '',
-              style: const TextStyle(color: Color(0xFFF7F3E8), fontWeight: FontWeight.w600, fontSize: 13),
+              style: const TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.w600, fontSize: 13),
             ),
             const SizedBox(height: 2),
             Text(
               '₹${result['price_per_person']?.toInt()}/person • 100% sheltered indoor',
-              style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+              style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
             ),
           ],
         ),

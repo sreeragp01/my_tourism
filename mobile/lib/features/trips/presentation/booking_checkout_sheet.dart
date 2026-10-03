@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../ai_planner/models/itinerary_models.dart';
 import '../../inventory/models/inventory_hold_models.dart';
 import '../data/trips_repository.dart';
@@ -31,12 +32,12 @@ class _BookingCheckoutSheetState extends State<BookingCheckoutSheet> {
   bool _processing = false;
   String? _errorMessage;
 
-  static const Color bgDark = Color(0xFF0D1F17);
-  static const Color surfaceDark = Color(0xFF142B20);
-  static const Color emerald = Color(0xFF10B981);
-  static const Color gold = Color(0xFFD4AF37);
-  static const Color textPrimary = Color(0xFFF7F3E8);
-  static const Color textMuted = Color(0xFFC5D8CD);
+  static const Color bgDark = AppTheme.midnightTeal;
+  static const Color surfaceDark = AppTheme.surfaceTeal;
+  static const Color emerald = AppTheme.oceanTeal;
+  static const Color gold = AppTheme.sunsetGold;
+  static const Color textPrimary = AppTheme.textCream;
+  static const Color textMuted = AppTheme.textMuted;
 
   @override
   void dispose() {
@@ -187,13 +188,13 @@ class _BookingCheckoutSheetState extends State<BookingCheckoutSheet> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.redAccent.withValues(alpha: 0.15),
+                      color: AppTheme.emergencyRed.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.redAccent),
+                      border: Border.all(color: AppTheme.emergencyRed),
                     ),
                     child: Text(
                       _errorMessage!,
-                      style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                      style: const TextStyle(color: AppTheme.emergencyRed, fontSize: 12),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -205,7 +206,7 @@ class _BookingCheckoutSheetState extends State<BookingCheckoutSheet> {
                   decoration: BoxDecoration(
                     color: bgDark,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white10),
+                    border: Border.all(color: AppTheme.borderTeal),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,7 +287,7 @@ class _BookingCheckoutSheetState extends State<BookingCheckoutSheet> {
                       _buildPriceRow('Kerala GST (5%)', '₹${_tax.toStringAsFixed(0)}'),
                       const SizedBox(height: 6),
                       _buildPriceRow('Platform & Eco Fee (2%)', '₹${_platformFee.toStringAsFixed(0)}'),
-                      const Divider(color: Colors.white12, height: 18),
+                      const Divider(color: AppTheme.borderTeal, height: 18),
                       _buildPriceRow(
                         'Total Payable',
                         '₹${_totalAmount.toStringAsFixed(0)}',

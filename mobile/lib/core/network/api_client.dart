@@ -110,6 +110,21 @@ class ApiClient {
     );
   }
 
+  Future<dynamic> patch(
+    String endpoint, {
+    Map<String, String>? headers,
+    dynamic body,
+    bool requiresAuth = true,
+  }) async {
+    return _sendWithRetry(
+      method: 'PATCH',
+      endpoint: endpoint,
+      headers: headers,
+      body: body,
+      requiresAuth: requiresAuth,
+    );
+  }
+
   Future<dynamic> delete(
     String endpoint, {
     Map<String, String>? headers,
@@ -210,6 +225,9 @@ class ApiClient {
           break;
         case 'PUT':
           response = await _httpClient.put(uri, headers: requestHeaders, body: bodyString).timeout(timeout);
+          break;
+        case 'PATCH':
+          response = await _httpClient.patch(uri, headers: requestHeaders, body: bodyString).timeout(timeout);
           break;
         case 'DELETE':
           response = await _httpClient.delete(uri, headers: requestHeaders).timeout(timeout);

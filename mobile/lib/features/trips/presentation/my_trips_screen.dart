@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:keralink_mobile/core/config/app_config.dart';
 import 'package:keralink_mobile/core/network/api_client.dart';
 import 'package:keralink_mobile/core/storage/secure_token_storage.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../data/trips_repository.dart';
 import '../models/trip_models.dart';
 import 'trip_detail_screen.dart';
@@ -22,12 +23,12 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
   bool _loading = true;
   String? _errorMessage;
 
-  static const Color bgDark = Color(0xFF0D1F17);
-  static const Color surfaceDark = Color(0xFF142B20);
-  static const Color emerald = Color(0xFF10B981);
-  static const Color gold = Color(0xFFD4AF37);
-  static const Color textPrimary = Color(0xFFF7F3E8);
-  static const Color textMuted = Color(0xFFC5D8CD);
+  static const Color bgDark = AppTheme.midnightTeal;
+  static const Color surfaceDark = AppTheme.surfaceTeal;
+  static const Color emerald = AppTheme.oceanTeal;
+  static const Color gold = AppTheme.sunsetGold;
+  static const Color textPrimary = AppTheme.textCream;
+  static const Color textMuted = AppTheme.textMuted;
 
   @override
   void initState() {
@@ -318,7 +319,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                   ),
                 ],
               ),
-              const Divider(color: Colors.white12, height: 24),
+              const Divider(color: AppTheme.borderTeal, height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

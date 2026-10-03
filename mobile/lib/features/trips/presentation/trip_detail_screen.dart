@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../data/trips_repository.dart';
 import '../models/trip_models.dart';
 import '../../companion/presentation/live_companion_screen.dart';
@@ -27,12 +28,12 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
   bool _loading = true;
   String? _error;
 
-  static const Color bgDark = Color(0xFF0D1F17);
-  static const Color surfaceDark = Color(0xFF142B20);
-  static const Color emerald = Color(0xFF10B981);
-  static const Color gold = Color(0xFFD4AF37);
-  static const Color textPrimary = Color(0xFFF7F3E8);
-  static const Color textMuted = Color(0xFFC5D8CD);
+  static const Color bgDark = AppTheme.midnightTeal;
+  static const Color surfaceDark = AppTheme.surfaceTeal;
+  static const Color emerald = AppTheme.oceanTeal;
+  static const Color gold = AppTheme.sunsetGold;
+  static const Color textPrimary = AppTheme.textCream;
+  static const Color textMuted = AppTheme.textMuted;
 
   @override
   void initState() {
@@ -90,6 +91,9 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                       MaterialPageRoute(
                         builder: (_) => LiveCompanionScreen(
                           bookingReference: _detail!.bookingReference,
+                          userName: _detail!.primaryGuestName,
+                          destinationSlug: _extractDestinationSlug(_detail!.corridor),
+                          tripDay: 1,
                         ),
                       ),
                     );
@@ -110,7 +114,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                 ),
                 IconButton(
                   key: const Key('safety_hub_nav_btn'),
-                  icon: const Icon(Icons.shield_outlined, color: Color(0xFFE11D48)),
+                  icon: const Icon(Icons.shield_outlined, color: AppTheme.emergencyRed),
                   tooltip: 'Safety Hub',
                   onPressed: () {
                     Navigator.push(
@@ -157,7 +161,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF144032), Color(0xFF0F281E)],
+              colors: [AppTheme.surfaceElevated, AppTheme.surfaceTeal],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -223,7 +227,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                 '${detail.startDate} to ${detail.endDate} • ${detail.travelersCount} Travelers',
                 style: const TextStyle(fontSize: 12, color: textMuted),
               ),
-              const Divider(color: Colors.white12, height: 28),
+              const Divider(color: AppTheme.borderTeal, height: 28),
 
               // QR Code Section
               Row(
@@ -291,7 +295,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
           decoration: BoxDecoration(
             color: surfaceDark,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            border: Border.all(color: AppTheme.borderTeal),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -355,7 +359,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
             decoration: BoxDecoration(
               color: surfaceDark,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              border: Border.all(color: AppTheme.borderTeal),
             ),
             child: Row(
               children: [
@@ -419,7 +423,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
           decoration: BoxDecoration(
             color: surfaceDark,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            border: Border.all(color: AppTheme.borderTeal),
           ),
           child: Column(
             children: [
@@ -428,7 +432,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
               _buildPriceRow('GST (5%)', '₹${detail.tax.toStringAsFixed(0)}'),
               const SizedBox(height: 6),
               _buildPriceRow('Platform & Eco Fee (2%)', '₹${detail.platformFee.toStringAsFixed(0)}'),
-              const Divider(color: Colors.white12, height: 16),
+              const Divider(color: AppTheme.borderTeal, height: 16),
               _buildPriceRow(
                 'Total Paid',
                 '₹${detail.totalAmount.toStringAsFixed(0)}',
@@ -467,8 +471,8 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      icon: const Icon(Icons.support_agent, size: 16, color: Color(0xFF0D1F17)),
-                      label: const Text('Companion', style: TextStyle(color: Color(0xFF0D1F17), fontSize: 11, fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.support_agent, size: 16, color: AppTheme.midnightTeal),
+                      label: const Text('Companion', style: TextStyle(color: AppTheme.midnightTeal, fontSize: 11, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: emerald,
                         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -480,6 +484,9 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                           MaterialPageRoute(
                             builder: (_) => LiveCompanionScreen(
                               bookingReference: detail.bookingReference,
+                              userName: detail.primaryGuestName,
+                              destinationSlug: _extractDestinationSlug(detail.corridor),
+                              tripDay: 1,
                             ),
                           ),
                         );
@@ -509,10 +516,10 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton.icon(
-                      icon: const Icon(Icons.shield_outlined, size: 16, color: Color(0xFFE11D48)),
-                      label: const Text('Safety Hub', style: TextStyle(color: Color(0xFFE11D48), fontSize: 11, fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.shield_outlined, size: 16, color: AppTheme.emergencyRed),
+                      label: const Text('Safety Hub', style: TextStyle(color: AppTheme.emergencyRed, fontSize: 11, fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFE11D48)),
+                        side: const BorderSide(color: AppTheme.emergencyRed),
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
@@ -537,6 +544,17 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
         const SizedBox(height: 30),
       ],
     );
+  }
+
+  String _extractDestinationSlug(String corridor) {
+    final lower = corridor.toLowerCase();
+    if (lower.contains('kochi') || lower.contains('cochin')) return 'kochi';
+    if (lower.contains('munnar')) return 'munnar';
+    if (lower.contains('thekkady')) return 'thekkady';
+    if (lower.contains('alappuzha') || lower.contains('alleppey')) return 'alappuzha';
+    if (lower.contains('wayanad')) return 'wayanad';
+    if (lower.contains('varkala')) return 'varkala';
+    return 'kochi';
   }
 
   Widget _buildPriceRow(String label, String amount, {bool isBold = false, Color? color}) {

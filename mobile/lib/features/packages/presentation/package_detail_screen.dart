@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../data/package_repository.dart';
 import '../models/package_models.dart';
 
@@ -17,6 +18,16 @@ class PackageDetailScreen extends StatefulWidget {
 }
 
 class _PackageDetailScreenState extends State<PackageDetailScreen> {
+  // Option B: Coastal Twilight Teal & Golden Sunset
+  static const Color bgDark = AppTheme.midnightTeal;
+  static const Color surfaceDark = AppTheme.surfaceTeal;
+  static const Color borderSubtle = AppTheme.borderTeal;
+  static const Color emerald = AppTheme.oceanTeal;
+  static const Color gold = AppTheme.sunsetGold;
+  static const Color textPrimary = AppTheme.textCream;
+  static const Color textMuted = AppTheme.textMuted;
+  static const Color textSubtle = AppTheme.textSubtle;
+
   late TourPackage _package;
 
   @override
@@ -44,7 +55,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF142B20),
+      backgroundColor: surfaceDark,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -65,10 +76,10 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 children: [
                   const Text(
                     'Connect with Operator',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textPrimary),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white70),
+                    icon: const Icon(Icons.close, color: textMuted),
                     onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
@@ -76,7 +87,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               const SizedBox(height: 6),
               Text(
                 'Direct inquiry to ${_package.operator.name}',
-                style: const TextStyle(color: Color(0xFF10B981), fontSize: 13, fontWeight: FontWeight.w600),
+                style: const TextStyle(color: emerald, fontSize: 13, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 16),
 
@@ -84,13 +95,15 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               TextField(
                 key: const Key('inquiry_name_field'),
                 controller: nameCtrl,
-                style: const TextStyle(color: Color(0xFFF7F3E8)),
+                style: const TextStyle(color: textPrimary),
                 decoration: InputDecoration(
                   labelText: 'Your Full Name',
-                  labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+                  labelStyle: const TextStyle(color: textSubtle),
                   filled: true,
-                  fillColor: const Color(0xFF0D1F17),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  fillColor: bgDark,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: borderSubtle)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: borderSubtle)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: emerald, width: 1.5)),
                 ),
               ),
               const SizedBox(height: 12),
@@ -100,13 +113,15 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 key: const Key('inquiry_phone_field'),
                 controller: phoneCtrl,
                 keyboardType: TextInputType.phone,
-                style: const TextStyle(color: Color(0xFFF7F3E8)),
+                style: const TextStyle(color: textPrimary),
                 decoration: InputDecoration(
                   labelText: 'Phone / WhatsApp Number',
-                  labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+                  labelStyle: const TextStyle(color: textSubtle),
                   filled: true,
-                  fillColor: const Color(0xFF0D1F17),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  fillColor: bgDark,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: borderSubtle)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: borderSubtle)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: emerald, width: 1.5)),
                 ),
               ),
               const SizedBox(height: 12),
@@ -115,18 +130,18 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Number of Travelers:', style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 14)),
+                  const Text('Number of Travelers:', style: TextStyle(color: textPrimary, fontSize: 14)),
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.remove_circle_outline, color: Color(0xFF10B981)),
+                        icon: const Icon(Icons.remove_circle_outline, color: emerald),
                         onPressed: () {
                           if (guests > 1) setModalState(() => guests--);
                         },
                       ),
-                      Text('$guests', style: const TextStyle(color: Color(0xFFF7F3E8), fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text('$guests', style: const TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
                       IconButton(
-                        icon: const Icon(Icons.add_circle_outline, color: Color(0xFF10B981)),
+                        icon: const Icon(Icons.add_circle_outline, color: emerald),
                         onPressed: () => setModalState(() => guests++),
                       ),
                     ],
@@ -140,10 +155,10 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   key: const Key('submit_inquiry_btn'),
-                  icon: const Icon(Icons.chat, color: Color(0xFF0D1F17)),
-                  label: const Text('Start WhatsApp Chat', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0D1F17))),
+                  icon: const Icon(Icons.chat, color: bgDark),
+                  label: const Text('Start WhatsApp Chat', style: TextStyle(fontWeight: FontWeight.bold, color: bgDark)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
+                    backgroundColor: emerald,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -164,7 +179,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Opening WhatsApp with ${_package.operator.name}...'),
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: emerald,
                       ),
                     );
                   },
@@ -181,40 +196,40 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF142B20),
-        title: Text(_package.operator.name, style: const TextStyle(color: Color(0xFFF7F3E8))),
+        backgroundColor: surfaceDark,
+        title: Text(_package.operator.name, style: const TextStyle(color: textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Accredited Tour Operator Helpline:', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
+            const Text('Accredited Tour Operator Helpline:', style: TextStyle(color: textSubtle, fontSize: 13)),
             const SizedBox(height: 8),
             SelectableText(
               _package.operator.phone,
-              style: const TextStyle(color: Color(0xFF10B981), fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(color: emerald, fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               _package.operator.license,
-              style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 11),
+              style: const TextStyle(color: textMuted, fontSize: 11),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close', style: TextStyle(color: Colors.white70)),
+            child: const Text('Close', style: TextStyle(color: textMuted)),
           ),
           ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
-            icon: const Icon(Icons.phone, size: 16, color: Color(0xFF0D1F17)),
-            label: const Text('Call', style: TextStyle(color: Color(0xFF0D1F17), fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(backgroundColor: emerald),
+            icon: const Icon(Icons.phone, size: 16, color: bgDark),
+            label: const Text('Call', style: TextStyle(color: bgDark, fontWeight: FontWeight.bold)),
             onPressed: () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Calling ${_package.operator.name} at ${_package.operator.phone}...'),
-                  backgroundColor: const Color(0xFF10B981),
+                  backgroundColor: emerald,
                 ),
               );
             },
@@ -228,46 +243,46 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF142B20),
-        title: const Text('Confirm Package Booking', style: TextStyle(color: Color(0xFFF7F3E8))),
+        backgroundColor: surfaceDark,
+        title: const Text('Confirm Package Booking', style: TextStyle(color: textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(_package.title, style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 14)),
+            Text(_package.title, style: const TextStyle(color: emerald, fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: 8),
-            Text('Operator: ${_package.operator.name}', style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 12)),
-            Text('Duration: ${_package.duration}', style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 12)),
+            Text('Operator: ${_package.operator.name}', style: const TextStyle(color: textMuted, fontSize: 12)),
+            Text('Duration: ${_package.duration}', style: const TextStyle(color: textMuted, fontSize: 12)),
             const SizedBox(height: 12),
             Text(
               'Total: ₹${_package.pricePerPerson.toInt()} / person',
-              style: const TextStyle(color: Color(0xFFF7F3E8), fontWeight: FontWeight.bold, fontSize: 16),
+              style: const TextStyle(color: gold, fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 6),
             const Text(
               'A booking pass and instant inventory hold will be reserved for 15 minutes.',
-              style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+              style: TextStyle(color: textSubtle, fontSize: 11),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+            child: const Text('Cancel', style: TextStyle(color: textMuted)),
           ),
           ElevatedButton(
             key: const Key('confirm_package_booking_btn'),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
+            style: ElevatedButton.styleFrom(backgroundColor: gold),
             onPressed: () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Package reserved successfully! Digital voucher created.'),
-                  backgroundColor: Color(0xFF10B981),
+                  backgroundColor: emerald,
                 ),
               );
             },
-            child: const Text('Confirm & Hold', style: TextStyle(color: Color(0xFF0D1F17), fontWeight: FontWeight.bold)),
+            child: const Text('Confirm & Hold', style: TextStyle(color: bgDark, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -277,7 +292,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: bgDark,
       body: Stack(
         children: [
           // Scrollable Content
@@ -287,7 +302,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               SliverAppBar(
                 expandedHeight: 280,
                 pinned: true,
-                backgroundColor: const Color(0xFF142B20),
+                backgroundColor: surfaceDark,
                 leading: IconButton(
                   icon: const CircleAvatar(
                     backgroundColor: Color(0x99000000),
@@ -303,7 +318,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                         _package.heroImage,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => const Center(
-                          child: Icon(Icons.landscape, color: Color(0xFF10B981), size: 64),
+                          child: Icon(Icons.landscape, color: emerald, size: 64),
                         ),
                       ),
                       Container(
@@ -314,7 +329,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                             colors: [
                               Colors.black.withValues(alpha: 0.3),
                               Colors.transparent,
-                              const Color(0xFF0D1F17),
+                              bgDark,
                             ],
                           ),
                         ),
@@ -337,33 +352,33 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                              color: emerald.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFF10B981)),
+                              border: Border.all(color: emerald),
                             ),
                             child: Text(
                               _package.duration,
-                              style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 12),
+                              style: const TextStyle(color: emerald, fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF2D5A43).withValues(alpha: 0.5),
+                              color: borderSubtle.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
                               _package.category.replaceAll('_', ' '),
-                              style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 12),
+                              style: const TextStyle(color: textMuted, fontSize: 12),
                             ),
                           ),
                           const Spacer(),
-                          const Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
+                          const Icon(Icons.star, color: gold, size: 16),
                           const SizedBox(width: 4),
                           Text(
                             '${_package.rating} (${_package.reviewCount} reviews)',
-                            style: const TextStyle(color: Color(0xFFF7F3E8), fontWeight: FontWeight.bold, fontSize: 12),
+                            style: const TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 12),
                           ),
                         ],
                       ),
@@ -375,14 +390,14 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFF7F3E8),
+                          color: textPrimary,
                           height: 1.25,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         _package.tagline,
-                        style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+                        style: const TextStyle(color: textSubtle, fontSize: 13),
                       ),
                       const SizedBox(height: 18),
 
@@ -390,9 +405,9 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF142B20),
+                          color: surfaceDark,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF2D5A43)),
+                          border: Border.all(color: borderSubtle),
                         ),
                         child: Row(
                           children: [
@@ -400,10 +415,10 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                               width: 48,
                               height: 48,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                color: emerald.withValues(alpha: 0.2),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.verified_user, color: Color(0xFF10B981), size: 26),
+                              child: const Icon(Icons.verified_user, color: emerald, size: 26),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -416,25 +431,25 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                                         child: Text(
                                           _package.operator.name,
                                           style: const TextStyle(
-                                            color: Color(0xFFF7F3E8),
+                                            color: textPrimary,
                                             fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                           ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      const Icon(Icons.verified, color: Color(0xFF10B981), size: 16),
+                                      const Icon(Icons.verified, color: emerald, size: 16),
                                     ],
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     _package.operator.license,
-                                    style: const TextStyle(color: Color(0xFF10B981), fontSize: 11),
+                                    style: const TextStyle(color: emerald, fontSize: 11),
                                   ),
                                   const SizedBox(height: 2),
                                   const Text(
                                     'Zero platform markup • Direct operator rates',
-                                    style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 10),
+                                    style: TextStyle(color: textSubtle, fontSize: 10),
                                   ),
                                 ],
                               ),
@@ -448,7 +463,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                       if (_package.highlights.isNotEmpty) ...[
                         const Text(
                           'Trip Highlights',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary),
                         ),
                         const SizedBox(height: 10),
                         for (final h in _package.highlights)
@@ -457,12 +472,12 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 16),
+                                const Icon(Icons.check_circle, color: emerald, size: 16),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     h,
-                                    style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 13),
+                                    style: const TextStyle(color: textMuted, fontSize: 13),
                                   ),
                                 ),
                               ],
@@ -474,7 +489,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                       // Day by Day Itinerary
                       const Text(
                         'Day-by-Day Itinerary',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary),
                       ),
                       const SizedBox(height: 12),
                       for (final day in _package.itinerary) _buildItineraryDayCard(day),
@@ -498,7 +513,8 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF142B20),
+                color: surfaceDark,
+                border: const Border(top: BorderSide(color: borderSubtle)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.5),
@@ -515,11 +531,11 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Price per person', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 10)),
+                        const Text('Price per person', style: TextStyle(color: textSubtle, fontSize: 10)),
                         Text(
                           '₹${_package.pricePerPerson.toInt()}',
                           style: const TextStyle(
-                            color: Color(0xFF10B981),
+                            color: gold,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -531,10 +547,10 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                     // WhatsApp Chat Button
                     ElevatedButton.icon(
                       key: const Key('chat_whatsapp_btn'),
-                      icon: const Icon(Icons.chat, size: 16, color: Color(0xFF0D1F17)),
-                      label: const Text('Chat', style: TextStyle(color: Color(0xFF0D1F17), fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.chat, size: 16, color: bgDark),
+                      label: const Text('Chat', style: TextStyle(color: bgDark, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: emerald,
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
@@ -545,10 +561,10 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                     // Call Operator Button
                     OutlinedButton.icon(
                       key: const Key('call_operator_btn'),
-                      icon: const Icon(Icons.phone, size: 16, color: Color(0xFFF7F3E8)),
-                      label: const Text('Call', style: TextStyle(color: Color(0xFFF7F3E8))),
+                      icon: const Icon(Icons.phone, size: 16, color: textPrimary),
+                      label: const Text('Call', style: TextStyle(color: textPrimary)),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF2D5A43)),
+                        side: const BorderSide(color: borderSubtle),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
@@ -561,12 +577,12 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                       child: ElevatedButton(
                         key: const Key('book_package_btn'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD4AF37),
+                          backgroundColor: gold,
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         onPressed: _bookPackageDirectly,
-                        child: const Text('Book', style: TextStyle(color: Color(0xFF0D1F17), fontWeight: FontWeight.bold)),
+                        child: const Text('Book', style: TextStyle(color: bgDark, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -584,9 +600,9 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF142B20),
+        color: surfaceDark,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF2D5A43)),
+        border: Border.all(color: borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -596,19 +612,19 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981),
+                  color: emerald,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   'DAY ${day.day}',
-                  style: const TextStyle(color: Color(0xFF0D1F17), fontWeight: FontWeight.bold, fontSize: 11),
+                  style: const TextStyle(color: bgDark, fontWeight: FontWeight.bold, fontSize: 11),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   day.title,
-                  style: const TextStyle(color: Color(0xFFF7F3E8), fontWeight: FontWeight.bold, fontSize: 14),
+                  style: const TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
               ),
             ],
@@ -616,26 +632,26 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
           const SizedBox(height: 8),
           Text(
             day.description,
-            style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 12, height: 1.4),
+            style: const TextStyle(color: textMuted, fontSize: 12, height: 1.4),
           ),
           const SizedBox(height: 10),
           Row(
             children: [
-              const Icon(Icons.hotel_outlined, color: Color(0xFF9CA3AF), size: 14),
+              const Icon(Icons.hotel_outlined, color: textSubtle, size: 14),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   day.stay,
-                  style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                  style: const TextStyle(color: textSubtle, fontSize: 11),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.restaurant_outlined, color: Color(0xFF9CA3AF), size: 14),
+              const Icon(Icons.restaurant_outlined, color: textSubtle, size: 14),
               const SizedBox(width: 4),
               Text(
                 day.meals,
-                style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                style: const TextStyle(color: textSubtle, fontSize: 11),
               ),
             ],
           ),
@@ -648,37 +664,37 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF142B20),
+        color: surfaceDark,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2D5A43)),
+        border: Border.all(color: borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Inclusions & Exclusions', style: TextStyle(color: Color(0xFFF7F3E8), fontWeight: FontWeight.bold, fontSize: 15)),
+          const Text('Inclusions & Exclusions', style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
           const SizedBox(height: 12),
           for (final inc in _package.inclusions)
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(
                 children: [
-                  const Icon(Icons.check, color: Color(0xFF10B981), size: 16),
+                  const Icon(Icons.check, color: emerald, size: 16),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(inc, style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 12))),
+                  Expanded(child: Text(inc, style: const TextStyle(color: textMuted, fontSize: 12))),
                 ],
               ),
             ),
           const SizedBox(height: 8),
-          const Divider(color: Color(0xFF2D5A43)),
+          const Divider(color: borderSubtle),
           const SizedBox(height: 8),
           for (final exc in _package.exclusions)
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(
                 children: [
-                  const Icon(Icons.close, color: Color(0xFFEF4444), size: 16),
+                  const Icon(Icons.close, color: AppTheme.emergencyRed, size: 16),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(exc, style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12))),
+                  Expanded(child: Text(exc, style: const TextStyle(color: textSubtle, fontSize: 12))),
                 ],
               ),
             ),

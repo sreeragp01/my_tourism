@@ -31,8 +31,88 @@ class AICompanionOrchestrator:
         user=None
     ) -> Dict[str, Any]:
         lower = query.lower().strip()
-        destination_clean = (destination_slug or 'munnar').lower().replace('-', '_')
-        ref = booking_reference or "KL2609051234"
+
+        # Destination detection across Kerala
+        DESTINATION_KEYWORDS = {
+            'fort kochi': 'kochi',
+            'kochi': 'kochi',
+            'cochin': 'kochi',
+            'ernakulam': 'kochi',
+            'munnar': 'munnar',
+            'thekkady': 'thekkady',
+            'periyar': 'thekkady',
+            'kumily': 'thekkady',
+            'alappuzha': 'alappuzha',
+            'alleppey': 'alappuzha',
+            'kumarakom': 'kumarakom',
+            'wayanad': 'wayanad',
+            'varkala': 'varkala',
+            'kovalam': 'kovalam',
+            'athirappilly': 'athirappilly',
+            'athirapally': 'athirappilly',
+            'vagamon': 'vagamon',
+            'bekal': 'bekal',
+            'kannur': 'kannur',
+            'kozhikode': 'kozhikode',
+            'calicut': 'kozhikode',
+            'marari': 'marari',
+            'poovar': 'poovar',
+            'trivandrum': 'trivandrum',
+            'thiruvananthapuram': 'trivandrum',
+        }
+
+        # 1. Detect if query specifically mentions a destination
+        detected_destination = None
+        for kw, slug in DESTINATION_KEYWORDS.items():
+            if kw in lower:
+                detected_destination = slug
+                break
+
+        # 2. Determine active destination context
+        if detected_destination:
+            destination_clean = detected_destination
+        elif destination_slug and destination_slug.strip() and destination_slug.strip().lower() != 'munnar':
+            destination_clean = destination_slug.lower().replace('-', '_')
+        else:
+            destination_clean = (destination_slug or 'munnar').lower().replace('-', '_')
+
+        # 3. Resolve active booking context
+        ref = booking_reference
+        booking_obj = None
+        if ref:
+            try:
+                from apps.bookings.models import Booking
+                booking_obj = Booking.objects.filter(booking_reference=ref).first()
+                if booking_obj and not detected_destination and destination_slug == 'munnar':
+                    first_item = booking_obj.items.first()
+                    if first_item:
+                        for kw, slug in DESTINATION_KEYWORDS.items():
+                            if kw in first_item.title.lower():
+                                destination_clean = slug
+                                break
+            except Exception:
+                pass
+        if not ref:
+            ref = "KL2609051234"
+
+        # Dynamic nearest hospital directory
+        HOSPITALS_BY_DESTINATION = {
+            'munnar': 'Tata General Hospital Munnar (3.2 km)',
+            'kochi': 'Aster Medcity / Medical Trust Hospital Kochi (4.5 km)',
+            'thekkady': 'St. Joseph Hospital Kumily / Thekkady (2.1 km)',
+            'alappuzha': 'Govt TD Medical College Alappuzha (5.0 km)',
+            'kumarakom': 'Kottayam Medical College (9.5 km)',
+            'wayanad': 'WIMS Medical College Meppadi / Wayanad (6.5 km)',
+            'varkala': 'Mission Hospital Varkala (2.8 km)',
+            'kovalam': 'KIMSHEALTH / Govt Medical College Trivandrum (11.0 km)',
+            'trivandrum': 'KIMSHEALTH / Govt Medical College Trivandrum (3.5 km)',
+            'athirappilly': 'St. James Hospital Chalakudy (18.0 km)',
+            'vagamon': 'Taluk Headquarters Hospital Peermade (14.0 km)',
+        }
+        nearest_hospital = HOSPITALS_BY_DESTINATION.get(
+            destination_clean,
+            f"District General Hospital ({destination_clean.replace('_', ' ').title()}) (3.5 km)"
+        )
 
         # -------------------------------------------------------------
         # 1. Authoritative Tool / Action Pipeline
@@ -41,10 +121,10 @@ class AICompanionOrchestrator:
             tool_invoked = "suggest_rain_alternative"
             tool_result = CompanionToolRegistry.suggest_rain_alternative(destination_clean, "Outdoor Jeep Safari")
             content = (
-                f"☔ Rain alternative found: '{tool_result['alternative_title']}' ({tool_result['category']}). "
+                f"☔ Rain alternative for {destination_clean.replace('_', ' ').title()}: '{tool_result['alternative_title']}' ({tool_result['category']}). "
                 f"{tool_result['reason']} (₹{tool_result['price_per_person']}/person)."
             )
-            suggestions = ["Apply rain alternative to Day 2", "Keep original schedule", "View Spa options"]
+            suggestions = [f"Apply rain alternative to {destination_clean.title()}", "Keep original schedule", "View Spa options"]
             return cls._build_response(content, suggestions, tool_invoked=tool_invoked, tool_result=tool_result, destination=destination_clean)
 
         elif any(w in lower for w in ['driver', 'chauffeur', 'pickup status', 'contact my driver', 'rajesh', 'call driver']):
@@ -64,7 +144,7 @@ class AICompanionOrchestrator:
                 f"🌧️ Weather update for {tool_result['destination']}: Currently {tool_result['temperature_celsius']}°C with {tool_result['condition'].replace('_', ' ').title()}. "
                 f"Rain probability is {tool_result['rain_probability_percent']}%. {tool_result['recommendation']}"
             )
-            suggestions = ["View Ghat radar", "Switch to indoor rain alternative", "Contact Chauffeur Rajesh"]
+            suggestions = [f"View {destination_clean.title()} Radar", "Switch to indoor rain alternative", "Contact Chauffeur Rajesh"]
             return cls._build_response(content, suggestions, tool_invoked=tool_invoked, tool_result=tool_result, destination=destination_clean)
 
         elif any(w in lower for w in ['emergency', 'police', 'hospital', 'help!', 'danger', 'sos', 'medical center', 'accident']):
@@ -73,7 +153,7 @@ class AICompanionOrchestrator:
                 'tourist_police': '1800-425-4747',
                 'national_emergency': '112',
                 'women_helpline': '181',
-                'nearest_hospital': 'Tata General Hospital Munnar (3.2 km)'
+                'nearest_hospital': nearest_hospital
             }
             content = (
                 "🚨 KeraLink 24/7 Safety Net Active!\n"
@@ -456,9 +536,9 @@ class AICompanionOrchestrator:
                 "• **Authentic Dining**: Traditional Sadhya, Malabar Biryani, and fresh backwater seafood.\n"
                 "• **Live Operations**: Instant chauffeur contacts, live weather radar, and Ghat road advisories.\n"
                 "• **Adaptive Travel**: Rain substitutes, emergency safety net, and cultural performance tickets.\n\n"
-                "What would you like to explore or check right now?"
+                f"What would you like to explore or check in {dest_title} right now?"
             )
-            suggestions = ["Check Weather", "Contact Chauffeur Rajesh", "Top Food Spots in Munnar"]
+            suggestions = [f"Check Weather in {dest_title}", "Contact Chauffeur Rajesh", f"Top Food Spots in {dest_title}"]
             return {"content": content, "suggestions": suggestions}
 
         # G. Intelligent Fallback for Open-ended Queries

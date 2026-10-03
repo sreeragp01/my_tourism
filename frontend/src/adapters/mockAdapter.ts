@@ -33,6 +33,59 @@ let currentUser: User = {
   isEmailVerified: true,
   isPhoneVerified: true,
   roles: ['CUSTOMER'],
+  profile: {
+    emergencyContactName: 'Ananya S. (Sister)',
+    emergencyContactPhone: '+91 94471 23456',
+    bloodGroup: 'O+ Positive',
+    medicalNotes: 'No major allergies. Carries mild asthma inhaler.',
+    dietaryPreference: 'Traditional Kerala Sadya (Veg)',
+    travelPace: 'Balanced (2-3 stops/day)',
+    accessibilityRequired: false,
+    ecoScore: 92,
+    ecoTier: 'Backwater Guardian',
+    tripsCompleted: 3,
+    evMiles: 142,
+    carbonOffsetKg: 58.4,
+    badges: [
+      {
+        id: 'munnar_mist',
+        title: 'Munnar Mist Explorer',
+        icon: 'mountain',
+        description: 'Navigated high-altitude tea trails of Lockhart Valley',
+        earnedAt: '2026-08-15',
+      },
+      {
+        id: 'backwater_guardian',
+        title: 'Backwater Guardian',
+        icon: 'anchor',
+        description: 'Completed zero-plastic solar houseboat journey in Kumarakom',
+        earnedAt: '2026-09-02',
+      },
+      {
+        id: 'spice_route',
+        title: 'Spice Route Trekker',
+        icon: 'leaf',
+        description: 'Supported organic cardamom farmers in Thekkady',
+        earnedAt: '2026-09-20',
+      },
+    ],
+    offlinePackages: [
+      {
+        id: 'pkg_munnar',
+        name: 'Munnar & Lockhart Valley Corridor',
+        size: '42 MB',
+        isDownloaded: true,
+        includes: 'Ghat route topo, offline SOS checkpoints, nearest CHC clinics',
+      },
+      {
+        id: 'pkg_wayanad',
+        name: 'Wayanad Ghat & Forest Pass',
+        size: '38 MB',
+        isDownloaded: false,
+        includes: 'Thamarassery Churam hairpin map, wildlife sanctuary emergency contacts',
+      },
+    ],
+  },
   createdAt: '2026-01-15T10:00:00Z',
 };
 
@@ -115,6 +168,28 @@ export class MockKeraLinkAdapter {
       ...currentUser,
       roles: [role],
       organizationId: role.startsWith('PROVIDER') ? 'org-munnar-tea' : undefined,
+    };
+    return { ...currentUser };
+  }
+
+  async updateUserProfile(payload: Partial<User & import('../types/contracts').UserProfileData>): Promise<User> {
+    currentUser = {
+      ...currentUser,
+      firstName: payload.firstName ?? currentUser.firstName,
+      lastName: payload.lastName ?? currentUser.lastName,
+      phone: payload.phone ?? currentUser.phone,
+      avatarUrl: payload.avatarUrl ?? currentUser.avatarUrl,
+      profile: {
+        ...(currentUser.profile!),
+        emergencyContactName: payload.emergencyContactName ?? currentUser.profile!.emergencyContactName,
+        emergencyContactPhone: payload.emergencyContactPhone ?? currentUser.profile!.emergencyContactPhone,
+        bloodGroup: payload.bloodGroup ?? currentUser.profile!.bloodGroup,
+        medicalNotes: payload.medicalNotes ?? currentUser.profile!.medicalNotes,
+        dietaryPreference: payload.dietaryPreference ?? currentUser.profile!.dietaryPreference,
+        travelPace: payload.travelPace ?? currentUser.profile!.travelPace,
+        accessibilityRequired: payload.accessibilityRequired ?? currentUser.profile!.accessibilityRequired,
+        offlinePackages: payload.offlinePackages ?? currentUser.profile!.offlinePackages,
+      },
     };
     return { ...currentUser };
   }
@@ -539,64 +614,189 @@ export class MockKeraLinkAdapter {
   // --------------------------------------------------------------------------
   // Live Trip Companion Chat
   // --------------------------------------------------------------------------
-  async sendCompanionMessage(message: string): Promise<CompanionMessage> {
+  async sendCompanionMessage(
+    message: string,
+    currentDestination: string = 'munnar',
+    tripDay: number = 2,
+    bookingReference?: string
+  ): Promise<CompanionMessage> {
     const lower = message.toLowerCase();
     const timestamp = new Date().toISOString();
 
-    if (lower.includes('rain') || lower.includes('monsoon') || lower.includes('weather')) {
-      return {
-        id: uid(),
-        sender: 'AI_COMPANION',
-        text: `🌧️ Munnar has light monsoon showers right now (21°C). I recommend visiting the **Lockhart Historic Tea Museum** or booking a cozy **Ayurvedic Herbal Therapy** at Fragrant Nature Spa instead of open cliff trekking.`,
-        timestamp,
-        suggestedQuickReplies: ['View indoor alternatives', 'Reschedule outdoor trek', 'Check tomorrow weather'],
-        actionCard: {
-          type: 'RAIN_ALTERNATIVE',
-          title: 'Monsoon-Friendly Activity Found',
-          description: 'Lockhart Tea Museum & Indoor Cupping (2.4 km away)',
-          ctaLabel: 'Apply Rain Schedule',
-        },
-      };
+    // Destination detection
+    const DESTINATIONS: Record<string, string> = {
+      'kochi': 'Fort Kochi',
+      'cochin': 'Fort Kochi',
+      'munnar': 'Munnar',
+      'thekkady': 'Thekkady',
+      'periyar': 'Thekkady',
+      'alappuzha': 'Alappuzha',
+      'alleppey': 'Alappuzha',
+      'kumarakom': 'Kumarakom',
+      'wayanad': 'Wayanad',
+      'varkala': 'Varkala',
+      'kovalam': 'Kovalam',
+      'athirappilly': 'Athirappilly',
+    };
+
+    let targetDest = currentDestination;
+    for (const [kw, name] of Object.entries(DESTINATIONS)) {
+      if (lower.includes(kw)) {
+        targetDest = kw;
+        break;
+      }
+    }
+    const destName = DESTINATIONS[targetDest.toLowerCase()] || targetDest.toUpperCase();
+
+    if (lower.includes('rain') || lower.includes('monsoon') || lower.includes('weather') || lower.includes('forecast')) {
+      if (targetDest === 'kochi') {
+        return {
+          id: uid(),
+          sender: 'AI_COMPANION',
+          text: `🌊 **Fort Kochi Weather**: Currently 30°C with coastal breeze. Rain probability is 20%. Ideal for visiting the **Mattancherry Palace** or an evening **Kathakali Performance** at the Cultural Centre.`,
+          timestamp,
+          suggestedQuickReplies: ['Kathakali Timings', 'Seafood in Fort Kochi', 'Jew Town Walking Map'],
+          actionCard: {
+            type: 'RAIN_ALTERNATIVE',
+            title: 'Kathakali Performance & Makeup Demo',
+            description: 'Indoor heritage theater with live classical drama (1.5 km away)',
+            ctaLabel: 'View Performance Details',
+          },
+        };
+      } else if (targetDest === 'alappuzha' || targetDest === 'alleppey') {
+        return {
+          id: uid(),
+          sender: 'AI_COMPANION',
+          text: `🛶 **Alappuzha Weather**: Currently 28°C with gentle lake breezes. Rain probability is 30%. All backwater houseboats and covered shikaras are operating smoothly on Vembanad Lake.`,
+          timestamp,
+          suggestedQuickReplies: ['Houseboat Cruise Status', 'Lunch Menu on Board', 'Marari Beach Sunset'],
+          actionCard: {
+            type: 'RAIN_ALTERNATIVE',
+            title: 'Covered Backwater Culinary Workshop',
+            description: 'Traditional tharavadu cooking demonstration under sheltered veranda',
+            ctaLabel: 'View Workshop Details',
+          },
+        };
+      } else if (targetDest === 'thekkady') {
+        return {
+          id: uid(),
+          sender: 'AI_COMPANION',
+          text: `🐘 **Thekkady Weather**: Currently 23°C with mountain air. Rain probability is 40%. The Periyar Lake boat safari is running, and spice plantation walks are lush and fragrant.`,
+          timestamp,
+          suggestedQuickReplies: ['Periyar Safari Timings', 'Spice Garden Tour', 'Kalaripayattu Show'],
+          actionCard: {
+            type: 'RAIN_ALTERNATIVE',
+            title: 'Kadathanadan Kalari Arena & Spice Gallery',
+            description: 'Sheltered amphitheater for traditional Kerala martial arts',
+            ctaLabel: 'View Kalari Show',
+          },
+        };
+      } else if (targetDest === 'wayanad') {
+        return {
+          id: uid(),
+          sender: 'AI_COMPANION',
+          text: `⛰️ **Wayanad Weather**: Currently 22°C with light forest mist. Rain probability is 45%. Perfect weather for visiting **Edakkal Caves** or enjoying bamboo rafting at Kuruva Island.`,
+          timestamp,
+          suggestedQuickReplies: ['Edakkal Caves Guide', 'Banasura Dam Boating', 'Tribal Handicrafts'],
+        };
+      } else if (targetDest === 'varkala') {
+        return {
+          id: uid(),
+          sender: 'AI_COMPANION',
+          text: `🏖️ **Varkala Weather**: Currently 29°C with sunny sea breeze. Rain probability is 15%. Calm seas and ideal conditions for North Cliff dining or surfing.`,
+          timestamp,
+          suggestedQuickReplies: ['Cliff Sunset Cafes', 'Ayurvedic Massage', 'Papanasam Beach'],
+        };
+      } else {
+        return {
+          id: uid(),
+          sender: 'AI_COMPANION',
+          text: `🌧️ **Munnar Hills Weather**: Light monsoon mist showers (19°C, 75% rain probability). I recommend visiting the **Lockhart Historic Tea Museum** or enjoying an **Ayurvedic Herbal Therapy** instead of open ridge trekking.`,
+          timestamp,
+          suggestedQuickReplies: ['View indoor alternatives', 'Reschedule outdoor trek', 'Check tomorrow weather'],
+          actionCard: {
+            type: 'RAIN_ALTERNATIVE',
+            title: 'Monsoon-Friendly Activity Found',
+            description: 'Lockhart Tea Museum & Indoor Cupping (2.4 km away)',
+            ctaLabel: 'Apply Rain Schedule',
+          },
+        };
+      }
     }
 
-    if (lower.includes('food') || lower.includes('restaurant') || lower.includes('eat') || lower.includes('dinner')) {
-      return {
-        id: uid(),
-        sender: 'AI_COMPANION',
-        text: `🍛 You're only 1.2 km away from **Rapsy Restaurant** in Munnar Town, legendary for hot Malabar Parottas, beef fry, and authentic cardamom tea. Alternatively, **The Glasshouse** inside your resort offers a candlelit hearthside dinner.`,
-        timestamp,
-        suggestedQuickReplies: ['Get Directions to Rapsy', 'Reserve Resort Table', 'Show vegetarian places'],
-        actionCard: {
-          type: 'RESTAURANT_SUGGESTION',
-          title: 'Top Local Restaurant: Rapsy',
-          description: '4.8 ★ · Authentic Malabar Specialities · 1.2 km',
-          ctaLabel: 'Navigate (10 min walk)',
-        },
-      };
+    if (lower.includes('food') || lower.includes('restaurant') || lower.includes('eat') || lower.includes('dinner') || lower.includes('lunch') || lower.includes('sadya') || lower.includes('seafood')) {
+      if (targetDest === 'kochi') {
+        return {
+          id: uid(),
+          sender: 'AI_COMPANION',
+          text: `🐟 **Top Dining in Fort Kochi**:\n• **Oceanos / Seagull**: Fresh catch Karimeen Pollichathu right by the water.\n• **Kashi Art Cafe**: Fresh artisan coffee, cakes, and organic breakfast salads.\n• **Fort House Restaurant**: Candlelit waterfront dining with authentic Kerala fish curry.`,
+          timestamp,
+          suggestedQuickReplies: ['Seagull Directions', 'Kashi Cafe Menu', 'Vegetarian Sadya Spots'],
+          actionCard: {
+            type: 'RESTAURANT_SUGGESTION',
+            title: 'Oceanos Seafood Restaurant',
+            description: '4.8 ★ · Fresh Claypot Fish Curry & Karimeen',
+            ctaLabel: 'Get Directions (8 min walk)',
+          },
+        };
+      } else if (targetDest === 'alappuzha' || targetDest === 'alleppey') {
+        return {
+          id: uid(),
+          sender: 'AI_COMPANION',
+          text: `🍛 **Backwater Culinary Highlights**:\n• **Fresh Karimeen Pollichathu**: Sautéed in shallots and wrapped in tender plantain leaf.\n• **Kuttanad Duck Roast**: Slow-cooked with black pepper and thick coconut gravy.\n• **Cassava (Kappa) & Fish Curry**: Classic boatman specialty at local waterside cafes.`,
+          timestamp,
+          suggestedQuickReplies: ['Houseboat Chef Menu', 'Local Toddy Shop Dining', 'Vegetarian Meals'],
+        };
+      } else {
+        return {
+          id: uid(),
+          sender: 'AI_COMPANION',
+          text: `🍛 **Culinary Highlights in ${destName}**:\n• Traditional Kerala Sadya served on fresh banana leaf with warm Palada Payasam.\n• Rapsy Restaurant: Famous for Malabar parottas and cardamom chai.\n• Saravana Bhavan: Pure vegetarian South Indian meals and crispy Dosas.`,
+          timestamp,
+          suggestedQuickReplies: ['Find Sadya Spots', 'Resort Dining', 'Show vegetarian places'],
+          actionCard: {
+            type: 'RESTAURANT_SUGGESTION',
+            title: 'Top Local Restaurant: Rapsy',
+            description: '4.8 ★ · Authentic Malabar Specialities · Town Center',
+            ctaLabel: 'Navigate (10 min walk)',
+          },
+        };
+      }
     }
 
-    if (lower.includes('delay') || lower.includes('driver') || lower.includes('traffic')) {
+    if (lower.includes('delay') || lower.includes('driver') || lower.includes('traffic') || lower.includes('rajesh') || lower.includes('chauffeur')) {
       return {
         id: uid(),
         sender: 'AI_COMPANION',
-        text: `🚗 I've alerted your chauffeur, Rajesh. He is currently 8 minutes away navigating light mist near Mattupetty junction. Your tea tasting slot has been automatically pushed by 30 minutes to ensure zero rush.`,
+        text: `🚗 I've alerted your chauffeur, Rajesh Kumar (Toyota Innova Crysta KL-07-CC-4821). He is on standby ready for your next transit. ${bookingReference ? `Linked to Booking Pass #${bookingReference}.` : ''}`,
         timestamp,
-        suggestedQuickReplies: ['Call Driver Rajesh', 'Share live location', 'Adjust afternoon plan'],
+        suggestedQuickReplies: ['Call Driver Rajesh', 'Share live location', 'Adjust schedule by 30m'],
         actionCard: {
           type: 'SCHEDULE_CHANGE',
-          title: 'Schedule Adjusted by 30 mins',
-          description: 'Tea plantation walk moved to 15:00',
-          ctaLabel: 'View Updated Timeline',
+          title: 'Chauffeur Rajesh on Standby',
+          description: 'Toyota Innova Crysta · KL-07-CC-4821',
+          ctaLabel: 'Call +91 98470 12345',
         },
       };
     }
 
+    if (lower.includes('emergency') || lower.includes('safety') || lower.includes('police') || lower.includes('sos')) {
+      return {
+        id: uid(),
+        sender: 'AI_COMPANION',
+        text: `🚨 **KeraLink 24/7 Safety Net Active for ${destName}**:\n• Kerala Tourist Police: 1800-425-4747 (Toll-Free)\n• National Emergency: 112\n• Nearest Hospital: District General Hospital (${destName}) (3.2 km)\n• Trip reference: ${bookingReference || 'KL2609051234'}`,
+        timestamp,
+        suggestedQuickReplies: ['Call Tourist Police', 'Dial 112', 'Share GPS Link'],
+      };
+    }
+
+    // Default contextual greeting
     return {
       id: uid(),
       sender: 'AI_COMPANION',
-      text: `Namaskaram! 🌴 I am your live KeraLink Companion for your Kerala journey. You are on **Day 2 (Munnar)**. Next up is your **Heritage Tea Estate Walk** at 14:30. How can I assist you right now?`,
+      text: `Namaskaram! 🌴 I am your live KeraLink Companion for **Day ${tripDay} in ${destName}**${bookingReference ? ` (Pass #${bookingReference})` : ''}. How can I assist your journey right now?`,
       timestamp,
-      suggestedQuickReplies: ["What's near me?", "It's raining, what can we do?", 'Find a good restaurant', 'Make today easier'],
+      suggestedQuickReplies: [`Weather in ${destName}`, `Top Sights in ${destName}`, 'Contact Chauffeur Rajesh', 'Emergency Help'],
     };
   }
 

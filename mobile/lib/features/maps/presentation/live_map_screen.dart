@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../models/map_models.dart';
 import '../data/map_repository.dart';
 import 'route_preview_screen.dart';
@@ -63,20 +64,20 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: AppTheme.midnightTeal,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF142B20),
+        backgroundColor: AppTheme.surfaceTeal,
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Live Corridor Map',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFF7F3E8)),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textCream),
             ),
             Text(
               _currentLandmark,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF10B981)),
+              style: const TextStyle(fontSize: 12, color: AppTheme.oceanTeal),
               overflow: TextOverflow.ellipsis,
             ),
           ],
@@ -84,12 +85,12 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
         actions: [
           IconButton(
             key: const Key('refresh_map_btn'),
-            icon: const Icon(Icons.my_location, color: Color(0xFF10B981)),
+            icon: const Icon(Icons.my_location, color: AppTheme.oceanTeal),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('GPS Centered: Lockhart Tea Valley (Accuracy ±8m)'),
-                  backgroundColor: Color(0xFF10B981),
+                  backgroundColor: AppTheme.oceanTeal,
                 ),
               );
             },
@@ -99,8 +100,8 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(2),
                 child: LinearProgressIndicator(
-                  backgroundColor: Color(0xFF142B20),
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                  backgroundColor: AppTheme.surfaceTeal,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.oceanTeal),
                   minHeight: 2,
                 ),
               )
@@ -126,9 +127,9 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFF1F2937).withValues(alpha: 0.92),
+                color: AppTheme.surfaceTeal.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
+                border: Border.all(color: AppTheme.sunsetGold, width: 1.2),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.3),
@@ -139,7 +140,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: Color(0xFFF59E0B), size: 24),
+                  Icon(Icons.warning_amber_rounded, color: AppTheme.sunsetGold, size: 24),
                   SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -147,12 +148,12 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
                       children: [
                         Text(
                           'Munnar Ghat Road Caution Active',
-                          style: TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 13),
+                          style: TextStyle(color: AppTheme.sunsetGold, fontWeight: FontWeight.bold, fontSize: 13),
                         ),
                         SizedBox(height: 2),
                         Text(
                           'Dense mountain mist and 14 hairpin turns. Recommended speed: 30 km/h with low beams.',
-                          style: TextStyle(color: Color(0xFFD1D5DB), fontSize: 11),
+                          style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
                         ),
                       ],
                     ),
@@ -176,10 +177,10 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
                     Expanded(
                       child: ElevatedButton.icon(
                         key: const Key('route_preview_btn'),
-                        icon: const Icon(Icons.alt_route, size: 18, color: Color(0xFF0D1F17)),
-                        label: const Text('Route Preview', style: TextStyle(color: Color(0xFF0D1F17), fontWeight: FontWeight.bold)),
+                        icon: const Icon(Icons.alt_route, size: 18, color: AppTheme.midnightTeal),
+                        label: const Text('Route Preview', style: TextStyle(color: AppTheme.midnightTeal, fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
+                          backgroundColor: AppTheme.oceanTeal,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
@@ -201,11 +202,11 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
                     Expanded(
                       child: OutlinedButton.icon(
                         key: const Key('nearby_experiences_btn'),
-                        icon: const Icon(Icons.explore_outlined, size: 18, color: Color(0xFFF7F3E8)),
-                        label: const Text('Nearby Spots', style: TextStyle(color: Color(0xFFF7F3E8), fontWeight: FontWeight.bold)),
+                        icon: const Icon(Icons.explore_outlined, size: 18, color: AppTheme.textCream),
+                        label: const Text('Nearby Spots', style: TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold)),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF2D5A43)),
-                          backgroundColor: const Color(0xFF142B20).withValues(alpha: 0.9),
+                          side: const BorderSide(color: AppTheme.borderTeal),
+                          backgroundColor: AppTheme.surfaceTeal.withValues(alpha: 0.9),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
@@ -231,9 +232,9 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF142B20).withValues(alpha: 0.95),
+                    color: AppTheme.surfaceTeal.withValues(alpha: 0.95),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFF2D5A43)),
+                    border: Border.all(color: AppTheme.borderTeal),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -244,14 +245,14 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
                             width: 8,
                             height: 8,
                             decoration: const BoxDecoration(
-                              color: Color(0xFF10B981),
+                              color: AppTheme.oceanTeal,
                               shape: BoxShape.circle,
                             ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'GPS: ${_currentLat.toStringAsFixed(4)}°N, ${_currentLon.toStringAsFixed(4)}°E',
-                            style: const TextStyle(color: Color(0xFFF7F3E8), fontSize: 12, fontFamily: 'monospace'),
+                            style: const TextStyle(color: AppTheme.textCream, fontSize: 12, fontFamily: 'monospace'),
                           ),
                         ],
                       ),
@@ -263,12 +264,12 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
                               padding: const EdgeInsets.only(right: 6.0),
                               child: Text(
                                 '${_routeResult!.distanceKm.toStringAsFixed(0)}km •',
-                                style: const TextStyle(color: Color(0xFF10B981), fontSize: 11),
+                                style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 11),
                               ),
                             ),
                           const Text(
                             'Elevation: 1,532m',
-                            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                            style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
                           ),
                         ],
                       ),
@@ -295,12 +296,12 @@ class _KeralaCorridorMapPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final bgPaint = Paint()..color = const Color(0xFF091510);
+    final bgPaint = Paint()..color = const Color(0xFF08161F);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
     // Grid lines representing geographical grid
     final gridPaint = Paint()
-      ..color = const Color(0xFF142B20).withValues(alpha: 0.5)
+      ..color = AppTheme.borderTeal.withValues(alpha: 0.35)
       ..strokeWidth = 1.0;
 
     for (double x = 0; x < size.width; x += 40) {
@@ -336,7 +337,7 @@ class _KeralaCorridorMapPainter extends CustomPainter {
 
     // Draw route glow
     final glowPaint = Paint()
-      ..color = const Color(0xFF10B981).withValues(alpha: 0.25)
+      ..color = AppTheme.oceanTeal.withValues(alpha: 0.25)
       ..strokeWidth = 8.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -344,7 +345,7 @@ class _KeralaCorridorMapPainter extends CustomPainter {
 
     // Draw main route line
     final routePaint = Paint()
-      ..color = const Color(0xFF10B981)
+      ..color = AppTheme.oceanTeal
       ..strokeWidth = 3.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -361,12 +362,12 @@ class _KeralaCorridorMapPainter extends CustomPainter {
     if (isCurrent) {
       // Pulsing traveler radar ring
       final radarPaint = Paint()
-        ..color = const Color(0xFF10B981).withValues(alpha: 0.3)
+        ..color = AppTheme.oceanTeal.withValues(alpha: 0.3)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(pos, 16.0, radarPaint);
 
       final dotPaint = Paint()
-        ..color = const Color(0xFF10B981)
+        ..color = AppTheme.oceanTeal
         ..style = PaintingStyle.fill;
       canvas.drawCircle(pos, 7.0, dotPaint);
 
@@ -374,7 +375,7 @@ class _KeralaCorridorMapPainter extends CustomPainter {
       canvas.drawCircle(pos, 3.0, whiteDot);
     } else {
       final dotPaint = Paint()
-        ..color = const Color(0xFF9CA3AF)
+        ..color = AppTheme.textSubtle
         ..style = PaintingStyle.fill;
       canvas.drawCircle(pos, 5.0, dotPaint);
     }
@@ -382,7 +383,7 @@ class _KeralaCorridorMapPainter extends CustomPainter {
     final textSpan = TextSpan(
       text: label,
       style: TextStyle(
-        color: isCurrent ? const Color(0xFF10B981) : const Color(0xFFD1D5DB),
+        color: isCurrent ? AppTheme.oceanTeal : AppTheme.textMuted,
         fontSize: 11,
         fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
       ),

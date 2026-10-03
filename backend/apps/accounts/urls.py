@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import (
     RegisterView, LoginView, RefreshTokenView, SessionListView, RevokeSessionView,
-    RequestPasswordResetView, VerifyPasswordResetView, SendVerificationOTPView, VerifyEmailOTPView
+    RequestPasswordResetView, VerifyPasswordResetView, SendVerificationOTPView, VerifyEmailOTPView,
+    UserProfileView
 )
 
 urlpatterns = [
@@ -10,6 +11,8 @@ urlpatterns = [
     path('refresh/', RefreshTokenView.as_view(), name='token-refresh'),
     path('sessions/', SessionListView.as_view(), name='session-list'),
     path('sessions/<uuid:session_id>/revoke/', RevokeSessionView.as_view(), name='session-revoke'),
+    path('me/', UserProfileView.as_view(), name='user-profile'),
+    path('profile/', UserProfileView.as_view(), name='user-profile-update'),
     
     # Password Reset & Verification
     path('password-reset/request/', RequestPasswordResetView.as_view(), name='password-reset-request'),

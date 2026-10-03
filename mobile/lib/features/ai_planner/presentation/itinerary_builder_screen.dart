@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:keralink_mobile/core/config/app_config.dart';
 import 'package:keralink_mobile/core/network/api_client.dart';
 import 'package:keralink_mobile/core/storage/secure_token_storage.dart';
+import 'package:keralink_mobile/core/theme/app_theme.dart';
 import '../../inventory/data/inventory_repository.dart';
 import '../../inventory/presentation/inventory_hold_sheet.dart';
 import '../data/ai_planner_repository.dart';
@@ -30,13 +31,13 @@ class _ItineraryBuilderScreenState extends State<ItineraryBuilderScreen> {
   String? _statusMessage;
   ItineraryDiff? _lastDiff;
 
-  // Theme Constants
-  static const Color bgDark = Color(0xFF0D1F17);
-  static const Color surfaceDark = Color(0xFF142B20);
-  static const Color emerald = Color(0xFF10B981);
-  static const Color gold = Color(0xFFD4AF37);
-  static const Color textPrimary = Color(0xFFF7F3E8);
-  static const Color textMuted = Color(0xFFC5D8CD);
+  // Theme Constants (Option B: Coastal Twilight Teal & Golden Sunset)
+  static const Color bgDark = AppTheme.midnightTeal;
+  static const Color surfaceDark = AppTheme.surfaceTeal;
+  static const Color emerald = AppTheme.oceanTeal;
+  static const Color gold = AppTheme.sunsetGold;
+  static const Color textPrimary = AppTheme.textCream;
+  static const Color textMuted = AppTheme.textMuted;
 
   late final IInventoryRepository _inventoryRepository;
 
@@ -1293,10 +1294,10 @@ class _CandidatePickerSheetState extends State<_CandidatePickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    const bgDark = Color(0xFF0D1F17);
-    const emerald = Color(0xFF10B981);
-    const gold = Color(0xFFD4AF37);
-    const textPrimary = Color(0xFFF7F3E8);
+    const bgDark = AppTheme.midnightTeal;
+    const emerald = AppTheme.oceanTeal;
+    const gold = AppTheme.sunsetGold;
+    const textPrimary = AppTheme.textCream;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
@@ -1325,7 +1326,7 @@ class _CandidatePickerSheetState extends State<_CandidatePickerSheet> {
                       ),
                       Text(
                         'Day ${widget.dayNumber} · ${widget.destinationName}',
-                        style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 12),
+                        style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
                       ),
                     ],
                   ),

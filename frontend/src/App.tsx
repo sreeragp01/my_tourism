@@ -16,6 +16,7 @@ import { BookingConfirmation } from './features/bookings/BookingConfirmation';
 import { LiveCompanionView } from './features/companion/LiveCompanionView';
 import { SafetyEmergencyHub } from './features/safety/SafetyEmergencyHub';
 import { MyTripsView } from './features/trips/MyTripsView';
+import { ProfileView } from './features/profile/ProfileView';
 import { ProviderPortalView } from './features/provider/ProviderPortalView';
 import { AdminPortalView } from './features/admin/AdminPortalView';
 import { ExperienceModal } from './components/common/ExperienceModal';
@@ -64,6 +65,8 @@ export function App() {
         return <SafetyEmergencyHub />;
       case 'MY_TRIPS':
         return <MyTripsView />;
+      case 'PROFILE':
+        return <ProfileView />;
       case 'PROVIDER_PORTAL':
         return <ProviderPortalView />;
       case 'ADMIN_PORTAL':

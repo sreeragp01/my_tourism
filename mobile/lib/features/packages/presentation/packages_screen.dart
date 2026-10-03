@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../data/package_repository.dart';
 import '../models/package_models.dart';
 import 'package_detail_screen.dart';
@@ -13,6 +14,16 @@ class PackagesScreen extends StatefulWidget {
 }
 
 class _PackagesScreenState extends State<PackagesScreen> {
+  // Option B: Coastal Twilight Teal & Golden Sunset
+  static const Color bgDark = AppTheme.midnightTeal;
+  static const Color surfaceDark = AppTheme.surfaceTeal;
+  static const Color borderSubtle = AppTheme.borderTeal;
+  static const Color emerald = AppTheme.oceanTeal;
+  static const Color gold = AppTheme.sunsetGold;
+  static const Color textPrimary = AppTheme.textCream;
+  static const Color textMuted = AppTheme.textMuted;
+  static const Color textSubtle = AppTheme.textSubtle;
+
   late final IPackageRepository _repo;
   List<TourPackage> _packages = [];
   bool _isLoading = true;
@@ -32,7 +43,6 @@ class _PackagesScreenState extends State<PackagesScreen> {
   @override
   void initState() {
     super.initState();
-    // Default to mock repo if not supplied
     _repo = widget.repository ?? PackageRepository(apiClient: null as dynamic);
     _loadPackages();
   }
@@ -75,9 +85,9 @@ class _PackagesScreenState extends State<PackagesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1F17),
+      backgroundColor: bgDark,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF142B20),
+        backgroundColor: surfaceDark,
         elevation: 0,
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,19 +97,19 @@ class _PackagesScreenState extends State<PackagesScreen> {
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFFF7F3E8),
+                color: textPrimary,
               ),
             ),
             Text(
               'Direct from DTPC & Kerala Tourism verified companies',
-              style: TextStyle(fontSize: 11, color: Color(0xFF10B981)),
+              style: TextStyle(fontSize: 11, color: emerald),
             ),
           ],
         ),
         actions: [
           IconButton(
             key: const Key('refresh_packages_btn'),
-            icon: const Icon(Icons.refresh, color: Color(0xFF10B981)),
+            icon: const Icon(Icons.refresh, color: emerald),
             onPressed: _loadPackages,
           ),
         ],
@@ -111,22 +121,22 @@ class _PackagesScreenState extends State<PackagesScreen> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF142B20),
+                color: surfaceDark,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF2D5A43)),
+                border: Border.all(color: borderSubtle),
               ),
               child: TextField(
                 key: const Key('packages_search_input'),
                 controller: _searchController,
-                style: const TextStyle(color: Color(0xFFF7F3E8), fontSize: 14),
+                style: const TextStyle(color: textPrimary, fontSize: 14),
                 onChanged: _onSearchChanged,
                 decoration: InputDecoration(
                   hintText: 'Search Munnar, Houseboat, Wayanad...',
-                  hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFF10B981), size: 20),
+                  hintStyle: const TextStyle(color: textSubtle, fontSize: 13),
+                  prefixIcon: const Icon(Icons.search, color: emerald, size: 20),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.white70, size: 18),
+                          icon: const Icon(Icons.clear, color: textMuted, size: 18),
                           onPressed: () {
                             _searchController.clear();
                             _onSearchChanged('');
@@ -155,15 +165,15 @@ class _PackagesScreenState extends State<PackagesScreen> {
                   key: Key('cat_chip_${cat['key']}'),
                   label: Text('${cat['icon']} ${cat['label']}'),
                   selected: isSelected,
-                  selectedColor: const Color(0xFF10B981),
-                  backgroundColor: const Color(0xFF142B20),
+                  selectedColor: emerald,
+                  backgroundColor: surfaceDark,
                   labelStyle: TextStyle(
-                    color: isSelected ? const Color(0xFF0D1F17) : const Color(0xFFF7F3E8),
+                    color: isSelected ? bgDark : textPrimary,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     fontSize: 12,
                   ),
                   side: BorderSide(
-                    color: isSelected ? const Color(0xFF10B981) : const Color(0xFF2D5A43),
+                    color: isSelected ? emerald : borderSubtle,
                   ),
                   onSelected: (_) => _onCategorySelected(cat['key']!),
                 );
@@ -175,7 +185,7 @@ class _PackagesScreenState extends State<PackagesScreen> {
           Expanded(
             child: _isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF10B981)),
+                    child: CircularProgressIndicator(color: emerald),
                   )
                 : _packages.isEmpty
                     ? _buildEmptyState()
@@ -195,25 +205,25 @@ class _PackagesScreenState extends State<PackagesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.travel_explore_outlined, color: Color(0xFF2D5A43), size: 64),
+          const Icon(Icons.travel_explore_outlined, color: borderSubtle, size: 64),
           const SizedBox(height: 12),
           const Text(
             'No matching tour packages found',
-            style: TextStyle(color: Color(0xFFF7F3E8), fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(color: textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
           const Text(
             'Try searching a different destination or select "All Packages"',
-            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+            style: TextStyle(color: textMuted, fontSize: 12),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
+            style: ElevatedButton.styleFrom(backgroundColor: emerald),
             onPressed: () {
               _searchController.clear();
               _onCategorySelected('ALL');
             },
-            child: const Text('Reset Filters', style: TextStyle(color: Color(0xFF0D1F17), fontWeight: FontWeight.bold)),
+            child: const Text('Reset Filters', style: TextStyle(color: bgDark, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -224,9 +234,9 @@ class _PackagesScreenState extends State<PackagesScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
       decoration: BoxDecoration(
-        color: const Color(0xFF142B20),
+        color: surfaceDark,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF2D5A43)),
+        border: Border.all(color: borderSubtle),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
@@ -246,12 +256,12 @@ class _PackagesScreenState extends State<PackagesScreen> {
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
                   child: Container(
-                    color: const Color(0xFF0D1F17),
+                    color: bgDark,
                     child: Image.network(
                       package.heroImage,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => const Center(
-                        child: Icon(Icons.landscape_rounded, color: Color(0xFF10B981), size: 48),
+                        child: Icon(Icons.landscape_rounded, color: emerald, size: 48),
                       ),
                     ),
                   ),
@@ -281,18 +291,18 @@ class _PackagesScreenState extends State<PackagesScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0D1F17).withValues(alpha: 0.9),
+                    color: bgDark.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFF10B981)),
+                    border: Border.all(color: emerald),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.schedule, color: Color(0xFF10B981), size: 14),
+                      const Icon(Icons.schedule, color: emerald, size: 14),
                       const SizedBox(width: 4),
                       Text(
                         package.duration,
-                        style: const TextStyle(color: Color(0xFFF7F3E8), fontSize: 11, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: textPrimary, fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -306,7 +316,7 @@ class _PackagesScreenState extends State<PackagesScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE11D48),
+                      color: AppTheme.emergencyRed,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -328,11 +338,11 @@ class _PackagesScreenState extends State<PackagesScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star, color: Color(0xFFF59E0B), size: 14),
+                      const Icon(Icons.star, color: gold, size: 14),
                       const SizedBox(width: 4),
                       Text(
                         '${package.rating} (${package.reviewCount})',
-                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: textPrimary, fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -350,22 +360,22 @@ class _PackagesScreenState extends State<PackagesScreen> {
                 // Operator Verified Pill
                 Row(
                   children: [
-                    const Icon(Icons.verified, color: Color(0xFF10B981), size: 16),
+                    const Icon(Icons.verified, color: emerald, size: 16),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         package.operator.name,
-                        style: const TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: emerald, fontSize: 12, fontWeight: FontWeight.bold),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2D5A43).withValues(alpha: 0.5),
+                        color: borderSubtle.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Text('DTPC Partner', style: TextStyle(color: Color(0xFFC5D8CD), fontSize: 10)),
+                      child: const Text('DTPC Partner', style: TextStyle(color: textMuted, fontSize: 10)),
                     ),
                   ],
                 ),
@@ -377,7 +387,7 @@ class _PackagesScreenState extends State<PackagesScreen> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFF7F3E8),
+                    color: textPrimary,
                     height: 1.3,
                   ),
                 ),
@@ -386,7 +396,7 @@ class _PackagesScreenState extends State<PackagesScreen> {
                 // Tagline
                 Text(
                   package.tagline,
-                  style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                  style: const TextStyle(color: textMuted, fontSize: 12),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -400,17 +410,17 @@ class _PackagesScreenState extends State<PackagesScreen> {
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0D1F17),
+                        color: bgDark,
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFF2D5A43)),
+                        border: Border.all(color: borderSubtle),
                       ),
-                      child: Text(d, style: const TextStyle(color: Color(0xFFC5D8CD), fontSize: 10)),
+                      child: Text(d, style: const TextStyle(color: textMuted, fontSize: 10)),
                     );
                   }).toList(),
                 ),
                 const SizedBox(height: 14),
 
-                const Divider(color: Color(0xFF2D5A43), height: 1),
+                const Divider(color: borderSubtle, height: 1),
                 const SizedBox(height: 12),
 
                 // Price and Actions
@@ -420,24 +430,24 @@ class _PackagesScreenState extends State<PackagesScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Starting from', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 10)),
+                        const Text('Starting from', style: TextStyle(color: textSubtle, fontSize: 10)),
                         Row(
                           children: [
                             Text(
                               '₹${package.pricePerPerson.toInt()}',
                               style: const TextStyle(
-                                color: Color(0xFF10B981),
+                                color: gold,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const Text(' / person', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11)),
+                            const Text(' / person', style: TextStyle(color: textMuted, fontSize: 11)),
                             if (package.originalPrice != null) ...[
                               const SizedBox(width: 6),
                               Text(
                                 '₹${package.originalPrice!.toInt()}',
                                 style: const TextStyle(
-                                  color: Color(0xFF6B7280),
+                                  color: textSubtle,
                                   fontSize: 11,
                                   decoration: TextDecoration.lineThrough,
                                 ),
@@ -449,10 +459,10 @@ class _PackagesScreenState extends State<PackagesScreen> {
                     ),
                     ElevatedButton.icon(
                       key: Key('view_pkg_${package.slug}'),
-                      icon: const Icon(Icons.arrow_forward, size: 16, color: Color(0xFF0D1F17)),
-                      label: const Text('View Details', style: TextStyle(color: Color(0xFF0D1F17), fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.arrow_forward, size: 16, color: bgDark),
+                      label: const Text('View Details', style: TextStyle(color: bgDark, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: gold,
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),

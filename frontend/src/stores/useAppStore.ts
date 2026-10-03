@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import {
   User,
+  UserProfileData,
   Destination,
   Experience,
   Accommodation,
@@ -25,6 +26,7 @@ export type ScreenId =
   | 'MY_TRIPS'
   | 'COMPANION'
   | 'SAFETY'
+  | 'PROFILE'
   | 'PROVIDER_PORTAL'
   | 'ADMIN_PORTAL';
 
@@ -47,6 +49,7 @@ interface AppState {
   currentRole: UserRole;
   setCurrentUser: (user: User | null) => void;
   switchRole: (role: UserRole) => Promise<void>;
+  updateUserProfile: (payload: Partial<User & UserProfileData>) => Promise<User>;
 
   // Tourism Data
   destinations: Destination[];
@@ -122,6 +125,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     } else {
       get().navigateTo('HOME');
     }
+  },
+
+  updateUserProfile: async (payload) => {
+    const updated = await httpAdapter.updateUserProfile(payload);
+    set({ currentUser: updated });
+    return updated;
   },
 
   destinations: [],
