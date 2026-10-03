@@ -123,7 +123,14 @@ class SafetyService:
             first_name = getattr(user, 'first_name', '')
             last_name = getattr(user, 'last_name', '')
             traveler_name = f"{first_name} {last_name}".strip() or getattr(user, 'email', 'Traveler')
-            location_consent = getattr(profile, 'emergency_location_sharing_consented', True) if profile else True
+            location_consent = bool(getattr(profile, 'emergency_location_sharing_consented', False)) if profile else False
+            data_consent = bool(getattr(profile, 'data_processing_consented', False)) if profile else False
+
+            # Data minimization: Essential responder blood group included; sensitive medical notes require explicit emergency/processing consent
+            has_medical_consent = data_consent or location_consent
+            blood_group = getattr(profile, 'blood_group', '') if profile else ''
+            medical_notes = (getattr(profile, 'medical_notes', '') or getattr(profile, 'medical_conditions', '')) if (profile and has_medical_consent) else ''
+            allergies = (getattr(profile, 'allergies', '') or getattr(profile, 'dietary_preference', '')) if (profile and has_medical_consent) else ''
 
             OutboxEvent.objects.create(
                 event_type='SAFETY_SOS_TRIGGERED',
@@ -143,9 +150,10 @@ class SafetyService:
                     'emergency_contact_name': getattr(profile, 'emergency_contact_name', '') if profile else '',
                     'emergency_contact_email': getattr(profile, 'emergency_contact_email', '') if profile else '',
                     'emergency_contact_phone': getattr(profile, 'emergency_contact_phone', '') if profile else '',
-                    'blood_group': getattr(profile, 'blood_group', '') if profile else '',
-                    'medical_conditions': getattr(profile, 'medical_conditions', '') if profile else '',
-                    'allergies': getattr(profile, 'allergies', '') if profile else '',
+                    'blood_group': blood_group,
+                    'medical_conditions': medical_notes,
+                    'allergies': allergies,
+                    'consent_verified': has_medical_consent,
                     'booking_reference': booking_reference,
                     'triggered_at': str(alert.created_at)
                 }

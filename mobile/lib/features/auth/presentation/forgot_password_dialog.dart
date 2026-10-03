@@ -79,9 +79,6 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
         _isLoading = false;
         _currentStep = 2;
         _successMessage = res['message'] ?? '6-digit OTP sent to $email';
-        if (res['demo_otp'] != null) {
-          _otpController.text = res['demo_otp'].toString();
-        }
       });
     } catch (e) {
       setState(() {

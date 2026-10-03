@@ -42,6 +42,16 @@ class RazorpayAdapter(PaymentGateway):
         return client.payment.refund(payment_id, int(amount_inr * 100))
 
 class PaymentSimulator(PaymentGateway):
+    def __init__(self):
+        import sys
+        from django.conf import settings
+        is_test = 'test' in sys.argv or getattr(settings, 'IS_TESTING', False)
+        if not getattr(settings, 'DEBUG', False) and not is_test:
+            raise RuntimeError(
+                "CRITICAL SECURITY VIOLATION: PaymentSimulator is strictly prohibited in production. "
+                "Real Razorpay credentials and signature verification are mandatory."
+            )
+
     def create_order(self, amount_inr: float, currency: str = 'INR', receipt: str = '', notes: dict = None) -> dict:
         return {
             'id': f"order_sim_{receipt}",
@@ -51,6 +61,13 @@ class PaymentSimulator(PaymentGateway):
         }
 
     def verify_payment_signature(self, order_id: str, payment_id: str, signature: str) -> bool:
+        import sys
+        from django.conf import settings
+        is_test = 'test' in sys.argv or getattr(settings, 'IS_TESTING', False)
+        if not getattr(settings, 'DEBUG', False) and not is_test:
+            raise RuntimeError(
+                "CRITICAL SECURITY VIOLATION: PaymentSimulator signature bypass attempted in production environment."
+            )
         return True
 
     def refund_payment(self, payment_id: str, amount_inr: float) -> dict:

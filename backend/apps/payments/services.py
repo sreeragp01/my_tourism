@@ -18,7 +18,16 @@ class IdempotentPaymentService:
     """
 
     def __init__(self, gateway_adapter=None):
-        self.gateway = gateway_adapter or PaymentSimulator()
+        if gateway_adapter:
+            self.gateway = gateway_adapter
+        else:
+            from django.conf import settings
+            key_id = getattr(settings, 'RAZORPAY_KEY_ID', '')
+            key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', '')
+            if key_id and key_secret and not key_id.startswith('rzp_test_placeholder'):
+                self.gateway = RazorpayAdapter(key_id=key_id, key_secret=key_secret)
+            else:
+                self.gateway = PaymentSimulator()
 
     @transaction.atomic
     def create_order(self, booking: Booking, user, idempotency_key: str, gateway: str = 'RAZORPAY') -> dict:

@@ -9,6 +9,10 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 if not SECRET_KEY:
     raise ImproperlyConfigured("DJANGO_SECRET_KEY environment variable is strictly required in production.")
 
+JWT_SIGNING_KEY = os.environ.get('JWT_SIGNING_KEY')
+if not JWT_SIGNING_KEY:
+    raise ImproperlyConfigured("JWT_SIGNING_KEY environment variable is strictly required in production (must be distinct from DJANGO_SECRET_KEY).")
+
 hosts_raw = os.environ.get('DJANGO_ALLOWED_HOSTS', '')
 ALLOWED_HOSTS = [h.strip() for h in hosts_raw.split(',') if h.strip()]
 if not ALLOWED_HOSTS:

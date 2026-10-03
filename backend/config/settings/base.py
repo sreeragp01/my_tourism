@@ -133,7 +133,7 @@ REST_FRAMEWORK = {
         'inventory_hold': '10/minute',
         'sos_trigger': '10/minute',
     },
-    'NUM_PROXIES': 1,
+    'NUM_PROXIES': int(os.environ.get('NUM_PROXIES', '1')),
 }
 
 SPECTACULAR_SETTINGS = {

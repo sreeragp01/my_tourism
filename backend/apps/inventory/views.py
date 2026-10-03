@@ -94,12 +94,12 @@ class InventoryHoldsView(APIView):
 
 
 class HoldDetailView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_scope = 'inventory_hold'
 
     def get(self, request, id):
-        user = request.user if request.user and request.user.is_authenticated else None
         try:
-            hold = InventoryService.get_hold(id, user=user)
+            hold = InventoryService.get_hold(id, user=request.user)
             return Response(InventoryHoldSerializer(hold).data, status=status.HTTP_200_OK)
         except HoldNotFoundError:
             return Response({"error": "Inventory hold not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -108,12 +108,12 @@ class HoldDetailView(APIView):
 
 
 class ReleaseHoldView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_scope = 'inventory_hold'
 
     def post(self, request, id):
-        user = request.user if request.user and request.user.is_authenticated else None
         try:
-            hold = InventoryService.release_hold(id, user=user)
+            hold = InventoryService.release_hold(id, user=request.user)
             return Response(InventoryHoldSerializer(hold).data, status=status.HTTP_200_OK)
         except HoldNotFoundError:
             return Response({"error": "Inventory hold not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -122,16 +122,16 @@ class ReleaseHoldView(APIView):
 
 
 class ExtendHoldView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_scope = 'inventory_hold'
 
     def post(self, request, id):
         serializer = ExtendHoldRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         extra_minutes = serializer.validated_data.get('extra_minutes', 10)
 
-        user = request.user if request.user and request.user.is_authenticated else None
         try:
-            hold = InventoryService.extend_hold(id, user=user, extra_minutes=extra_minutes)
+            hold = InventoryService.extend_hold(id, user=request.user, extra_minutes=extra_minutes)
             return Response(InventoryHoldSerializer(hold).data, status=status.HTTP_200_OK)
         except HoldNotFoundError:
             return Response({"error": "Inventory hold not found"}, status=status.HTTP_404_NOT_FOUND)

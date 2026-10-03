@@ -10,7 +10,14 @@ class KeraLinkJWTAuthentication(authentication.BaseAuthentication):
             return None
 
         raw_token = auth_header.split(' ')[1]
-        signing_key = getattr(settings, 'JWT_SIGNING_KEY', None) or settings.SECRET_KEY
+        signing_key = getattr(settings, 'JWT_SIGNING_KEY', None)
+        if not signing_key:
+            import sys
+            is_testing = 'test' in sys.argv or getattr(settings, 'IS_TESTING', False)
+            if getattr(settings, 'DEBUG', False) or is_testing:
+                signing_key = settings.SECRET_KEY
+            else:
+                raise exceptions.AuthenticationFailed('Server security configuration error: Missing JWT signing key')
         try:
             payload = jwt.decode(raw_token, signing_key, algorithms=['HS256'])
         except jwt.ExpiredSignatureError:

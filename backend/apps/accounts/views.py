@@ -33,7 +33,14 @@ def issue_tokens_for_session(user: User, session: UserSession, family: RefreshTo
         'exp': now + timedelta(minutes=15),
         'iat': now,
     }
-    signing_key = getattr(settings, 'JWT_SIGNING_KEY', None) or settings.SECRET_KEY
+    signing_key = getattr(settings, 'JWT_SIGNING_KEY', None)
+    if not signing_key:
+        import sys
+        is_testing = 'test' in sys.argv or getattr(settings, 'IS_TESTING', False)
+        if getattr(settings, 'DEBUG', False) or is_testing:
+            signing_key = settings.SECRET_KEY
+        else:
+            raise RuntimeError("CRITICAL SECURITY ERROR: JWT_SIGNING_KEY must be configured in production environments.")
     access_token = jwt.encode(access_payload, signing_key, algorithm='HS256')
 
     # 14-day Refresh Token
@@ -227,16 +234,30 @@ class RequestPasswordResetView(views.APIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email'].lower().strip()
 
+        # Per-target-email cap (3 per 15 minutes) to protect against inbox bombing
+        email_throttle_key = f"otp_request_email:{email}"
+        email_count = cache.get(email_throttle_key, 0)
+        if email_count >= 3:
+            return Response({
+                'success': False,
+                'error': {
+                    'code': 'RATE_LIMITED',
+                    'message': 'Too many OTP requests for this email address. Please try again after 15 minutes.'
+                }
+            }, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
         try:
             user = User.objects.get(email=email)
             otp = PasswordResetOTP.generate_otp_for_user(user)
             email_sent = AccountEmailService.send_password_reset_otp_email(user, otp.otp)
+            cache.set(email_throttle_key, email_count + 1, timeout=900)
             return Response({
                 'success': True,
                 'message': f'6-digit verification OTP sent to {email}.',
                 'email_sent': email_sent,
             }, status=status.HTTP_200_OK)
         except User.DoesNotExist:
+            cache.set(email_throttle_key, email_count + 1, timeout=900)
             return Response({
                 'success': True,
                 'message': f'If an account exists with {email}, a 6-digit verification OTP has been sent.'
@@ -292,6 +313,10 @@ class VerifyPasswordResetView(views.APIView):
         user.set_password(new_password)
         user.save()
 
+        # Clear login lockout and failed attempt counters upon successful password reset
+        cache.delete(f"login_lockout:{email}")
+        cache.delete(f"login_attempts:{email}")
+
         # Revoke all active sessions for security
         UserSession.objects.filter(user=user, revoked_at__isnull=True).update(revoked_at=timezone.now())
 
@@ -306,8 +331,21 @@ class SendVerificationOTPView(views.APIView):
     throttle_scope = 'otp_request'
 
     def post(self, request):
+        email = request.user.email.lower().strip()
+        email_throttle_key = f"otp_request_email:{email}"
+        email_count = cache.get(email_throttle_key, 0)
+        if email_count >= 3:
+            return Response({
+                'success': False,
+                'error': {
+                    'code': 'RATE_LIMITED',
+                    'message': 'Too many OTP requests for this email. Please try again after 15 minutes.'
+                }
+            }, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
         otp = EmailVerificationOTP.generate_otp_for_user(request.user)
         email_sent = AccountEmailService.send_verification_otp_email(request.user, otp.otp)
+        cache.set(email_throttle_key, email_count + 1, timeout=900)
         return Response({
             'success': True,
             'message': f'Verification OTP sent to {request.user.email}',
@@ -409,5 +447,136 @@ class UserProfileView(views.APIView):
             'success': True,
             'message': 'Profile updated successfully',
             'data': data
+        }, status=status.HTTP_200_OK)
+
+
+class DataExportView(views.APIView):
+    """
+    DPDP Act Right to Data Portability.
+    Exports all personal, profile, session, and booking data associated with user in structured JSON.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        user_data = UserOwnerDetailSerializer(user).data
+
+        sessions = list(UserSession.objects.filter(user=user).values(
+            'id', 'device_name', 'platform', 'ip_address', 'last_active', 'created_at', 'revoked_at'
+        ))
+
+        from apps.bookings.models import Booking
+        bookings = []
+        for b in Booking.objects.filter(user=user).order_by('-created_at'):
+            bookings.append({
+                'reference': b.booking_reference,
+                'trip_title': b.trip_title,
+                'status': b.status,
+                'start_date': str(b.start_date),
+                'end_date': str(b.end_date),
+                'total_amount': float(b.total_amount),
+                'currency': b.currency,
+                'created_at': b.created_at.isoformat(),
+            })
+
+        export_payload = {
+            'exported_at': timezone.now().isoformat(),
+            'platform': 'KeraLink Tourism Platform',
+            'compliance': 'Digital Personal Data Protection (DPDP) Act Aligned',
+            'user_identity': {
+                'id': str(user.id),
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'phone': user.phone,
+                'roles': user.roles,
+                'date_joined': user.date_joined.isoformat(),
+            },
+            'profile_and_preferences': user_data.get('profile', {}),
+            'sessions': sessions,
+            'bookings': bookings,
+        }
+
+        return Response({
+            'success': True,
+            'data': export_payload,
+            'message': 'Personal data package generated successfully.'
+        }, status=status.HTTP_200_OK)
+
+
+class WithdrawConsentView(views.APIView):
+    """
+    DPDP Act Right to Withdraw Consent.
+    Revokes user's data processing and location tracking consents.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        profile.data_processing_consented = False
+        profile.emergency_location_sharing_consented = False
+        profile.consent_withdrawn_at = timezone.now()
+        profile.save(update_fields=[
+            'data_processing_consented',
+            'emergency_location_sharing_consented',
+            'consent_withdrawn_at'
+        ])
+
+        return Response({
+            'success': True,
+            'message': 'Consent successfully withdrawn. Emergency location sharing and personal data processing have been disabled.',
+            'consent_withdrawn_at': profile.consent_withdrawn_at.isoformat()
+        }, status=status.HTTP_200_OK)
+
+
+class DeleteAccountView(views.APIView):
+    """
+    DPDP Act Right to Erasure / Account Deletion.
+    Deactivates account, anonymizes PII, clears profile data, and revokes all sessions.
+    Requires password confirmation.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        password = request.data.get('password')
+        if not password or not request.user.check_password(password):
+            return Response({
+                'success': False,
+                'error': {'code': 'INVALID_PASSWORD', 'message': 'Incorrect password. Account deletion requires valid password confirmation.'}
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        with transaction.atomic():
+            profile.emergency_contact_name = ''
+            profile.emergency_contact_phone = ''
+            profile.emergency_contact_email = ''
+            profile.emergency_location_sharing_consented = False
+            profile.medical_notes = ''
+            profile.blood_group = ''
+            profile.dietary_preference = ''
+            profile.data_processing_consented = False
+            profile.consent_withdrawn_at = timezone.now()
+            profile.save()
+
+            UserSession.objects.filter(user=user, revoked_at__isnull=True).update(revoked_at=timezone.now())
+
+            anon_id = uuid.uuid4().hex[:8]
+            user.first_name = 'Deleted'
+            user.last_name = 'User'
+            user.phone = ''
+            user.avatar_url = ''
+            user.email = f"deleted_{anon_id}@{anon_id}.invalid"
+            user.is_active = False
+            user.set_unusable_password()
+            user.save()
+
+        return Response({
+            'success': True,
+            'message': 'Your account and personal data have been successfully deleted in compliance with DPDP data erasure principles.'
         }, status=status.HTTP_200_OK)
 

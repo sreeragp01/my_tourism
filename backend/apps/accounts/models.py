@@ -130,6 +130,7 @@ class UserProfile(models.Model):
     data_processing_consented = models.BooleanField(default=False)
     data_processing_consented_at = models.DateTimeField(null=True, blank=True)
     consent_policy_version = models.CharField(max_length=20, default='v1.0')
+    consent_withdrawn_at = models.DateTimeField(null=True, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

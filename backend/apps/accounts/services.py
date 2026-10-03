@@ -15,7 +15,7 @@ class AccountEmailService:
             f"Hello {user.first_name or 'Traveler'},\n\n"
             f"You requested to reset your password for your KeraLink account.\n\n"
             f"Your 6-Digit Verification Code is:  {otp_code}\n\n"
-            f"This code will expire in 15 minutes. If you did not make this request, please ignore this email.\n\n"
+            f"This code will expire in 10 minutes. If you did not make this request, please ignore this email.\n\n"
             f"Best regards,\n"
             f"KeraLink Tourism Platform\n"
             f"God's Own Country Live Travel Companion"
@@ -38,7 +38,7 @@ class AccountEmailService:
                     </span>
                 </div>
                 <p style="color: #64748b; font-size: 13px; text-align: center; margin: 0;">
-                    &#9201; This code expires in <strong>15 minutes</strong>.
+                    &#9201; This code expires in <strong>10 minutes</strong>.
                 </p>
             </div>
             <p style="color: #94a3b8; font-size: 12px; line-height: 1.4; text-align: center;">
@@ -74,7 +74,7 @@ class AccountEmailService:
         message = (
             f"Hello {first_name},\n\n"
             f"Welcome to KeraLink! Your verification code is: {otp_code}\n\n"
-            f"This code will expire in 30 minutes.\n\n"
+            f"This code will expire in 10 minutes.\n\n"
             f"Best regards,\n"
             f"KeraLink Tourism Platform\n"
             f"God's Own Country Live Travel Companion"
@@ -97,7 +97,7 @@ class AccountEmailService:
                     </span>
                 </div>
                 <p style="color: #64748b; font-size: 13px; text-align: center; margin: 0;">
-                    &#9201; This code expires in <strong>30 minutes</strong>.
+                    &#9201; This code expires in <strong>10 minutes</strong>.
                 </p>
             </div>
             <p style="color: #94a3b8; font-size: 12px; line-height: 1.4; text-align: center;">

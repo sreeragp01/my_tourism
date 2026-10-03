@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     RegisterView, LoginView, RefreshTokenView, SessionListView, RevokeSessionView,
     RequestPasswordResetView, VerifyPasswordResetView, SendVerificationOTPView, VerifyEmailOTPView,
-    UserProfileView
+    UserProfileView, DataExportView, WithdrawConsentView, DeleteAccountView
 )
 
 urlpatterns = [
@@ -19,4 +19,9 @@ urlpatterns = [
     path('password-reset/verify/', VerifyPasswordResetView.as_view(), name='password-reset-verify'),
     path('otp/send/', SendVerificationOTPView.as_view(), name='otp-send'),
     path('otp/verify/', VerifyEmailOTPView.as_view(), name='otp-verify'),
+
+    # DPDP Act Rights Endpoints
+    path('export-data/', DataExportView.as_view(), name='data-export'),
+    path('withdraw-consent/', WithdrawConsentView.as_view(), name='withdraw-consent'),
+    path('delete-account/', DeleteAccountView.as_view(), name='delete-account'),
 ]

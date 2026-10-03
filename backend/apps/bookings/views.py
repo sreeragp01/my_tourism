@@ -151,34 +151,10 @@ class BookingTransitionView(APIView):
 class UserTripsView(APIView):
     """
     Returns confirmed, active, and completed trips for the authenticated user.
-    For unauthenticated guests or new users, returns available sample trips or an empty list without 403 Forbidden.
     """
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        if not request.user or not request.user.is_authenticated:
-            # Provide confirmed demo/sample bookings for guests so vouchers and passes can be explored
-            sample_bookings = Booking.objects.exclude(status__in=['DRAFT', 'EXPIRED']).order_by('-created_at')[:5]
-            trips = []
-            for b in sample_bookings:
-                trips.append({
-                    'id': str(b.id),
-                    'booking_reference': b.booking_reference,
-                    'trip_title': b.trip_title,
-                    'start_date': str(b.start_date),
-                    'end_date': str(b.end_date),
-                    'travelers_count': b.travelers_count,
-                    'status': b.status,
-                    'total_amount': float(b.total_amount),
-                    'currency': b.currency,
-                    'digital_pass_token': b.digital_pass_token or f"KERALINK-PASS-{b.booking_reference}",
-                    'green_trip_score': b.green_trip_score,
-                    'items_count': b.items.count(),
-                    'corridor': "Kochi → Munnar → Thekkady → Alappuzha",
-                    'created_at': b.created_at.isoformat(),
-                })
-            return Response({"trips": trips, "count": len(trips), "is_authenticated": False}, status=status.HTTP_200_OK)
-
         bookings = Booking.objects.filter(
             user=request.user
         ).exclude(status__in=['DRAFT', 'EXPIRED']).order_by('-created_at')
@@ -208,15 +184,16 @@ class UserTripsView(APIView):
 class TripDetailView(APIView):
     """
     Detailed trip view including vouchers, chauffeur, and digital pass.
+    Strictly restricted to the booking owner or platform staff.
     """
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, reference):
         booking = Booking.objects.filter(booking_reference=reference).first()
         if not booking:
             return Response({"error": "Trip not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if request.user and request.user.is_authenticated and booking.user and booking.user != request.user and not request.user.is_staff:
+        if booking.user != request.user and not request.user.is_staff:
             return Response({"error": "Unauthorized to view this trip"}, status=status.HTTP_403_FORBIDDEN)
 
         items = []
