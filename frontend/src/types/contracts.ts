@@ -65,11 +65,14 @@ export interface OfflinePackageItem {
 export interface UserProfileData {
   emergencyContactName: string;
   emergencyContactPhone: string;
+  emergencyContactEmail?: string;
+  emergencyLocationSharingConsented?: boolean;
   bloodGroup: string;
   medicalNotes: string;
   dietaryPreference: string;
   travelPace: string;
   accessibilityRequired: boolean;
+  dataProcessingConsented?: boolean;
   ecoScore: number;
   ecoTier: string;
   tripsCompleted: number;

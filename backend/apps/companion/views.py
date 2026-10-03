@@ -9,13 +9,15 @@ class LiveTripCompanionChatView(APIView):
     Live Trip Companion chat endpoint backed by an explicit Tool/Action architecture:
     Traveler -> Intent Detection -> Tool Permission -> Authoritative Tool -> Validated AI Result
     """
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_scope = 'ai_companion'
 
     def post(self, request):
         serializer = CompanionMessageRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
+        user = request.user
         destination_slug = data.get('destination_slug') or data.get('current_destination') or 'munnar'
         response_payload = AICompanionOrchestrator.process_query(
             query=data['query'],

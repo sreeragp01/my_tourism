@@ -23,6 +23,7 @@ from .services import (
 
 class ParsePromptView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_scope = 'ai_companion'
 
     def post(self, request):
         serializer = ParsePromptRequestSerializer(data=request.data)
@@ -33,6 +34,7 @@ class ParsePromptView(APIView):
 
 class GenerateItineraryView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_scope = 'ai_companion'
 
     def post(self, request):
         serializer = GenerateItineraryRequestSerializer(data=request.data)

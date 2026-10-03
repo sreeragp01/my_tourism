@@ -1,8 +1,10 @@
 import logging
+from celery import shared_task
 from .services import InventoryService
 
 logger = logging.getLogger(__name__)
 
+@shared_task
 def cleanup_expired_holds_task():
     """
     Periodic worker task (run every 60 seconds) to find and release

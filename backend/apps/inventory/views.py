@@ -40,14 +40,15 @@ class InventoryAvailabilityView(APIView):
 
 
 class InventoryHoldsView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_scope = 'inventory_hold'
 
     def post(self, request):
         serializer = CreateHoldRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        user = request.user if request.user and request.user.is_authenticated else None
+        user = request.user
 
         try:
             inv_type = data['inventory_type'].upper()
@@ -143,14 +144,15 @@ class ExtendHoldView(APIView):
 
 
 class HoldItineraryView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_scope = 'inventory_hold'
 
     def post(self, request):
         serializer = BatchItineraryHoldRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        user = request.user if request.user and request.user.is_authenticated else None
+        user = request.user
 
         try:
             holds = InventoryService.hold_itinerary(
@@ -183,7 +185,7 @@ class HoldItineraryView(APIView):
 
 
 class ReleaseExpiredHoldsView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAdminUser]
 
     def post(self, request):
         count = InventoryService.release_expired_holds()

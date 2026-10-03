@@ -95,28 +95,36 @@ class SafetyService:
         notes: str = ''
     ) -> Dict[str, Any]:
         """
-        Immediately persists a safety alert and publishes a high-priority domain event.
-        Guaranteed to return fast without blocking on AI or external latency.
+        Atomically persists a safety alert and publishes a high-priority domain event.
+        Commits both within a single database transaction, guaranteeing zero event loss.
         """
-        booking = None
-        if booking_reference:
-            from apps.bookings.models import Booking
-            booking = Booking.objects.filter(booking_reference=booking_reference).first()
+        from django.db import transaction
+        from apps.events.models import OutboxEvent
 
-        alert = SafetyAlert.objects.create(
-            user=user,
-            booking=booking,
-            alert_type=alert_type,
-            latitude=latitude,
-            longitude=longitude,
-            location_name=location_name or 'Current GPS coordinates',
-            status='TRIGGERED',
-            notes=notes
-        )
+        with transaction.atomic():
+            booking = None
+            if booking_reference:
+                from apps.bookings.models import Booking
+                booking = Booking.objects.filter(booking_reference=booking_reference).first()
 
-        # Publish outbox event for async SMS / FCM / Control Room dispatch
-        try:
-            from apps.events.models import OutboxEvent
+            alert = SafetyAlert.objects.create(
+                user=user,
+                booking=booking,
+                alert_type=alert_type,
+                latitude=latitude,
+                longitude=longitude,
+                location_name=location_name or 'Current GPS coordinates',
+                status='TRIGGERED',
+                notes=notes
+            )
+
+            # Enrich payload with traveler emergency contacts & medical info
+            profile = getattr(user, 'profile', None)
+            first_name = getattr(user, 'first_name', '')
+            last_name = getattr(user, 'last_name', '')
+            traveler_name = f"{first_name} {last_name}".strip() or getattr(user, 'email', 'Traveler')
+            location_consent = getattr(profile, 'emergency_location_sharing_consented', True) if profile else True
+
             OutboxEvent.objects.create(
                 event_type='SAFETY_SOS_TRIGGERED',
                 aggregate_type='SafetyAlert',
@@ -125,16 +133,23 @@ class SafetyService:
                     'alert_id': str(alert.id),
                     'user_id': str(user.id),
                     'user_email': getattr(user, 'email', ''),
+                    'traveler_name': traveler_name,
+                    'traveler_phone': getattr(user, 'phone', ''),
                     'alert_type': alert_type,
-                    'latitude': latitude,
-                    'longitude': longitude,
+                    'latitude': latitude if location_consent else None,
+                    'longitude': longitude if location_consent else None,
                     'location_name': alert.location_name,
+                    'location_consent': location_consent,
+                    'emergency_contact_name': getattr(profile, 'emergency_contact_name', '') if profile else '',
+                    'emergency_contact_email': getattr(profile, 'emergency_contact_email', '') if profile else '',
+                    'emergency_contact_phone': getattr(profile, 'emergency_contact_phone', '') if profile else '',
+                    'blood_group': getattr(profile, 'blood_group', '') if profile else '',
+                    'medical_conditions': getattr(profile, 'medical_conditions', '') if profile else '',
+                    'allergies': getattr(profile, 'allergies', '') if profile else '',
                     'booking_reference': booking_reference,
                     'triggered_at': str(alert.created_at)
                 }
             )
-        except Exception as e:
-            logger.warning(f"Could not record OutboxEvent for SOS {alert.id}: {e}")
 
         return {
             'success': True,

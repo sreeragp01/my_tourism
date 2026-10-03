@@ -85,31 +85,51 @@ def default_offline_packages():
     ]
 
 
+BLOOD_GROUP_CHOICES = [
+    ('', 'Not Specified'),
+    ('A+', 'A Positive'),
+    ('A-', 'A Negative'),
+    ('B+', 'B Positive'),
+    ('B-', 'B Negative'),
+    ('AB+', 'AB Positive'),
+    ('AB-', 'AB Negative'),
+    ('O+', 'O Positive'),
+    ('O-', 'O Negative'),
+]
+
+
 class UserProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     
     # In Case of Emergency (ICE)
-    emergency_contact_name = models.CharField(max_length=150, blank=True, default='Ananya S. (Sister)')
-    emergency_contact_phone = models.CharField(max_length=50, blank=True, default='+91 94471 23456')
-    blood_group = models.CharField(max_length=20, blank=True, default='O+ Positive')
-    medical_notes = models.TextField(blank=True, default='No major allergies. Carries mild asthma inhaler.')
+    emergency_contact_name = models.CharField(max_length=150, blank=True, default='')
+    emergency_contact_phone = models.CharField(max_length=50, blank=True, default='')
+    emergency_contact_email = models.EmailField(blank=True, null=True)
+    emergency_location_sharing_consented = models.BooleanField(default=False)
+    blood_group = models.CharField(max_length=20, blank=True, default='', choices=BLOOD_GROUP_CHOICES)
+    medical_notes = models.TextField(blank=True, default='', max_length=500)
     
     # AI Architect & Experience Preferences
-    dietary_preference = models.CharField(max_length=100, blank=True, default='Traditional Kerala Sadya (Veg)')
-    travel_pace = models.CharField(max_length=100, blank=True, default='Balanced (2-3 stops/day)')
+    dietary_preference = models.CharField(max_length=100, blank=True, default='')
+    travel_pace = models.CharField(max_length=100, blank=True, default='')
     accessibility_required = models.BooleanField(default=False)
     
     # Eco-Tourism Passport
-    eco_score = models.IntegerField(default=92)
-    eco_tier = models.CharField(max_length=100, default='Backwater Guardian')
-    trips_completed = models.IntegerField(default=3)
-    ev_miles = models.IntegerField(default=142)
-    carbon_offset_kg = models.FloatField(default=58.4)
-    badges = models.JSONField(default=default_profile_badges, blank=True)
+    eco_score = models.IntegerField(default=0)
+    eco_tier = models.CharField(max_length=100, default='Seedling Traveler')
+    trips_completed = models.IntegerField(default=0)
+    ev_miles = models.IntegerField(default=0)
+    carbon_offset_kg = models.FloatField(default=0.0)
+    badges = models.JSONField(default=list, blank=True)
     
     # Offline Ghat Corridors
-    offline_packages = models.JSONField(default=default_offline_packages, blank=True)
+    offline_packages = models.JSONField(default=list, blank=True)
+    
+    # DPDP 2023-Aligned Privacy & Consent
+    data_processing_consented = models.BooleanField(default=False)
+    data_processing_consented_at = models.DateTimeField(null=True, blank=True)
+    consent_policy_version = models.CharField(max_length=20, default='v1.0')
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -158,6 +178,7 @@ class PasswordResetOTP(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_otps')
     otp = models.CharField(max_length=6, db_index=True)
+    attempts = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)
@@ -167,26 +188,28 @@ class PasswordResetOTP(models.Model):
 
     @classmethod
     def generate_otp_for_user(cls, user):
-        import random
+        import secrets
         from datetime import timedelta
         # Invalidate old unused OTPs
         cls.objects.filter(user=user, is_used=False).update(is_used=True)
-        code = f"{random.randint(100000, 999999)}"
+        code = f"{secrets.randbelow(900000) + 100000:06d}"
         return cls.objects.create(
             user=user,
             otp=code,
-            expires_at=timezone.now() + timedelta(minutes=15),
+            attempts=0,
+            expires_at=timezone.now() + timedelta(minutes=10),
             is_used=False
         )
 
     def is_valid(self):
-        return not self.is_used and timezone.now() <= self.expires_at
+        return not self.is_used and self.attempts < 5 and timezone.now() <= self.expires_at
 
 
 class EmailVerificationOTP(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_otps')
     otp = models.CharField(max_length=6, db_index=True)
+    attempts = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)
@@ -196,16 +219,17 @@ class EmailVerificationOTP(models.Model):
 
     @classmethod
     def generate_otp_for_user(cls, user):
-        import random
+        import secrets
         from datetime import timedelta
         cls.objects.filter(user=user, is_used=False).update(is_used=True)
-        code = f"{random.randint(100000, 999999)}"
+        code = f"{secrets.randbelow(900000) + 100000:06d}"
         return cls.objects.create(
             user=user,
             otp=code,
-            expires_at=timezone.now() + timedelta(minutes=30),
+            attempts=0,
+            expires_at=timezone.now() + timedelta(minutes=10),
             is_used=False
         )
 
     def is_valid(self):
-        return not self.is_used and timezone.now() <= self.expires_at
+        return not self.is_used and self.attempts < 5 and timezone.now() <= self.expires_at

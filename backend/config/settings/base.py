@@ -11,11 +11,13 @@ try:
 except ImportError:
     pass
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'keralink-prod-super-secure-key-2026-gods-own-country')
+# Security & Secrets (No hardcoded secrets)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+JWT_SIGNING_KEY = os.environ.get('JWT_SIGNING_KEY')
 
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if h.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -55,7 +57,6 @@ INSTALLED_APPS = [
     'apps.notifications',
 ]
 
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -68,7 +69,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.audit.middleware.AuditLoggingMiddleware',
 ]
-
 
 ROOT_URLCONF = 'config.urls'
 
@@ -110,6 +110,7 @@ else:
 
 AUTH_USER_MODEL = 'accounts.User'
 
+# Authoritative DRF Configuration with Scoped Throttling & Proxy Support
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'apps.accounts.authentication.KeraLinkJWTAuthentication',
@@ -117,8 +118,23 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/minute',
+        'user': '1000/minute',
+        'auth_login': '5/minute',
+        'otp_request': '3/minute',
+        'otp_verify': '5/minute',
+        'ai_companion': '20/minute',
+        'inventory_hold': '10/minute',
+        'sos_trigger': '10/minute',
+    },
+    'NUM_PROXIES': 1,
 }
-
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'KeraLink Tourism Platform API',
@@ -127,7 +143,9 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS & CSRF
+cors_raw = os.environ.get('CORS_ALLOWED_ORIGINS', '')
+CORS_ALLOWED_ORIGINS = [o.strip() for o in cors_raw.split(',') if o.strip()]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -141,6 +159,10 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
     'idempotency-key',
 ]
+
+csrf_raw = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_raw.split(',') if o.strip()]
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
@@ -161,3 +183,13 @@ EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() in ('true', '1',
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'KeraLink Tourism <noreply@keralink.travel>')
+
+# Third-Party Integrations
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+OPENWEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY')
+
+# Payments Interim Circuit Breaker (Default False)
+PAYMENTS_ENABLED = os.environ.get('PAYMENTS_ENABLED', 'False').lower() in ('true', '1', 'yes')
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
+RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET', '')

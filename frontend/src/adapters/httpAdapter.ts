@@ -271,51 +271,61 @@ export class HttpKeraLinkAdapter {
   // User Profile & Roles
   // --------------------------------------------------------------------------
   async getCurrentUser(): Promise<User> {
-    try {
-      const res = await this.fetchWithAuth('/auth/me/');
-      if (res.ok) {
-        const json = await res.json();
-        return mapUser(json);
-      }
-    } catch (_) {}
-    return mockBackend.getCurrentUser();
+    const useMock = (import.meta as any).env?.VITE_USE_MOCK === 'true';
+    if (useMock) {
+      return mockBackend.getCurrentUser();
+    }
+
+    const res = await this.fetchWithAuth('/auth/me/');
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error?.message || errBody.detail || `Failed to fetch user profile (${res.status})`);
+    }
+    const json = await res.json();
+    return mapUser(json);
   }
 
   async updateUserProfile(payload: Partial<User & UserProfileData>): Promise<User> {
-    try {
-      const body: Record<string, any> = {};
-      if (payload.firstName !== undefined) body.first_name = payload.firstName;
-      if (payload.lastName !== undefined) body.last_name = payload.lastName;
-      if (payload.phone !== undefined) body.phone = payload.phone;
-      if (payload.avatarUrl !== undefined) body.avatar_url = payload.avatarUrl;
-      if (payload.emergencyContactName !== undefined) body.emergency_contact_name = payload.emergencyContactName;
-      if (payload.emergencyContactPhone !== undefined) body.emergency_contact_phone = payload.emergencyContactPhone;
-      if (payload.bloodGroup !== undefined) body.blood_group = payload.bloodGroup;
-      if (payload.medicalNotes !== undefined) body.medical_notes = payload.medicalNotes;
-      if (payload.dietaryPreference !== undefined) body.dietary_preference = payload.dietaryPreference;
-      if (payload.travelPace !== undefined) body.travel_pace = payload.travelPace;
-      if (payload.accessibilityRequired !== undefined) body.accessibility_required = payload.accessibilityRequired;
-      if (payload.offlinePackages !== undefined) {
-        body.offline_packages = payload.offlinePackages.map((p) => ({
-          id: p.id,
-          name: p.name,
-          size: p.size,
-          is_downloaded: p.isDownloaded,
-          includes: p.includes,
-        }));
-      }
+    const useMock = (import.meta as any).env?.VITE_USE_MOCK === 'true';
+    if (useMock) {
+      return mockBackend.updateUserProfile(payload);
+    }
 
-      const res = await this.fetchWithAuth('/auth/profile/', {
-        method: 'PATCH',
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        return mapUser(json);
-      }
-    } catch (_) {}
+    const body: Record<string, any> = {};
+    if (payload.firstName !== undefined) body.first_name = payload.firstName;
+    if (payload.lastName !== undefined) body.last_name = payload.lastName;
+    if (payload.phone !== undefined) body.phone = payload.phone;
+    if (payload.avatarUrl !== undefined) body.avatar_url = payload.avatarUrl;
+    if (payload.emergencyContactName !== undefined) body.emergency_contact_name = payload.emergencyContactName;
+    if (payload.emergencyContactPhone !== undefined) body.emergency_contact_phone = payload.emergencyContactPhone;
+    if (payload.emergencyContactEmail !== undefined) body.emergency_contact_email = payload.emergencyContactEmail;
+    if (payload.emergencyLocationSharingConsented !== undefined) body.emergency_location_sharing_consented = payload.emergencyLocationSharingConsented;
+    if (payload.bloodGroup !== undefined) body.blood_group = payload.bloodGroup;
+    if (payload.medicalNotes !== undefined) body.medical_notes = payload.medicalNotes;
+    if (payload.dietaryPreference !== undefined) body.dietary_preference = payload.dietaryPreference;
+    if (payload.travelPace !== undefined) body.travel_pace = payload.travelPace;
+    if (payload.accessibilityRequired !== undefined) body.accessibility_required = payload.accessibilityRequired;
+    if (payload.dataProcessingConsented !== undefined) body.data_processing_consented = payload.dataProcessingConsented;
+    if (payload.offlinePackages !== undefined) {
+      body.offline_packages = payload.offlinePackages.map((p) => ({
+        id: p.id,
+        name: p.name,
+        size: p.size,
+        is_downloaded: p.isDownloaded,
+        includes: p.includes,
+      }));
+    }
 
-    return mockBackend.updateUserProfile(payload);
+    const res = await this.fetchWithAuth('/auth/profile/', {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error?.message || errBody.detail || `Failed to update profile (${res.status})`);
+    }
+    const json = await res.json();
+    return mapUser(json);
   }
 
   async switchRole(role: User['roles'][0]): Promise<User> {

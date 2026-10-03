@@ -1,18 +1,21 @@
 import uuid
 import jwt
+import secrets
 from datetime import timedelta
+from django.db import transaction
 from django.conf import settings
 from django.utils import timezone
+from django.core.cache import cache
 from rest_framework import status, views, permissions
 from rest_framework.response import Response
 from .models import (
     User, UserProfile, UserSession, RefreshTokenFamily, RefreshToken, PasswordResetOTP,
-    EmailVerificationOTP, default_profile_badges, default_offline_packages
+    EmailVerificationOTP
 )
 from .serializers import (
-    UserSerializer, UserSessionSerializer, RegisterSerializer, LoginSerializer,
-    TokenRefreshSerializer, PasswordResetRequestSerializer, PasswordResetVerifySerializer,
-    EmailVerificationSerializer
+    UserSerializer, UserSessionSerializer, UserOwnerDetailSerializer, UserProfileUpdateSerializer,
+    RegisterSerializer, LoginSerializer, TokenRefreshSerializer, PasswordResetRequestSerializer,
+    PasswordResetVerifySerializer, EmailVerificationSerializer
 )
 from .services import AccountEmailService
 
@@ -30,7 +33,8 @@ def issue_tokens_for_session(user: User, session: UserSession, family: RefreshTo
         'exp': now + timedelta(minutes=15),
         'iat': now,
     }
-    access_token = jwt.encode(access_payload, settings.SECRET_KEY, algorithm='HS256')
+    signing_key = getattr(settings, 'JWT_SIGNING_KEY', None) or settings.SECRET_KEY
+    access_token = jwt.encode(access_payload, signing_key, algorithm='HS256')
 
     # 14-day Refresh Token
     raw_refresh = str(uuid.uuid4())
@@ -50,6 +54,7 @@ def issue_tokens_for_session(user: User, session: UserSession, family: RefreshTo
 
 class RegisterView(views.APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_scope = 'anon'
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -76,18 +81,49 @@ class RegisterView(views.APIView):
 
 class LoginView(views.APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_scope = 'auth_login'
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+        email = data['email'].lower().strip()
+
+        # Per-email lockout against credential stuffing
+        lockout_key = f"login_lockout:{email}"
+        attempts_key = f"login_attempts:{email}"
+
+        if cache.get(lockout_key):
+            return Response({
+                'success': False,
+                'error': {
+                    'code': 'ACCOUNT_LOCKED',
+                    'message': 'Account temporarily locked due to multiple failed login attempts. Please try again after 15 minutes.'
+                }
+            }, status=status.HTTP_429_TOO_MANY_REQUESTS)
 
         try:
-            user = User.objects.get(email=data['email'])
+            user = User.objects.get(email=email)
             if not user.check_password(data['password']):
+                failed_count = cache.get(attempts_key, 0) + 1
+                cache.set(attempts_key, failed_count, timeout=900)
+                if failed_count >= 5:
+                    cache.set(lockout_key, True, timeout=900)
                 return Response({'success': False, 'error': {'code': 'INVALID_CREDENTIALS', 'message': 'Invalid email or password'}}, status=status.HTTP_401_UNAUTHORIZED)
         except User.DoesNotExist:
+            failed_count = cache.get(attempts_key, 0) + 1
+            cache.set(attempts_key, failed_count, timeout=900)
+            if failed_count >= 5:
+                cache.set(lockout_key, True, timeout=900)
             return Response({'success': False, 'error': {'code': 'INVALID_CREDENTIALS', 'message': 'Invalid email or password'}}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Successful authentication: clear failure counters
+        cache.delete(attempts_key)
+        cache.delete(lockout_key)
+
+        # Extract client IP supporting reverse proxy
+        xff = request.META.get('HTTP_X_FORWARDED_FOR')
+        client_ip = xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR', '127.0.0.1')
 
         # Create session
         session = UserSession.objects.create(
@@ -95,7 +131,7 @@ class LoginView(views.APIView):
             device_id=str(uuid.uuid4())[:12],
             device_name=data.get('device_name', 'Web Browser'),
             platform=data.get('platform', 'WEB'),
-            ip_address=request.META.get('REMOTE_ADDR', '127.0.0.1'),
+            ip_address=client_ip,
             user_agent=request.META.get('HTTP_USER_AGENT', 'Unknown'),
             expires_at=timezone.now() + timedelta(days=30),
         )
@@ -184,6 +220,7 @@ class RevokeSessionView(views.APIView):
 
 class RequestPasswordResetView(views.APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_scope = 'otp_request'
 
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
@@ -198,7 +235,6 @@ class RequestPasswordResetView(views.APIView):
                 'success': True,
                 'message': f'6-digit verification OTP sent to {email}.',
                 'email_sent': email_sent,
-                'demo_otp': otp.otp if getattr(settings, 'DEBUG', True) else None
             }, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({
@@ -209,6 +245,7 @@ class RequestPasswordResetView(views.APIView):
 
 class VerifyPasswordResetView(views.APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_scope = 'otp_verify'
 
     def post(self, request):
         serializer = PasswordResetVerifySerializer(data=request.data)
@@ -222,12 +259,35 @@ class VerifyPasswordResetView(views.APIView):
         except User.DoesNotExist:
             return Response({'success': False, 'error': {'code': 'INVALID_REQUEST', 'message': 'Invalid reset request'}}, status=status.HTTP_400_BAD_REQUEST)
 
-        otp_record = PasswordResetOTP.objects.filter(user=user, otp=code, is_used=False).first()
-        if not otp_record or not otp_record.is_valid():
-            return Response({'success': False, 'error': {'code': 'INVALID_OTP', 'message': 'Invalid or expired 6-digit OTP code'}}, status=status.HTTP_400_BAD_REQUEST)
+        # Fetch user's latest active OTP record
+        otp_record = PasswordResetOTP.objects.filter(user=user, is_used=False).order_by('-created_at').first()
+        if not otp_record:
+            return Response({'success': False, 'error': {'code': 'INVALID_OTP', 'message': 'No active OTP verification found. Please request a new code.'}}, status=status.HTTP_400_BAD_REQUEST)
 
+        if otp_record.attempts >= 5:
+            otp_record.is_used = True
+            otp_record.save(update_fields=['is_used'])
+            return Response({
+                'success': False,
+                'error': {'code': 'OTP_LOCKED', 'message': 'Too many failed attempts. This OTP code has been locked. Please request a new code.'}
+            }, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        if timezone.now() > otp_record.expires_at:
+            return Response({'success': False, 'error': {'code': 'OTP_EXPIRED', 'message': 'OTP verification code has expired. Please request a new code.'}}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Constant-time comparison
+        if not secrets.compare_digest(otp_record.otp, code):
+            otp_record.attempts += 1
+            otp_record.save(update_fields=['attempts'])
+            remaining = max(0, 5 - otp_record.attempts)
+            return Response({
+                'success': False,
+                'error': {'code': 'INVALID_OTP', 'message': f'Invalid verification code. {remaining} attempt(s) remaining.'}
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Successfully verified
         otp_record.is_used = True
-        otp_record.save()
+        otp_record.save(update_fields=['is_used'])
 
         user.set_password(new_password)
         user.save()
@@ -243,6 +303,7 @@ class VerifyPasswordResetView(views.APIView):
 
 class SendVerificationOTPView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
+    throttle_scope = 'otp_request'
 
     def post(self, request):
         otp = EmailVerificationOTP.generate_otp_for_user(request.user)
@@ -251,21 +312,41 @@ class SendVerificationOTPView(views.APIView):
             'success': True,
             'message': f'Verification OTP sent to {request.user.email}',
             'email_sent': email_sent,
-            'demo_otp': otp.otp if getattr(settings, 'DEBUG', True) else None
         }, status=status.HTTP_200_OK)
 
 
 class VerifyEmailOTPView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
+    throttle_scope = 'otp_verify'
 
     def post(self, request):
         code = request.data.get('otp', '').strip()
-        otp_record = EmailVerificationOTP.objects.filter(user=request.user, otp=code, is_used=False).first()
-        if not otp_record or not otp_record.is_valid():
-            return Response({'success': False, 'error': {'code': 'INVALID_OTP', 'message': 'Invalid or expired OTP'}}, status=status.HTTP_400_BAD_REQUEST)
+        otp_record = EmailVerificationOTP.objects.filter(user=request.user, is_used=False).order_by('-created_at').first()
+        if not otp_record:
+            return Response({'success': False, 'error': {'code': 'INVALID_OTP', 'message': 'No active verification code found.'}}, status=status.HTTP_400_BAD_REQUEST)
+
+        if otp_record.attempts >= 5:
+            otp_record.is_used = True
+            otp_record.save(update_fields=['is_used'])
+            return Response({
+                'success': False,
+                'error': {'code': 'OTP_LOCKED', 'message': 'Too many failed attempts. Code locked. Please request a new code.'}
+            }, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        if timezone.now() > otp_record.expires_at:
+            return Response({'success': False, 'error': {'code': 'OTP_EXPIRED', 'message': 'Verification code has expired. Please request a new code.'}}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not secrets.compare_digest(otp_record.otp, code):
+            otp_record.attempts += 1
+            otp_record.save(update_fields=['attempts'])
+            remaining = max(0, 5 - otp_record.attempts)
+            return Response({
+                'success': False,
+                'error': {'code': 'INVALID_OTP', 'message': f'Invalid verification code. {remaining} attempt(s) remaining.'}
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         otp_record.is_used = True
-        otp_record.save()
+        otp_record.save(update_fields=['is_used'])
 
         request.user.is_email_verified = True
         request.user.save()
@@ -277,98 +358,53 @@ class VerifyEmailOTPView(views.APIView):
 
 
 class UserProfileView(views.APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        user = request.user if request.user and request.user.is_authenticated else None
-        if user:
-            profile, _ = UserProfile.objects.get_or_create(user=user)
-            user_data = UserSerializer(user).data
-        else:
-            user_data = {
-                'id': 'd0a1b2c3-4d5e-6f7a-8b9c-0d1e2f3a4b5c',
-                'email': 'sreerag@keralink.travel',
-                'first_name': 'Sreerag',
-                'last_name': 'P.',
-                'phone': '+91 98765 43210',
-                'avatar_url': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-                'is_email_verified': True,
-                'is_phone_verified': True,
-                'roles': ['CUSTOMER'],
-                'profile': {
-                    'emergency_contact_name': 'Ananya S. (Sister)',
-                    'emergency_contact_phone': '+91 94471 23456',
-                    'blood_group': 'O+ Positive',
-                    'medical_notes': 'No major allergies. Carries mild asthma inhaler.',
-                    'dietary_preference': 'Traditional Kerala Sadya (Veg)',
-                    'travel_pace': 'Balanced (2-3 stops/day)',
-                    'accessibility_required': False,
-                    'eco_score': 92,
-                    'eco_tier': 'Backwater Guardian',
-                    'trips_completed': 3,
-                    'ev_miles': 142,
-                    'carbon_offset_kg': 58.4,
-                    'badges': default_profile_badges(),
-                    'offline_packages': default_offline_packages(),
-                }
-            }
-
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        user_data = UserOwnerDetailSerializer(request.user).data
         return Response({
             'success': True,
             'data': user_data
         }, status=status.HTTP_200_OK)
 
     def patch(self, request):
-        user = request.user if request.user and request.user.is_authenticated else None
-        if user:
-            profile, _ = UserProfile.objects.get_or_create(user=user)
-            for field in ['first_name', 'last_name', 'phone', 'avatar_url']:
-                if field in request.data:
-                    setattr(user, field, request.data[field])
-            user.save()
+        serializer = UserProfileUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated = serializer.validated_data
 
-            prof_data = request.data.get('profile', request.data)
+        user = request.user
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        with transaction.atomic():
+            # Update user identity fields if provided
+            user_fields = ['first_name', 'last_name', 'phone', 'avatar_url']
+            user_updated = False
+            for field in user_fields:
+                if field in validated:
+                    setattr(user, field, validated[field])
+                    user_updated = True
+            if user_updated:
+                user.save()
+
+            # Update profile fields if provided
             profile_fields = [
-                'emergency_contact_name', 'emergency_contact_phone', 'blood_group', 'medical_notes',
-                'dietary_preference', 'travel_pace', 'accessibility_required', 'offline_packages'
+                'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_email',
+                'emergency_location_sharing_consented', 'blood_group', 'medical_notes',
+                'dietary_preference', 'travel_pace', 'accessibility_required',
+                'offline_packages', 'data_processing_consented'
             ]
+            profile_updated = False
             for field in profile_fields:
-                if field in prof_data:
-                    setattr(profile, field, prof_data[field])
-                elif field in request.data:
-                    setattr(profile, field, request.data[field])
-            profile.save()
+                if field in validated:
+                    setattr(profile, field, validated[field])
+                    if field == 'data_processing_consented' and validated[field]:
+                        profile.data_processing_consented_at = timezone.now()
+                    profile_updated = True
+            if profile_updated:
+                profile.save()
 
-            data = UserSerializer(user).data
-        else:
-            data = {
-                'id': 'd0a1b2c3-4d5e-6f7a-8b9c-0d1e2f3a4b5c',
-                'email': 'sreerag@keralink.travel',
-                'first_name': request.data.get('first_name', 'Sreerag'),
-                'last_name': request.data.get('last_name', 'P.'),
-                'phone': request.data.get('phone', '+91 98765 43210'),
-                'avatar_url': request.data.get('avatar_url', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'),
-                'is_email_verified': True,
-                'is_phone_verified': True,
-                'roles': ['CUSTOMER'],
-                'profile': {
-                    'emergency_contact_name': request.data.get('emergency_contact_name', 'Ananya S. (Sister)'),
-                    'emergency_contact_phone': request.data.get('emergency_contact_phone', '+91 94471 23456'),
-                    'blood_group': request.data.get('blood_group', 'O+ Positive'),
-                    'medical_notes': request.data.get('medical_notes', 'No major allergies. Carries mild asthma inhaler.'),
-                    'dietary_preference': request.data.get('dietary_preference', 'Traditional Kerala Sadya (Veg)'),
-                    'travel_pace': request.data.get('travel_pace', 'Balanced (2-3 stops/day)'),
-                    'accessibility_required': request.data.get('accessibility_required', False),
-                    'eco_score': 92,
-                    'eco_tier': 'Backwater Guardian',
-                    'trips_completed': 3,
-                    'ev_miles': 142,
-                    'carbon_offset_kg': 58.4,
-                    'badges': default_profile_badges(),
-                    'offline_packages': request.data.get('offline_packages', default_offline_packages()),
-                }
-            }
-
+        data = UserOwnerDetailSerializer(user).data
         return Response({
             'success': True,
             'message': 'Profile updated successfully',

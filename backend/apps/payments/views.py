@@ -1,4 +1,5 @@
 import uuid
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
@@ -14,6 +15,13 @@ class CreatePaymentOrderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        if not getattr(settings, 'PAYMENTS_ENABLED', False):
+            return Response({
+                'success': False,
+                'code': 'PAYMENTS_DISABLED',
+                'message': 'Payment processing is temporarily suspended for security verification.'
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
         serializer = CreatePaymentOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -45,6 +53,13 @@ class DirectPaymentVerifyView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        if not getattr(settings, 'PAYMENTS_ENABLED', False):
+            return Response({
+                'success': False,
+                'code': 'PAYMENTS_DISABLED',
+                'message': 'Live payment verification is temporarily suspended for security verification.'
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
         serializer = VerifyPaymentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -71,6 +86,13 @@ class PaymentWebhookView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        if not getattr(settings, 'PAYMENTS_ENABLED', False):
+            return Response({
+                'success': False,
+                'code': 'PAYMENTS_DISABLED',
+                'message': 'Payment webhooks are temporarily suspended.'
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
         serializer = WebhookPayloadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data

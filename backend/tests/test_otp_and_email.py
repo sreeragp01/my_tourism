@@ -1,6 +1,7 @@
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.core import mail
+from django.core.cache import cache
 from django.utils import timezone
 from datetime import timedelta
 from unittest.mock import patch
@@ -9,6 +10,18 @@ from rest_framework import status
 
 from apps.accounts.models import User, UserSession, PasswordResetOTP, EmailVerificationOTP
 from apps.accounts.services import AccountEmailService
+
+TEST_REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'apps.accounts.authentication.KeraLinkJWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [],
+    'DEFAULT_THROTTLE_RATES': {},
+    'NUM_PROXIES': 1,
+}
 
 
 class OTPModelTestCase(TestCase):
@@ -27,7 +40,7 @@ class OTPModelTestCase(TestCase):
         self.assertFalse(otp.is_used)
         self.assertTrue(otp.is_valid())
         self.assertGreater(otp.expires_at, timezone.now())
-        self.assertLessEqual(otp.expires_at, timezone.now() + timedelta(minutes=16))
+        self.assertLessEqual(otp.expires_at, timezone.now() + timedelta(minutes=11))
 
     def test_password_reset_otp_invalidates_previous_otps(self):
         otp1 = PasswordResetOTP.generate_otp_for_user(self.user)
@@ -53,7 +66,7 @@ class OTPModelTestCase(TestCase):
         self.assertFalse(otp.is_used)
         self.assertTrue(otp.is_valid())
         self.assertGreater(otp.expires_at, timezone.now())
-        self.assertLessEqual(otp.expires_at, timezone.now() + timedelta(minutes=31))
+        self.assertLessEqual(otp.expires_at, timezone.now() + timedelta(minutes=11))
 
     def test_email_verification_otp_invalidates_previous_otps(self):
         otp1 = EmailVerificationOTP.generate_otp_for_user(self.user)
@@ -109,9 +122,13 @@ class AccountEmailServiceTestCase(TestCase):
         self.assertFalse(success)
 
 
-@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+@override_settings(
+    EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+    REST_FRAMEWORK=TEST_REST_FRAMEWORK,
+)
 class PasswordResetAPITestCase(TestCase):
     def setUp(self):
+        cache.clear()
         self.client = APIClient()
         self.email = 'ananya.kochi@example.com'
         self.user = User.objects.create_user(
@@ -120,35 +137,41 @@ class PasswordResetAPITestCase(TestCase):
             first_name='Ananya'
         )
 
-    @override_settings(DEBUG=True)
-    def test_request_password_reset_valid_user_debug_mode(self):
+    def test_request_password_reset_valid_user_hides_demo_otp(self):
         url = reverse('password-reset-request')
         response = self.client.post(url, {'email': self.email}, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data['success'])
         self.assertTrue(response.data['email_sent'])
-        self.assertIsNotNone(response.data.get('demo_otp'))
+        # demo_otp must never be returned in API JSON
+        self.assertNotIn('demo_otp', response.data)
         
-        # Verify email dispatched to outbox
+        # Verify email dispatched to outbox containing real OTP
         self.assertEqual(len(mail.outbox), 1)
-        self.assertIn(response.data['demo_otp'], mail.outbox[0].body)
-        
-        # Verify OTP record in DB
         otp_record = PasswordResetOTP.objects.filter(user=self.user, is_used=False).first()
         self.assertIsNotNone(otp_record)
-        self.assertEqual(otp_record.otp, response.data['demo_otp'])
+        self.assertIn(otp_record.otp, mail.outbox[0].body)
 
-    @override_settings(DEBUG=False)
-    def test_request_password_reset_valid_user_prod_mode_hides_demo_otp(self):
-        url = reverse('password-reset-request')
-        response = self.client.post(url, {'email': self.email}, format='json')
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(response.data['success'])
-        self.assertTrue(response.data['email_sent'])
-        self.assertIsNone(response.data.get('demo_otp'))
-        self.assertEqual(len(mail.outbox), 1)
+    @patch('apps.accounts.views.VerifyPasswordResetView.throttle_classes', [])
+    def test_verify_password_reset_locks_after_5_failed_attempts(self):
+        otp = PasswordResetOTP.generate_otp_for_user(self.user)
+        url = reverse('password-reset-verify')
+
+        # First 4 failed attempts: returns 400 with attempts count
+        for i in range(1, 5):
+            res = self.client.post(url, {'email': self.email, 'otp': '000000', 'new_password': 'NewPassword123!'}, format='json')
+            self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertIn(f'{5 - i} attempt(s) remaining', res.data['error']['message'])
+
+        # 5th failed attempt: reaches max attempts (5)
+        res = self.client.post(url, {'email': self.email, 'otp': '000000', 'new_password': 'NewPassword123!'}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # 6th attempt: locked out with 429 TOO_MANY_REQUESTS
+        res = self.client.post(url, {'email': self.email, 'otp': otp.otp, 'new_password': 'NewPassword123!'}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+        self.assertEqual(res.data['error']['code'], 'OTP_LOCKED')
 
     def test_request_password_reset_nonexistent_user_safe_response(self):
         url = reverse('password-reset-request')
@@ -223,7 +246,7 @@ class PasswordResetAPITestCase(TestCase):
         response = self.client.post(url, payload, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['error']['code'], 'INVALID_OTP')
+        self.assertEqual(response.data['error']['code'], 'OTP_EXPIRED')
 
     def test_verify_password_reset_replay_attack_rejected(self):
         otp = PasswordResetOTP.generate_otp_for_user(self.user)
@@ -245,9 +268,13 @@ class PasswordResetAPITestCase(TestCase):
         self.assertEqual(second_res.data['error']['code'], 'INVALID_OTP')
 
 
-@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+@override_settings(
+    EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+    REST_FRAMEWORK=TEST_REST_FRAMEWORK,
+)
 class EmailVerificationAPITestCase(TestCase):
     def setUp(self):
+        cache.clear()
         self.client = APIClient()
         self.user = User.objects.create_user(
             email='newbie@keralink.travel',

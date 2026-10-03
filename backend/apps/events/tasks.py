@@ -1,8 +1,10 @@
 import logging
+from celery import shared_task
 from .dispatcher import EventDispatcher
 
 logger = logging.getLogger(__name__)
 
+@shared_task
 def process_outbox_events_task(batch_size: int = 100):
     """
     Periodic Celery / background worker task to poll pending OutboxEvent records

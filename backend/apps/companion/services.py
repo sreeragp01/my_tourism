@@ -218,7 +218,11 @@ class AICompanionOrchestrator:
             return None
 
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+            url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+            headers = {
+                "Content-Type": "application/json",
+                "x-goog-api-key": api_key,
+            }
             system_prompt = (
                 f"You are KeraLink AI, the world-class personal travel companion for a traveler in Kerala, India (God's Own Country). "
                 f"The traveler is currently in {destination.title()} on Day {trip_day} of their journey. "
@@ -240,7 +244,7 @@ class AICompanionOrchestrator:
                 }
             }
 
-            resp = requests.post(url, json=payload, timeout=8)
+            resp = requests.post(url, json=payload, headers=headers, timeout=8)
             if resp.status_code == 200:
                 data = resp.json()
                 text = data["candidates"][0]["content"]["parts"][0]["text"].strip()

@@ -1,6 +1,6 @@
 import uuid
 from decimal import Decimal
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -14,6 +14,7 @@ from apps.bookings.models import Booking
 
 User = get_user_model()
 
+@override_settings(PAYMENTS_ENABLED=True)
 class MasterE2EJourneyTestCase(TestCase):
     """
     🔥 MASTER END-TO-END TRANSACTIONAL TRIP ENGINE TEST

@@ -10,8 +10,9 @@ class KeraLinkJWTAuthentication(authentication.BaseAuthentication):
             return None
 
         raw_token = auth_header.split(' ')[1]
+        signing_key = getattr(settings, 'JWT_SIGNING_KEY', None) or settings.SECRET_KEY
         try:
-            payload = jwt.decode(raw_token, settings.SECRET_KEY, algorithms=['HS256'])
+            payload = jwt.decode(raw_token, signing_key, algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed('Access token has expired')
         except jwt.InvalidTokenError:
