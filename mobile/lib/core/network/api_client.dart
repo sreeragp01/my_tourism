@@ -1,0 +1,381 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io' show SocketException;
+import 'package:http/http.dart' as http;
+import '../config/app_config.dart';
+import '../errors/api_exception.dart';
+import '../storage/secure_token_storage.dart';
+
+typedef SessionExpiredCallback = void Function();
+
+class ApiClient {
+  final AppConfig config;
+  final ISecureTokenStorage storage;
+  final http.Client _httpClient;
+  final Duration timeout;
+  SessionExpiredCallback? onSessionExpired;
+
+  // Single-flight token refresh mutex to avoid concurrent rotation attempts
+  Completer<bool>? _refreshCompleter;
+
+  ApiClient({
+    required this.config,
+    required this.storage,
+    http.Client? httpClient,
+    this.timeout = const Duration(seconds: 30),
+    this.onSessionExpired,
+  }) : _httpClient = httpClient ?? http.Client();
+
+  String? _activeBaseUrl;
+  String get baseUrl => _activeBaseUrl ?? config.apiBaseUrl;
+
+  Future<void> init() async {
+    try {
+      if (!config.isProduction) {
+        final stored = await storage.getCustomBaseUrl();
+        if (stored != null && stored.trim().isNotEmpty) {
+          _activeBaseUrl = stored.trim();
+        }
+      }
+    } catch (_) {}
+  }
+
+  void setCustomBaseUrl(String url, {bool persist = true}) {
+    _activeBaseUrl = url.endsWith('/') ? url.substring(0, url.length - 1) : url;
+    if (persist) {
+      storage.saveCustomBaseUrl(_activeBaseUrl);
+    }
+  }
+
+  /// Probes the server health endpoint to test connectivity
+  Future<bool> checkHealth([String? targetUrl]) async {
+    final target = (targetUrl ?? baseUrl).trim();
+    final clean = target.endsWith('/') ? target.substring(0, target.length - 1) : target;
+    try {
+      final uri = Uri.parse('$clean/health/');
+      final res = await _httpClient.get(uri).timeout(const Duration(seconds: 12));
+      if (res.statusCode == 200) return true;
+    } catch (_) {}
+    try {
+      final uri = Uri.parse('$clean/auth/login/');
+      final res = await _httpClient.get(uri).timeout(const Duration(seconds: 12));
+      return res.statusCode < 500;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<dynamic> get(
+    String endpoint, {
+    Map<String, String>? headers,
+    Map<String, dynamic>? queryParameters,
+    bool requiresAuth = true,
+  }) async {
+    return _sendWithRetry(
+      method: 'GET',
+      endpoint: endpoint,
+      headers: headers,
+      queryParameters: queryParameters,
+      requiresAuth: requiresAuth,
+    );
+  }
+
+  Future<dynamic> post(
+    String endpoint, {
+    Map<String, String>? headers,
+    dynamic body,
+    bool requiresAuth = true,
+  }) async {
+    return _sendWithRetry(
+      method: 'POST',
+      endpoint: endpoint,
+      headers: headers,
+      body: body,
+      requiresAuth: requiresAuth,
+    );
+  }
+
+  Future<dynamic> put(
+    String endpoint, {
+    Map<String, String>? headers,
+    dynamic body,
+    bool requiresAuth = true,
+  }) async {
+    return _sendWithRetry(
+      method: 'PUT',
+      endpoint: endpoint,
+      headers: headers,
+      body: body,
+      requiresAuth: requiresAuth,
+    );
+  }
+
+  Future<dynamic> patch(
+    String endpoint, {
+    Map<String, String>? headers,
+    dynamic body,
+    bool requiresAuth = true,
+  }) async {
+    return _sendWithRetry(
+      method: 'PATCH',
+      endpoint: endpoint,
+      headers: headers,
+      body: body,
+      requiresAuth: requiresAuth,
+    );
+  }
+
+  Future<dynamic> delete(
+    String endpoint, {
+    Map<String, String>? headers,
+    bool requiresAuth = true,
+  }) async {
+    return _sendWithRetry(
+      method: 'DELETE',
+      endpoint: endpoint,
+      headers: headers,
+      requiresAuth: requiresAuth,
+    );
+  }
+
+  Future<dynamic> _sendWithRetry({
+    required String method,
+    required String endpoint,
+    Map<String, String>? headers,
+    Map<String, dynamic>? queryParameters,
+    dynamic body,
+    bool requiresAuth = true,
+    bool isRetry = false,
+  }) async {
+    final response = await _rawRequest(
+      method: method,
+      endpoint: endpoint,
+      headers: headers,
+      queryParameters: queryParameters,
+      body: body,
+      requiresAuth: requiresAuth,
+    );
+
+    // 401 Interception & Token Refresh
+    if (response.statusCode == 401 && requiresAuth && !isRetry) {
+      final refreshed = await _executeTokenRefresh();
+      if (refreshed) {
+        // Retry the original request once with rotated token
+        return _sendWithRetry(
+          method: method,
+          endpoint: endpoint,
+          headers: headers,
+          queryParameters: queryParameters,
+          body: body,
+          requiresAuth: requiresAuth,
+          isRetry: true,
+        );
+      } else {
+        await storage.clearTokens();
+        onSessionExpired?.call();
+        throw const UnauthorizedException(
+          message: 'Session has expired. Please log in again.',
+        );
+      }
+    }
+
+    return _processResponse(response);
+  }
+
+  Future<http.Response> _rawRequest({
+    required String method,
+    required String endpoint,
+    Map<String, String>? headers,
+    Map<String, dynamic>? queryParameters,
+    dynamic body,
+    bool requiresAuth = true,
+  }) async {
+    final cleanEndpoint = endpoint.startsWith('/') ? endpoint : '/$endpoint';
+    var uri = Uri.parse('$baseUrl$cleanEndpoint');
+
+    if (queryParameters != null && queryParameters.isNotEmpty) {
+      uri = uri.replace(
+        queryParameters: queryParameters.map((k, v) => MapEntry(k, v?.toString() ?? '')),
+      );
+    }
+
+    final requestHeaders = <String, String>{
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      if (headers != null) ...headers,
+    };
+
+    if (requiresAuth) {
+      final token = await storage.getAccessToken();
+      if (token != null && token.isNotEmpty) {
+        requestHeaders['Authorization'] = 'Bearer $token';
+      }
+    }
+
+    try {
+      final bodyString = body != null ? jsonEncode(body) : null;
+      http.Response response;
+
+      switch (method) {
+        case 'GET':
+          response = await _httpClient.get(uri, headers: requestHeaders).timeout(timeout);
+          break;
+        case 'POST':
+          response = await _httpClient.post(uri, headers: requestHeaders, body: bodyString).timeout(timeout);
+          break;
+        case 'PUT':
+          response = await _httpClient.put(uri, headers: requestHeaders, body: bodyString).timeout(timeout);
+          break;
+        case 'PATCH':
+          response = await _httpClient.patch(uri, headers: requestHeaders, body: bodyString).timeout(timeout);
+          break;
+        case 'DELETE':
+          response = await _httpClient.delete(uri, headers: requestHeaders).timeout(timeout);
+          break;
+        default:
+          throw UnsupportedError('HTTP method $method not supported');
+      }
+
+      return response;
+    } on TimeoutException {
+      if (_activeBaseUrl == null) {
+        final fallback = await _probeFallbackCandidates(cleanEndpoint, method, requestHeaders, body);
+        if (fallback != null) return fallback;
+      }
+      throw const TimeoutException(
+        message: 'Connection timed out connecting to KeraLink server. Please check your internet connection and try again.',
+      );
+    } on SocketException catch (e) {
+      if (_activeBaseUrl == null) {
+        final fallback = await _probeFallbackCandidates(cleanEndpoint, method, requestHeaders, body);
+        if (fallback != null) return fallback;
+      }
+      throw NetworkException(
+        message: 'Unable to connect to server (${e.message.isNotEmpty ? e.message : "Network error"}). Please check your internet connection and try again.',
+      );
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw NetworkException(message: 'Connection failed: ${e.toString()}');
+    }
+  }
+
+  Future<http.Response?> _probeFallbackCandidates(
+    String cleanEndpoint,
+    String method,
+    Map<String, String> requestHeaders,
+    dynamic body,
+  ) async {
+    for (final candidate in config.candidateBaseUrls) {
+      if (candidate == baseUrl) continue;
+      try {
+        final altUri = Uri.parse('$candidate$cleanEndpoint');
+        http.Response altResponse;
+        final bodyString = body != null ? jsonEncode(body) : null;
+        switch (method) {
+          case 'GET':
+            altResponse = await _httpClient.get(altUri, headers: requestHeaders).timeout(const Duration(milliseconds: 2500));
+            break;
+          case 'POST':
+            altResponse = await _httpClient.post(altUri, headers: requestHeaders, body: bodyString).timeout(const Duration(milliseconds: 2500));
+            break;
+          case 'PUT':
+            altResponse = await _httpClient.put(altUri, headers: requestHeaders, body: bodyString).timeout(const Duration(milliseconds: 2500));
+            break;
+          case 'DELETE':
+            altResponse = await _httpClient.delete(altUri, headers: requestHeaders).timeout(const Duration(milliseconds: 2500));
+            break;
+          default:
+            continue;
+        }
+        _activeBaseUrl = candidate;
+        storage.saveCustomBaseUrl(candidate);
+        return altResponse;
+      } catch (_) {
+        continue;
+      }
+    }
+    return null;
+  }
+
+  /// Single-flight mutex token refresh flow
+  Future<bool> _executeTokenRefresh() async {
+    if (_refreshCompleter != null) {
+      return _refreshCompleter!.future;
+    }
+
+    _refreshCompleter = Completer<bool>();
+
+    try {
+      final refreshToken = await storage.getRefreshToken();
+      if (refreshToken == null || refreshToken.isEmpty) {
+        _refreshCompleter!.complete(false);
+        return false;
+      }
+
+      final refreshUri = Uri.parse('$baseUrl/auth/refresh/');
+      final response = await _httpClient
+          .post(
+            refreshUri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: jsonEncode({'refresh_token': refreshToken}),
+          )
+          .timeout(timeout);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        final tokens = data['data'] ?? data;
+        final newAccess = tokens['access_token']?.toString();
+        final newRefresh = tokens['refresh_token']?.toString();
+        final expiresAt = tokens['refresh_token_expires_at']?.toString();
+
+        if (newAccess != null && newRefresh != null) {
+          await storage.saveTokens(
+            accessToken: newAccess,
+            refreshToken: newRefresh,
+            expiresAt: expiresAt,
+          );
+          _refreshCompleter!.complete(true);
+          return true;
+        }
+      }
+
+      // If refresh failed (401, replay, expired)
+      _refreshCompleter!.complete(false);
+      return false;
+    } catch (_) {
+      _refreshCompleter!.complete(false);
+      return false;
+    } finally {
+      _refreshCompleter = null;
+    }
+  }
+
+  dynamic _processResponse(http.Response response) {
+    dynamic jsonBody;
+    if (response.body.isNotEmpty) {
+      try {
+        jsonBody = jsonDecode(utf8.decode(response.bodyBytes));
+      } catch (_) {
+        jsonBody = {'message': response.body};
+      }
+    } else {
+      jsonBody = {};
+    }
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return jsonBody;
+    }
+
+    if (jsonBody is Map<String, dynamic>) {
+      throw ApiException.fromJson(jsonBody, response.statusCode);
+    }
+
+    throw ApiException(
+      message: 'Request failed with status ${response.statusCode}',
+      statusCode: response.statusCode,
+    );
+  }
+}

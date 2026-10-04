@@ -1,0 +1,30 @@
+# Secrets & Local Env
+.env
+.env.*
+!.env.example
+*.env
+*.pem
+*.key
+
+# Git & IDE
+.git
+.gitignore
+.idea
+.vscode
+
+# Python Bytecode & Cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+staticfiles/
+media/
+*.sqlite3
+db.sqlite3
+*.log
+run_backend.bat
+run_backend.ps1
