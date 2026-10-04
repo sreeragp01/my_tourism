@@ -6,6 +6,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from django.contrib.auth import get_user_model
 
+from django.core.cache import cache
 from apps.accommodations.models import Accommodation, RoomType, RoomInventory
 from apps.experiences.models import Experience, ExperienceSlot
 from apps.ai.models import AIPlan, AIPlanVersion
@@ -36,6 +37,7 @@ class MasterE2EJourneyTestCase(TestCase):
     """
 
     def setUp(self):
+        cache.clear()
         self.client = APIClient()
         self.today = timezone.now().date()
         self.org_id = uuid.uuid4()
@@ -346,3 +348,7 @@ class MasterE2EJourneyTestCase(TestCase):
         self.assertEqual(pass_resp.data['status'], "CONFIRMED")
         self.assertEqual(pass_resp.data['items_count'], 2)
         self.assertEqual(pass_resp.data['pass_token'], booking_record.digital_pass_token)
+
+    def tearDown(self):
+        cache.clear()
+        super().tearDown()

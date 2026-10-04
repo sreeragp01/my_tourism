@@ -20,5 +20,53 @@ services:
         value: ".onrender.com,localhost,127.0.0.1"
       - key: DATABASE_URL
         sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: keralink-redis
+          property: connectionString
       - key: PYTHON_VERSION
         value: 3.11.9
+
+  - type: worker
+    name: keralink-worker
+    env: python
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements/base.txt
+    startCommand: celery -A config worker --beat -l info
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.prod
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        fromService:
+          type: web
+          name: keralink-api
+          envVarKey: DJANGO_SECRET_KEY
+      - key: JWT_SIGNING_KEY
+        fromService:
+          type: web
+          name: keralink-api
+          envVarKey: JWT_SIGNING_KEY
+      - key: DATABASE_URL
+        fromService:
+          type: web
+          name: keralink-api
+          envVarKey: DATABASE_URL
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: keralink-redis
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  - type: redis
+    name: keralink-redis
+    region: singapore
+    plan: free
+    maxmemoryPolicy: noeviction
+    ipAllowList: [] # internal network access only

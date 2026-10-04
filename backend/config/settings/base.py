@@ -209,3 +209,14 @@ RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET', '')
 
 # Statutory Financial & Tax Records Retention (GST Act 2017 & Indian Income Tax Act: 8 years / 2920 days)
 STATUTORY_TAX_RETENTION_DAYS = int(os.environ.get('STATUTORY_TAX_RETENTION_DAYS', 8 * 365))
+
+# Celery Asynchronous Task Processing & Periodic Scheduler
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60

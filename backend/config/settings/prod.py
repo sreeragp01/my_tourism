@@ -9,17 +9,24 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 if not SECRET_KEY:
     raise ImproperlyConfigured("DJANGO_SECRET_KEY environment variable is strictly required in production.")
 
-# JWT Signing Key (Fallbacks securely to SECRET_KEY if not explicitly customized)
-JWT_SIGNING_KEY = os.environ.get('JWT_SIGNING_KEY') or SECRET_KEY
+# JWT Signing Key (Must be explicitly configured and distinct from SECRET_KEY in production)
+JWT_SIGNING_KEY = os.environ.get('JWT_SIGNING_KEY')
+if not JWT_SIGNING_KEY:
+    raise ImproperlyConfigured("JWT_SIGNING_KEY environment variable is strictly required in production.")
+if JWT_SIGNING_KEY == SECRET_KEY:
+    raise ImproperlyConfigured("Security Violation: JWT_SIGNING_KEY must be distinct from DJANGO_SECRET_KEY.")
 
-# Allowed Hosts (Includes Render's dynamic host automatically)
+# Allowed Hosts (Fail-closed: requires explicit DJANGO_ALLOWED_HOSTS or RENDER_EXTERNAL_HOSTNAME)
 hosts_raw = os.environ.get('DJANGO_ALLOWED_HOSTS', '')
 ALLOWED_HOSTS = [h.strip() for h in hosts_raw.split(',') if h.strip()]
 render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if render_host and render_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(render_host)
 if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['.onrender.com', 'localhost', '127.0.0.1']
+    raise ImproperlyConfigured(
+        "DJANGO_ALLOWED_HOSTS or RENDER_EXTERNAL_HOSTNAME must be explicitly configured in production. "
+        "Wildcard and default fail-open are strictly disabled."
+    )
 
 # CORS & CSRF Whitelist
 CORS_ALLOW_ALL_ORIGINS = False
@@ -39,11 +46,12 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+# Opt-in for HSTS Preload: only enable after domain is submitted and validated on hstspreload.org
+SECURE_HSTS_PRELOAD = os.environ.get('SECURE_HSTS_PRELOAD', 'False').lower() in ('true', '1', 'yes')
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-# Shared Cache Architecture (Redis when REDIS_URL provided, LocMemCache fallback for lightweight hosting)
+# Shared Cache Architecture (Redis strictly recommended in production to synchronize throttles across workers)
 REDIS_URL = os.environ.get('REDIS_URL')
 if REDIS_URL:
     CACHES = {
@@ -53,6 +61,11 @@ if REDIS_URL:
         }
     }
 else:
+    import logging
+    logging.getLogger('django.security').warning(
+        "REDIS_URL not configured. Falling back to LocMemCache. "
+        "Note: Rate-limiting throttles and session state will not be shared across multi-process workers."
+    )
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -89,4 +102,8 @@ if SENTRY_DSN:
 
 # Production Payment Safeguard: Never permit payment simulator in production
 ALLOW_PAYMENT_SIMULATOR = False
+
+# Silence W021 when SECURE_HSTS_PRELOAD is intentionally opted out
+if not SECURE_HSTS_PRELOAD:
+    SILENCED_SYSTEM_CHECKS = ['security.W021']
 

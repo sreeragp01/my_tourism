@@ -159,6 +159,18 @@ class SafetyService:
                 }
             )
 
+            # Direct synchronous dispatch fallback on transaction commit:
+            # Guarantees life-critical emergency SOS alerts are immediately dispatched to responders
+            # and emergency contacts even if the Celery worker queue is delayed or down.
+            def dispatch_sos_immediately():
+                try:
+                    from apps.events.dispatcher import EventDispatcher
+                    EventDispatcher.dispatch_pending_events()
+                except Exception as ex:
+                    logger.error(f"Immediate SOS outbox dispatch failed: {ex}", exc_info=True)
+
+            transaction.on_commit(dispatch_sos_immediately)
+
         return {
             'success': True,
             'alert_id': str(alert.id),

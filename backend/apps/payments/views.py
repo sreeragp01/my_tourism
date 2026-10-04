@@ -10,6 +10,7 @@ from .serializers import (
 )
 from .services import IdempotentPaymentService, PaymentVerificationError
 from apps.bookings.models import Booking
+from integrations.payments.payment_gateway import PaymentGateway
 
 class CreatePaymentOrderView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -93,15 +94,69 @@ class PaymentWebhookView(APIView):
                 'message': 'Payment webhooks are temporarily suspended.'
             }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
-        serializer = WebhookPayloadSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
+        # 1. Authoritative Webhook Cryptographic Signature Verification
+        webhook_secret = getattr(settings, 'RAZORPAY_WEBHOOK_SECRET', '')
+        received_signature = (
+            request.headers.get('X-Razorpay-Signature')
+            or request.META.get('HTTP_X_RAZORPAY_SIGNATURE')
+            or (request.data.get('signature') if isinstance(request.data, dict) else None)
+        )
+
+        is_test_env = getattr(settings, 'ALLOW_PAYMENT_SIMULATOR', False)
+
+        # In production (ALLOW_PAYMENT_SIMULATOR=False), webhook_secret and valid signature are strictly mandatory.
+        # In test simulation mode, if signature is omitted it proceeds; if signature is passed, it is strictly validated.
+        if webhook_secret and not (is_test_env and not received_signature):
+            if not received_signature:
+                return Response(
+                    {"error": "Missing X-Razorpay-Signature header.", "code": "SIGNATURE_REQUIRED"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            is_valid = PaymentGateway.verify_webhook_signature(
+                raw_body=request.body,
+                signature=received_signature,
+                webhook_secret=webhook_secret
+            )
+            if not is_valid:
+                return Response(
+                    {"error": "Invalid webhook cryptographic signature.", "code": "INVALID_SIGNATURE"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        elif not is_test_env:
+            return Response(
+                {"error": "RAZORPAY_WEBHOOK_SECRET is not configured on server.", "code": "CONFIGURATION_ERROR"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        # 2. Extract event parameters (supports standard Razorpay JSON and custom payload)
+        raw_data = request.data
+        if not isinstance(raw_data, dict):
+            return Response({"error": "Invalid JSON body", "code": "INVALID_BODY"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'event' in raw_data and 'payload' in raw_data:
+            event_id = raw_data.get('id') or request.headers.get('X-Razorpay-Event-Id') or f"evt_{uuid.uuid4().hex[:16]}"
+            event_type = raw_data.get('event')
+            payload_data = raw_data.get('payload', {})
+        elif 'event_type' in raw_data and 'payload' in raw_data:
+            event_id = raw_data.get('event_id') or f"evt_{uuid.uuid4().hex[:16]}"
+            event_type = raw_data.get('event_type')
+            payload_data = raw_data.get('payload', {})
+        else:
+            return Response(
+                {"error": "Unsupported webhook payload structure.", "code": "INVALID_PAYLOAD"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         service = IdempotentPaymentService()
         result = service.process_webhook_event(
-            event_id=data['event_id'],
-            event_type=data['event_type'],
-            payload=data['payload'],
-            signature=data.get('signature', ''),
+            event_id=event_id,
+            event_type=event_type,
+            payload=payload_data,
+            signature=received_signature or '',
         )
+
+        if result.get('status') == 'amount_mismatch':
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
         return Response(result, status=status.HTTP_200_OK)
+

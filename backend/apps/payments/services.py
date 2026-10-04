@@ -147,12 +147,24 @@ class IdempotentPaymentService:
         if not valid:
             raise PaymentVerificationError("Invalid Razorpay payment signature. Payment verification failed.")
 
-        # Update Payment record
+        # Update Payment record and verify order match
         payment = Payment.objects.filter(booking=booking, gateway_order_id=gateway_order_id).first()
-        if payment:
-            payment.status = 'SUCCESS'
-            payment.gateway_payment_id = gateway_payment_id
-            payment.save(update_fields=['status', 'gateway_payment_id'])
+        if not payment:
+            raise PaymentVerificationError(
+                f"No payment order matching '{gateway_order_id}' was initiated for this booking."
+            )
+
+        # Enforce exact amount integrity between initiated payment and booking total
+        expected_paise = int(Decimal(str(booking.total_amount)) * 100)
+        payment_paise = int(Decimal(str(payment.amount)) * 100)
+        if payment_paise != expected_paise:
+            raise PaymentVerificationError(
+                f"Payment amount mismatch: initiated {payment_paise} paise does not match booking total {expected_paise} paise."
+            )
+
+        payment.status = 'SUCCESS'
+        payment.gateway_payment_id = gateway_payment_id
+        payment.save(update_fields=['status', 'gateway_payment_id'])
 
         # Atomically consume all linked inventory holds
         self._consume_booking_holds(booking)
@@ -193,8 +205,22 @@ class IdempotentPaymentService:
         )
 
         booking_id = payload.get("booking_id")
-        if not booking_id and "payment" in payload:
-            booking_id = payload["payment"].get("notes", {}).get("booking_id")
+        if not booking_id and isinstance(payload.get("payment"), dict):
+            pay_data = payload["payment"]
+            entity = pay_data.get("entity") if isinstance(pay_data.get("entity"), dict) else pay_data
+            booking_id = (
+                entity.get("notes", {}).get("booking_id")
+                or pay_data.get("notes", {}).get("booking_id")
+                or entity.get("booking_id")
+            )
+        if not booking_id and isinstance(payload.get("order"), dict):
+            ord_data = payload["order"]
+            entity = ord_data.get("entity") if isinstance(ord_data.get("entity"), dict) else ord_data
+            booking_id = (
+                entity.get("notes", {}).get("booking_id")
+                or ord_data.get("notes", {}).get("booking_id")
+                or entity.get("receipt")
+            )
 
         if not booking_id:
             return {"status": "ignored", "reason": "No booking_id found in webhook payload"}
@@ -205,6 +231,32 @@ class IdempotentPaymentService:
             return {"status": "ignored", "reason": f"Booking {booking_id} not found"}
 
         if event_type in ["payment.captured", "order.paid"]:
+            # Enforce exact amount integrity if amount is present in webhook payload
+            paid_amount = None
+            if isinstance(payload.get("payment"), dict):
+                pay_data = payload["payment"]
+                if isinstance(pay_data.get("entity"), dict):
+                    paid_amount = pay_data["entity"].get("amount")
+                else:
+                    paid_amount = pay_data.get("amount")
+            if paid_amount is None and isinstance(payload.get("order"), dict):
+                ord_data = payload["order"]
+                if isinstance(ord_data.get("entity"), dict):
+                    paid_amount = ord_data["entity"].get("amount")
+                else:
+                    paid_amount = ord_data.get("amount")
+            if paid_amount is None:
+                paid_amount = payload.get("amount")
+
+            if paid_amount is not None:
+                expected_paise = int(Decimal(str(booking.total_amount)) * 100)
+                if int(paid_amount) != expected_paise:
+                    return {
+                        "status": "amount_mismatch",
+                        "reason": f"Paid amount {paid_amount} paise does not match expected booking total {expected_paise} paise.",
+                        "booking_reference": booking.booking_reference,
+                    }
+
             if booking.status != 'CONFIRMED':
                 # Atomically consume all linked inventory holds
                 self._consume_booking_holds(booking)
@@ -219,7 +271,14 @@ class IdempotentPaymentService:
                     booking.digital_pass_token = f"KL-PASS-{booking.booking_reference}-{uuid.uuid4().hex[:8].upper()}"
                 booking.save(update_fields=['status', 'confirmed_at', 'digital_pass_token'])
 
-            payment_id = payload.get("payment_id") or payload.get("payment", {}).get("id")
+            payment_id = payload.get("payment_id")
+            if not payment_id and isinstance(payload.get("payment"), dict):
+                pay_data = payload["payment"]
+                if isinstance(pay_data.get("entity"), dict):
+                    payment_id = pay_data["entity"].get("id")
+                else:
+                    payment_id = pay_data.get("id")
+
             payment = Payment.objects.filter(booking=booking).first()
             if payment:
                 payment.status = 'SUCCESS'
