@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 enum AppEnvironment {
   development,
   staging,
@@ -31,7 +29,10 @@ class AppConfig {
 
   /// Factory creating configuration from compile-time flags (--dart-define)
   factory AppConfig.fromEnvironment() {
-    const envStr = String.fromEnvironment('ENVIRONMENT', defaultValue: 'production');
+    const envStr = String.fromEnvironment(
+      'ENVIRONMENT',
+      defaultValue: 'production',
+    );
     const customUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
     return AppConfig(
       environment: _parseEnvironment(envStr),
@@ -55,48 +56,14 @@ class AppConfig {
     if (customBaseUrl != null && customBaseUrl!.isNotEmpty) {
       return [customBaseUrl!];
     }
-
-    switch (environment) {
-      case AppEnvironment.production:
-        return const [
-          liveProductionUrl,
-        ];
-
-      case AppEnvironment.staging:
-        return const [
-          liveProductionUrl,
-          'http://192.168.220.40:8000/api/v1',
-          'http://127.0.0.1:8000/api/v1',
-        ];
-
-      case AppEnvironment.development:
-        return const [
-          liveProductionUrl,
-          'http://192.168.220.40:8000/api/v1',
-          'http://127.0.0.1:8000/api/v1',
-          'http://10.0.2.2:8000/api/v1',
-        ];
-    }
+    return const [liveProductionUrl];
   }
 
   String get apiBaseUrl {
     if (customBaseUrl != null && customBaseUrl!.isNotEmpty) {
       return customBaseUrl!;
     }
-
-    switch (environment) {
-      case AppEnvironment.production:
-        return liveProductionUrl;
-
-      case AppEnvironment.staging:
-        return 'https://staging-api.keralink.org/api/v1';
-
-      case AppEnvironment.development:
-        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-          return 'http://10.0.2.2:8000/api/v1';
-        }
-        return 'http://127.0.0.1:8000/api/v1';
-    }
+    return liveProductionUrl;
   }
 
   bool get isProduction => environment == AppEnvironment.production;

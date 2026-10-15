@@ -1,6 +1,17 @@
 import random
 from rest_framework import serializers
-from .models import VehicleCategory, AirportTransferRoute, CabBooking
+from .models import VehicleCategory, AirportTransferRoute, CabBooking, Driver
+
+class DriverSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Driver
+        fields = [
+            'id', 'name', 'phone', 'whatsapp', 'license_number',
+            'vehicle_type', 'vehicle_plate_number', 'district',
+            'rating', 'trips_completed', 'is_verified', 'is_available',
+            'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
 
 class VehicleCategorySerializer(serializers.ModelSerializer):
     class Meta:

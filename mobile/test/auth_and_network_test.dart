@@ -10,16 +10,10 @@ import 'package:keralink_mobile/features/auth/data/auth_repository.dart';
 
 void main() {
   group('AppConfig Environment Tests', () {
-    test('Default development environment URL selection', () {
-      const config = AppConfig(environment: AppEnvironment.development);
-      expect(config.isDevelopment, isTrue);
-      expect(config.isProduction, isFalse);
-      expect(config.apiBaseUrl, contains('8000/api/v1'));
-    });
-
-    test('Staging environment URL selection', () {
-      const config = AppConfig(environment: AppEnvironment.staging);
-      expect(config.apiBaseUrl, 'https://staging-api.keralink.org/api/v1');
+    test('Default environment URL selection defaults to Render cloud backend', () {
+      final config = AppConfig.fromEnvironment();
+      expect(config.isProduction, isTrue);
+      expect(config.apiBaseUrl, AppConfig.liveProductionUrl);
     });
 
     test('Production environment URL selection', () {
@@ -442,9 +436,9 @@ void main() {
       expect(isHealthy, isFalse);
     });
 
-    test('candidateBaseUrls includes Wi-Fi LAN IP in development', () {
+    test('candidateBaseUrls targets Render cloud backend', () {
       const config = AppConfig(environment: AppEnvironment.development);
-      expect(config.candidateBaseUrls, anyElement(contains('192.168.220.40')));
+      expect(config.candidateBaseUrls, [AppConfig.liveProductionUrl]);
     });
   });
 }

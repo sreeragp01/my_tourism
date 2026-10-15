@@ -75,4 +75,11 @@ class ApiConstants {
   static const String notificationPreferences = '/notifications/preferences/';
   static const String deviceToken = '/notifications/device-token/';
   static const String proximityCheck = '/notifications/proximity-check/';
+
+  // Admin & Platform Management
+  static const String adminStats = '/auth/admin/stats/';
+  static const String adminUsers = '/auth/admin/users/';
+  static String adminUserAction(String userId) => '/auth/admin/users/$userId/action/';
+  static const String packages = '/packages/';
+  static const String transportDrivers = '/transport/drivers/';
 }

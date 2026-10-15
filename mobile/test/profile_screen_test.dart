@@ -97,6 +97,26 @@ class MockProfileRepository implements IProfileRepository {
     profile = profile.copyWith(offlinePackages: updated);
     return profile;
   }
+
+  @override
+  Future<UserProfile> addDocument(TravelerDocumentItem doc) async {
+    final docs = List<TravelerDocumentItem>.from(profile.documents);
+    final index = docs.indexWhere((d) => d.id == doc.id || (d.type == doc.type && doc.type != 'PERMIT'));
+    if (index >= 0) {
+      docs[index] = doc;
+    } else {
+      docs.add(doc);
+    }
+    profile = profile.copyWith(documents: docs);
+    return profile;
+  }
+
+  @override
+  Future<UserProfile> removeDocument(String docId) async {
+    final docs = profile.documents.where((d) => d.id != docId).toList();
+    profile = profile.copyWith(documents: docs);
+    return profile;
+  }
 }
 
 void main() {

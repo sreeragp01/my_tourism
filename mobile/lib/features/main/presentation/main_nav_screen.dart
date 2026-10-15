@@ -17,6 +17,7 @@ import '../../safety/presentation/safety_hub_screen.dart';
 import '../../search/data/search_repository.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../profile/data/profile_repository.dart';
+import '../../admin/presentation/admin_control_hub_screen.dart';
 
 class MainNavScreen extends StatefulWidget {
   final AuthRepository? authRepository;
@@ -145,6 +146,15 @@ class _MainNavScreenState extends State<MainNavScreen> {
       ProfileScreen(
         repository: _profileRepo,
         onLogout: widget.authRepository != null ? _handleLogout : null,
+        onOpenAdminHub: (widget.authRepository?.currentUser?.isAdmin == true)
+            ? () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AdminControlHubScreen(authRepository: widget.authRepository!),
+                  ),
+                );
+              }
+            : null,
       ),
     ];
 

@@ -5,6 +5,7 @@ import '../data/auth_repository.dart';
 import 'register_screen.dart';
 import 'forgot_password_dialog.dart';
 import '../../main/presentation/main_nav_screen.dart';
+import '../../admin/presentation/admin_control_hub_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final AuthRepository authRepository;
@@ -43,18 +44,26 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await widget.authRepository.login(
+      final user = await widget.authRepository.login(
         email: _emailController.text,
         password: _passwordController.text,
       );
 
       if (!mounted) return;
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => MainNavScreen(authRepository: widget.authRepository),
-        ),
-      );
+      if (user.isAdmin) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => AdminControlHubScreen(authRepository: widget.authRepository),
+          ),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => MainNavScreen(authRepository: widget.authRepository),
+          ),
+        );
+      }
     } on ApiException catch (e) {
       setState(() {
         _errorMessage = e.message;
@@ -103,6 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +176,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
                     ),
                   ),
-
                   const SizedBox(height: 32),
 
                   // Error Banner

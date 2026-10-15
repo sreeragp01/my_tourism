@@ -3,6 +3,7 @@ import '../../../core/theme/app_theme.dart';
 import '../data/auth_repository.dart';
 import 'login_screen.dart';
 import '../../main/presentation/main_nav_screen.dart';
+import '../../admin/presentation/admin_control_hub_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   final AuthRepository authRepository;
@@ -32,11 +33,19 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     if (isAuthenticated) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => MainNavScreen(authRepository: widget.authRepository),
-        ),
-      );
+      if (widget.authRepository.currentUser?.isAdmin == true) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => AdminControlHubScreen(authRepository: widget.authRepository),
+          ),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => MainNavScreen(authRepository: widget.authRepository),
+          ),
+        );
+      }
     } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(

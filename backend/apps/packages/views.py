@@ -1,29 +1,51 @@
 import urllib.parse
+import uuid
+from django.utils.text import slugify
 from django.db.models import Q
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 
 from .models import TourPackage, PackageInquiry
 from .serializers import (
     TourPackageListSerializer,
     TourPackageDetailSerializer,
     PackageInquirySerializer,
+    TourPackageAdminSerializer,
 )
 
-class TourPackageViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = TourPackage.objects.filter(is_active=True)
-    permission_classes = [AllowAny]
+class TourPackageViewSet(viewsets.ModelViewSet):
+    queryset = TourPackage.objects.all()
     lookup_field = 'slug'
 
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return [AllowAny()]
+
     def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return TourPackageAdminSerializer
         if self.action == 'retrieve':
             return TourPackageDetailSerializer
         return TourPackageListSerializer
 
+    def perform_create(self, serializer):
+        title = serializer.validated_data.get('title', 'Tour Package')
+        slug = serializer.validated_data.get('slug')
+        if not slug:
+            slug = f"{slugify(title)}-{uuid.uuid4().hex[:6]}"
+        pkg_id = serializer.validated_data.get('id')
+        if not pkg_id:
+            pkg_id = f"pkg_{uuid.uuid4().hex[:10]}"
+        serializer.save(id=pkg_id, slug=slug)
+
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = TourPackage.objects.all()
+        # For non-admin, filter active packages
+        if not (self.request.user and self.request.user.is_staff):
+            qs = qs.filter(is_active=True)
         
         # Category filter
         category = self.request.query_params.get('category')

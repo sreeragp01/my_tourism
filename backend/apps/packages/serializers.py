@@ -80,3 +80,13 @@ class PackageInquirySerializer(serializers.ModelSerializer):
             'message', 'channel', 'created_at'
         ]
         read_only_fields = ['id', 'package', 'created_at']
+
+
+class TourPackageAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TourPackage
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'required': False},
+            'slug': {'required': False},
+        }

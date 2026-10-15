@@ -1,15 +1,25 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from decimal import Decimal
 
-from .models import VehicleCategory, AirportTransferRoute, CabBooking
+from .models import VehicleCategory, AirportTransferRoute, CabBooking, Driver
 from .serializers import (
     VehicleCategorySerializer,
     AirportTransferRouteSerializer,
     CabBookingSerializer,
+    DriverSerializer,
 )
+
+class DriverViewSet(viewsets.ModelViewSet):
+    queryset = Driver.objects.all()
+    serializer_class = DriverSerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return [AllowAny()]
 
 class VehicleCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = VehicleCategory.objects.filter(is_active=True)

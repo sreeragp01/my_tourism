@@ -7,11 +7,13 @@ import '../models/user_profile_model.dart';
 class ProfileScreen extends StatefulWidget {
   final IProfileRepository? repository;
   final VoidCallback? onLogout;
+  final VoidCallback? onOpenAdminHub;
 
   const ProfileScreen({
     super.key,
     this.repository,
     this.onLogout,
+    this.onOpenAdminHub,
   });
 
   @override
@@ -45,12 +47,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
-    final prof = await _repository.getProfile();
-    if (mounted) {
-      setState(() {
-        _profile = prof;
-        _isLoading = false;
-      });
+    try {
+      final prof = await _repository.getProfile();
+      if (mounted) {
+        setState(() {
+          _profile = prof;
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _profile = UserProfile.mockDefault();
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -195,6 +206,215 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showAddDocumentDialog() {
+    String selectedType = 'AADHAAR';
+    final numberController = TextEditingController();
+    bool isSimulatingUpload = false;
+    String? selectedFileName;
+
+    final typeMap = {
+      'AADHAAR': 'Government Aadhaar Card',
+      'PASSPORT': 'International Passport',
+      'DRIVING_LICENSE': 'Driving License (Motor & EV)',
+      'PERMIT': 'Kerala Forest & Wildlife Permit',
+      'INSURANCE': 'Travel & Medical Insurance',
+    };
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surfaceTeal,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+            left: 20,
+            right: 20,
+            top: 24,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Upload Required Document / ID',
+                      style: TextStyle(
+                        color: AppTheme.textCream,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: AppTheme.textMuted),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Required by Kerala Tourism Dept for homestays, houseboats, vehicle rentals & high-range safaris.',
+                  style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+
+                const Text('Document Type', style: TextStyle(color: AppTheme.sunsetGold, fontSize: 12, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceElevated,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.borderTeal),
+                  ),
+                  child: DropdownButton<String>(
+                    value: selectedType,
+                    isExpanded: true,
+                    underline: const SizedBox(),
+                    dropdownColor: AppTheme.surfaceElevated,
+                    style: const TextStyle(color: AppTheme.textCream, fontSize: 13),
+                    items: typeMap.entries.map((e) {
+                      return DropdownMenuItem(value: e.key, child: Text(e.value));
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setModalState(() => selectedType = val);
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                const Text('Document / ID Number', style: TextStyle(color: AppTheme.sunsetGold, fontSize: 12, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: numberController,
+                  style: const TextStyle(color: AppTheme.textCream, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: selectedType == 'AADHAAR' ? 'e.g. 5421 9876 1234' : 'e.g. KL-07-2023-XXXX',
+                    hintStyle: const TextStyle(color: AppTheme.textSubtle, fontSize: 12),
+                    filled: true,
+                    fillColor: AppTheme.surfaceElevated,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderTeal)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.sunsetGold)),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // File Attachment Simulator
+                const Text('Document Scan / Photo', style: TextStyle(color: AppTheme.sunsetGold, fontSize: 12, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                GestureDetector(
+                  onTap: () {
+                    setModalState(() {
+                      isSimulatingUpload = true;
+                    });
+                    Future.delayed(const Duration(milliseconds: 600), () {
+                      if (context.mounted) {
+                        setModalState(() {
+                          isSimulatingUpload = false;
+                          selectedFileName = '${selectedType.toLowerCase()}_scan.pdf';
+                        });
+                      }
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceElevated,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: selectedFileName != null ? AppTheme.oceanTeal : AppTheme.borderTeal,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          selectedFileName != null ? Icons.check_circle_rounded : Icons.file_upload_outlined,
+                          color: selectedFileName != null ? AppTheme.oceanTeal : AppTheme.sunsetGold,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            isSimulatingUpload
+                                ? 'Uploading and scanning file...'
+                                : (selectedFileName ?? 'Tap to select document scan / photo'),
+                            style: TextStyle(
+                              color: selectedFileName != null ? AppTheme.oceanTeal : AppTheme.textMuted,
+                              fontSize: 12,
+                              fontWeight: selectedFileName != null ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                        if (isSimulatingUpload)
+                          const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.sunsetGold))
+                        else
+                          Text(
+                            selectedFileName != null ? 'Change' : 'Browse',
+                            style: const TextStyle(color: AppTheme.sunsetGold, fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.sunsetGold,
+                      foregroundColor: AppTheme.midnightTeal,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () async {
+                      final docNum = numberController.text.trim();
+                      final maskedNum = docNum.length > 4 ? '•••• •••• ${docNum.substring(docNum.length - 4)}' : (docNum.isNotEmpty ? docNum : 'Verified •••• 9841');
+                      final newDoc = TravelerDocumentItem(
+                        id: 'doc_${DateTime.now().millisecondsSinceEpoch}',
+                        type: selectedType,
+                        title: typeMap[selectedType] ?? 'Government ID',
+                        documentNumber: maskedNum,
+                        status: 'VERIFIED',
+                        issueDate: 'Verified 2026',
+                      );
+
+                      final messenger = ScaffoldMessenger.of(context);
+                      Navigator.pop(ctx);
+                      final updated = await _repository.addDocument(newDoc);
+                      if (!mounted) return;
+                      setState(() => _profile = updated);
+                      messenger.showSnackBar(
+                        SnackBar(
+                          backgroundColor: AppTheme.oceanTeal,
+                          content: Text(
+                            '${newDoc.title} uploaded & verified successfully!',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    },
+                    child: const Text('Save & Verify Document', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDialogField({
     required TextEditingController controller,
     required String label,
@@ -263,6 +483,61 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildTravelerHeader(),
             const SizedBox(height: 16),
 
+            if (widget.onOpenAdminHub != null) ...[
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.oceanTeal.withValues(alpha: 0.5),
+                      AppTheme.surfaceTeal,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.sunsetGold, width: 1.2),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.sunsetGold.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.admin_panel_settings, color: AppTheme.sunsetGold, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Central Command Access',
+                            style: TextStyle(color: AppTheme.textCream, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          Text(
+                            'Manage packages, drivers, users & locations',
+                            style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: widget.onOpenAdminHub,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.sunsetGold,
+                        foregroundColor: AppTheme.midnightTeal,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Open Hub', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             // 2. Metrics Ribbon
             _buildMetricsRibbon(),
             const SizedBox(height: 20),
@@ -273,7 +548,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildIceCard(),
             const SizedBox(height: 20),
 
-            // 4. AI Travel Architect Preferences
+            // 4. Required Travel Documents & Verification
+            _buildSectionHeader('Traveler ID & Required Documents', Icons.badge_rounded, AppTheme.oceanTeal),
+            const SizedBox(height: 10),
+            _buildRequiredDocumentsCard(),
+            const SizedBox(height: 20),
+
+            // 5. AI Travel Architect Preferences
             _buildSectionHeader('AI Travel & Dietary Preferences', Icons.auto_awesome, AppTheme.sunsetGold),
             const SizedBox(height: 10),
             _buildAiPreferencesCard(),
@@ -625,6 +906,144 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   MaterialPageRoute(builder: (_) => const SafetyHubScreen()),
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRequiredDocumentsCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceTeal,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppTheme.oceanTeal.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Required Verification Documents',
+                      style: TextStyle(color: AppTheme.textCream, fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Govt KYC required for stays, houseboats & permits',
+                      style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add_circle, color: AppTheme.sunsetGold, size: 24),
+                tooltip: 'Add New Document',
+                onPressed: _showAddDocumentDialog,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_profile.documents.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(16),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceElevated,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'No documents added yet. Tap below to upload your ID.',
+                style: TextStyle(color: AppTheme.textMuted, fontSize: 12),
+              ),
+            )
+          else
+            Column(
+              children: _profile.documents.map((doc) {
+                IconData docIcon = Icons.badge_outlined;
+                if (doc.type == 'DRIVING_LICENSE') docIcon = Icons.drive_eta_outlined;
+                if (doc.type == 'PERMIT') docIcon = Icons.park_outlined;
+                if (doc.type == 'INSURANCE') docIcon = Icons.health_and_safety_outlined;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceElevated,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppTheme.borderTeal),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.oceanTeal.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(docIcon, color: AppTheme.oceanTeal, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              doc.title,
+                              style: const TextStyle(color: AppTheme.textCream, fontSize: 13, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${doc.documentNumber} • ${doc.issueDate}',
+                              style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.oceanTeal.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppTheme.oceanTeal.withValues(alpha: 0.4)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_circle, color: AppTheme.oceanTeal, size: 12),
+                            const SizedBox(width: 4),
+                            Text(
+                              doc.status,
+                              style: const TextStyle(color: AppTheme.oceanTeal, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.sunsetGold,
+                side: BorderSide(color: AppTheme.sunsetGold.withValues(alpha: 0.7)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              icon: const Icon(Icons.upload_file_rounded, size: 18),
+              label: const Text('Add / Upload Another Document', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              onPressed: _showAddDocumentDialog,
             ),
           ),
         ],

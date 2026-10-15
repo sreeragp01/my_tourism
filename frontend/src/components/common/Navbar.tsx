@@ -101,7 +101,7 @@ export const Navbar: React.FC = () => {
           {/* Live Backend Connection Indicator */}
           <button
             onClick={() => checkBackendHealth()}
-            title="Django Backend API Status (Click to ping http://localhost:8000)"
+            title="Django Backend API Status (Click to ping https://my-tourism.onrender.com)"
             className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
               isBackendOnline === true
                 ? 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40 shadow-sm shadow-emerald-950'

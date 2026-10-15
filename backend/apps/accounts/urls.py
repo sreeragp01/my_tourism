@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (
     RegisterView, LoginView, RefreshTokenView, SessionListView, RevokeSessionView,
     RequestPasswordResetView, VerifyPasswordResetView, SendVerificationOTPView, VerifyEmailOTPView,
-    UserProfileView, DataExportView, WithdrawConsentView, DeleteAccountView
+    UserProfileView, DataExportView, WithdrawConsentView, DeleteAccountView,
+    AdminPlatformStatsView, AdminUserListView, AdminUserActionView
 )
 
 urlpatterns = [
@@ -24,4 +25,9 @@ urlpatterns = [
     path('export-data/', DataExportView.as_view(), name='data-export'),
     path('withdraw-consent/', WithdrawConsentView.as_view(), name='withdraw-consent'),
     path('delete-account/', DeleteAccountView.as_view(), name='delete-account'),
+
+    # Admin Control Endpoints
+    path('admin/stats/', AdminPlatformStatsView.as_view(), name='admin-platform-stats'),
+    path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
+    path('admin/users/<uuid:user_id>/action/', AdminUserActionView.as_view(), name='admin-user-action'),
 ]

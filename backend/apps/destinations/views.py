@@ -45,11 +45,22 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
         return qs
 
 
-class DestinationViewSet(viewsets.ReadOnlyModelViewSet):
+class DestinationViewSet(viewsets.ModelViewSet):
     queryset = Destination.objects.all()
     serializer_class = DestinationSerializer
-    permission_classes = [permissions.AllowAny]
     lookup_field = 'slug'
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [permissions.IsAdminUser()]
+        return [permissions.AllowAny()]
+
+    def perform_create(self, serializer):
+        from django.utils.text import slugify
+        name = serializer.validated_data.get('name', 'Destination')
+        slug = serializer.validated_data.get('slug') or slugify(name)
+        dest_id = serializer.validated_data.get('id') or slug
+        serializer.save(id=dest_id, slug=slug)
 
     def get_queryset(self):
         qs = super().get_queryset()

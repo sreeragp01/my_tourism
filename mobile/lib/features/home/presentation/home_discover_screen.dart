@@ -426,336 +426,492 @@ class _HomeDiscoverScreenState extends State<HomeDiscoverScreen> {
   }
 
   Widget _buildFeaturedCircuitCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceTeal,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppTheme.borderTeal,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+    return GestureDetector(
+      onTap: () {
+        Destination? match;
+        for (final d in _destinations) {
+          if (d.name.toLowerCase().contains('alleppey') ||
+              d.district.toLowerCase().contains('alappuzha')) {
+            match = d;
+            break;
+          }
+        }
+        if (match != null) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => DestinationDetailsScreen(
+                destination: match!,
+                onPlanForDestination: widget.onOpenPlanner,
+              ),
+            ),
+          );
+        } else {
+          _openSearch('Alleppey');
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceTeal,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppTheme.sunsetGold.withValues(alpha: 0.5),
+            width: 1.2,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Hero Image Header with Badges
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(20)),
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Image.network(
-                    'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: AppTheme.surfaceElevated,
-                      child: const Center(
-                        child: Icon(Icons.sailing,
-                            color: AppTheme.oceanTeal, size: 40),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // Gradient Overlay
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(20)),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.2),
-                        AppTheme.midnightTeal.withValues(alpha: 0.85),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Best Seller Badge
-              Positioned(
-                top: 12,
-                left: 12,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.sunsetGold,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'BEST SELLER',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ),
-              // Rating Badge
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.star, color: AppTheme.sunsetGold, size: 12),
-                      SizedBox(width: 4),
-                      Text(
-                        '4.9 (128)',
-                        style: TextStyle(
-                          color: AppTheme.textCream,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Hero Image Header with Badges
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(20)),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.network(
+                      'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: AppTheme.surfaceElevated,
+                        child: const Center(
+                          child: Icon(Icons.sailing,
+                              color: AppTheme.oceanTeal, size: 40),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              // Title & Price on Image
-              const Positioned(
-                bottom: 12,
-                left: 14,
-                right: 14,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Backwater Sunset Cruise & Kayak',
-                      style: TextStyle(
-                        color: AppTheme.textCream,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                // Gradient Overlay
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(20)),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.2),
+                          AppTheme.midnightTeal.withValues(alpha: 0.85),
+                        ],
                       ),
                     ),
-                    SizedBox(height: 2),
-                    Row(
+                  ),
+                ),
+                // Best Seller Badge
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.sunsetGold,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'FEATURED CIRCUIT',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+                // Rating Badge
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Row(
                       children: [
-                        Icon(Icons.location_on,
-                            color: AppTheme.oceanTeal, size: 12),
+                        Icon(Icons.star, color: AppTheme.sunsetGold, size: 12),
                         SizedBox(width: 4),
                         Text(
-                          'Alleppey • Punnamada Backwaters',
+                          '4.9 (128)',
                           style: TextStyle(
-                              color: AppTheme.textMuted, fontSize: 11),
-                        ),
-                        Spacer(),
-                        Text(
-                          'From ₹12,500',
-                          style: TextStyle(
-                            color: AppTheme.sunsetGold,
+                            color: AppTheme.textCream,
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                            fontSize: 11,
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          // Route Milestone Dots
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                const _RouteDot(label: 'Kochi', isStart: true),
-                Expanded(
-                  child: Container(
-                    height: 2,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppTheme.oceanTeal,
-                          AppTheme.sunsetGold.withValues(alpha: 0.6),
-                        ],
-                      ),
-                    ),
                   ),
                 ),
-                const _RouteDot(label: 'Munnar Hills'),
-                Expanded(
-                  child: Container(
-                    height: 2,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppTheme.sunsetGold.withValues(alpha: 0.6),
-                          AppTheme.sunsetCoral,
+                // Title & Price on Image
+                const Positioned(
+                  bottom: 12,
+                  left: 14,
+                  right: 14,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Backwater Sunset Cruise & Kayak',
+                        style: TextStyle(
+                          color: AppTheme.textCream,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on,
+                              color: AppTheme.oceanTeal, size: 12),
+                          SizedBox(width: 4),
+                          Text(
+                            'Alleppey • Punnamada Backwaters',
+                            style: TextStyle(
+                                color: AppTheme.textMuted, fontSize: 11),
+                          ),
+                          Spacer(),
+                          Text(
+                            'From ₹12,500',
+                            style: TextStyle(
+                              color: AppTheme.sunsetGold,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
-                    ),
+                    ],
                   ),
                 ),
-                const _RouteDot(label: 'Alleppey', isEnd: true),
               ],
             ),
-          ),
-        ],
+            // Route Milestone Dots
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const _RouteDot(label: 'Kochi', isStart: true),
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.oceanTeal,
+                                AppTheme.sunsetGold.withValues(alpha: 0.6),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const _RouteDot(label: 'Munnar Hills'),
+                      Expanded(
+                        child: Container(
+                          height: 2,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.sunsetGold.withValues(alpha: 0.6),
+                                AppTheme.sunsetCoral,
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const _RouteDot(label: 'Alleppey', isEnd: true),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Tap to explore full circuit details →',
+                        style: TextStyle(
+                          color: AppTheme.sunsetGold,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildCuratedCollections() {
-    final escapes = [
-      {
-        'title': 'Munnar Tea Hills',
-        'tag': 'Misty Hills',
-        'rating': '4.8 ★',
-        'price': '₹4,500/night',
-        'image':
-            'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80',
-      },
-      {
-        'title': 'Varkala Red Cliff',
-        'tag': 'Arabian Sea',
-        'rating': '4.8 ★',
-        'price': '₹3,200/night',
-        'image':
-            'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=600&q=80',
-      },
-      {
-        'title': 'Thekkady Jungle Safari',
-        'tag': 'Periyar Wildlife',
-        'rating': '4.7 ★',
-        'price': '₹4,200/night',
-        'image':
-            'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80',
-      },
-    ];
+    // If live destinations are available, use them to populate the horizontal scroll
+    final hasDestinations = _destinations.isNotEmpty;
+    final List<Map<String, dynamic>> items = hasDestinations
+        ? _destinations.map((d) {
+            return {
+              'destination': d,
+              'title': d.name,
+              'tag': d.district.isNotEmpty ? d.district : (d.tags.isNotEmpty ? d.tags.first : 'Kerala'),
+              'rating': '★ 4.9',
+              'price': 'View Details',
+              'image': d.heroImage.isNotEmpty
+                  ? d.heroImage
+                  : 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80',
+            };
+          }).toList()
+        : [
+            {
+              'destination': null,
+              'title': 'Munnar Tea Hills',
+              'tag': 'Misty Hills',
+              'rating': '4.8 ★',
+              'price': '₹4,500/night',
+              'image':
+                  'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=600&q=80',
+            },
+            {
+              'destination': null,
+              'title': 'Varkala Red Cliff',
+              'tag': 'Arabian Sea',
+              'rating': '4.8 ★',
+              'price': '₹3,200/night',
+              'image':
+                  'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=600&q=80',
+            },
+            {
+              'destination': null,
+              'title': 'Thekkady Jungle Safari',
+              'tag': 'Periyar Wildlife',
+              'rating': '4.7 ★',
+              'price': '₹4,200/night',
+              'image':
+                  'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=600&q=80',
+            },
+            {
+              'destination': null,
+              'title': 'Wayanad Rain Trails',
+              'tag': 'High Range',
+              'rating': '4.9 ★',
+              'price': '₹3,800/night',
+              'image':
+                  'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80',
+            },
+          ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Popular Kerala Escapes',
+            const Text(
+              'Popular Kerala Sites & Escapes',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.textCream,
               ),
             ),
-            Text(
-              'See All',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppTheme.oceanTeal,
-                fontWeight: FontWeight.bold,
+            GestureDetector(
+              onTap: () {
+                if (widget.onOpenExplore != null) {
+                  widget.onOpenExplore!();
+                } else {
+                  _openSearch();
+                }
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                child: Text(
+                  'See All →',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.oceanTeal,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 180,
+          height: 190,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            itemCount: escapes.length,
+            itemCount: items.length,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              final e = escapes[index];
-              return Container(
-                width: 160,
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceTeal,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.borderTeal),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(16)),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.network(
-                              e['image']!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                color: AppTheme.surfaceElevated,
-                                child: const Icon(Icons.landscape,
-                                    color: AppTheme.oceanTeal),
-                              ),
-                            ),
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.6),
-                                  borderRadius: BorderRadius.circular(6),
+              final e = items[index];
+              return GestureDetector(
+                onTap: () {
+                  final Destination? dest = e['destination'] as Destination?;
+                  if (dest != null) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => DestinationDetailsScreen(
+                          destination: dest,
+                          onPlanForDestination: widget.onOpenPlanner,
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+
+                  // Look for match by title keyword
+                  final titleLower = e['title'].toString().toLowerCase();
+                  Destination? match;
+                  for (final d in _destinations) {
+                    final dLower = d.name.toLowerCase();
+                    if (titleLower.contains(dLower) || dLower.contains(titleLower.split(' ').first)) {
+                      match = d;
+                      break;
+                    }
+                  }
+
+                  if (match != null) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => DestinationDetailsScreen(
+                          destination: match!,
+                          onPlanForDestination: widget.onOpenPlanner,
+                        ),
+                      ),
+                    );
+                  } else {
+                    _openSearch(e['title'].toString().split(' ').first);
+                  }
+                },
+                child: Container(
+                  width: 175,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceTeal,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.borderTeal),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16)),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.network(
+                                e['image']!.toString(),
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: AppTheme.surfaceElevated,
+                                  child: const Icon(Icons.landscape,
+                                      color: AppTheme.oceanTeal),
                                 ),
-                                child: Text(
-                                  e['rating']!,
-                                  style: const TextStyle(
-                                    color: AppTheme.sunsetGold,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                              ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.65),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    e['rating']!.toString(),
+                                    style: const TextStyle(
+                                      color: AppTheme.sunsetGold,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
+                              Positioned(
+                                bottom: 8,
+                                left: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.midnightTeal.withValues(alpha: 0.8),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    e['tag']!.toString(),
+                                    style: const TextStyle(
+                                      color: AppTheme.oceanTeal,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              e['title']!.toString(),
+                              style: const TextStyle(
+                                color: AppTheme.textCream,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    e['price']!.toString(),
+                                    style: const TextStyle(
+                                      color: AppTheme.sunsetGold,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 10,
+                                  color: AppTheme.oceanTeal,
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            e['title']!,
-                            style: const TextStyle(
-                              color: AppTheme.textCream,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            e['price']!,
-                            style: const TextStyle(
-                              color: AppTheme.oceanTeal,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },

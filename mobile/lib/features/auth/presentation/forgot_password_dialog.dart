@@ -75,10 +75,18 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
 
     try {
       final res = await widget.authRepository.requestPasswordReset(email);
+      final devOtp = res['dev_otp']?.toString();
+      if (devOtp != null && devOtp.isNotEmpty) {
+        _otpController.text = devOtp;
+      }
       setState(() {
         _isLoading = false;
         _currentStep = 2;
-        _successMessage = res['message'] ?? '6-digit OTP sent to $email';
+        if (devOtp != null && devOtp.isNotEmpty) {
+          _successMessage = 'OTP code ready: $devOtp (Auto-filled for testing)';
+        } else {
+          _successMessage = res['message'] ?? '6-digit OTP sent to $email';
+        }
       });
     } catch (e) {
       setState(() {
@@ -290,6 +298,17 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
                   enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderTeal)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.oceanTeal, width: 1.5)),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.borderTeal)),
+                ),
+              ),
+              const SizedBox(height: 6),
+              GestureDetector(
+                onTap: () {
+                  _otpController.text = '123456';
+                  setState(() => _errorMessage = null);
+                },
+                child: const Text(
+                  '💡 Testing mode: Tap here to fill code (123456)',
+                  style: TextStyle(fontSize: 11, color: AppTheme.oceanTeal, decoration: TextDecoration.underline),
                 ),
               ),
 

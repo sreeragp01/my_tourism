@@ -31,11 +31,12 @@ class ApiClient {
 
   Future<void> init() async {
     try {
-      if (!config.isProduction) {
-        final stored = await storage.getCustomBaseUrl();
-        if (stored != null && stored.trim().isNotEmpty) {
-          _activeBaseUrl = stored.trim();
-        }
+      final stored = await storage.getCustomBaseUrl();
+      if (stored != null && (stored.contains('10.0.2.2') || stored.contains('127.0.0.1') || stored.contains('localhost'))) {
+        await storage.saveCustomBaseUrl(null);
+        _activeBaseUrl = null;
+      } else if (!config.isProduction && stored != null && stored.trim().isNotEmpty) {
+        _activeBaseUrl = stored.trim();
       }
     } catch (_) {}
   }
@@ -236,6 +237,13 @@ class ApiClient {
           throw UnsupportedError('HTTP method $method not supported');
       }
 
+      if (response.statusCode >= 500 && _activeBaseUrl == null) {
+        final fallback = await _probeFallbackCandidates(cleanEndpoint, method, requestHeaders, body);
+        if (fallback != null && fallback.statusCode < 500) {
+          return fallback;
+        }
+      }
+
       return response;
     } on TimeoutException {
       if (_activeBaseUrl == null) {
@@ -359,7 +367,11 @@ class ApiClient {
       try {
         jsonBody = jsonDecode(utf8.decode(response.bodyBytes));
       } catch (_) {
-        jsonBody = {'message': response.body};
+        final bodyStr = response.body.trim();
+        final displayMsg = bodyStr.startsWith('<')
+            ? 'Server Error (${response.statusCode}): Could not complete operation. Please verify backend service.'
+            : bodyStr;
+        jsonBody = {'message': displayMsg};
       }
     } else {
       jsonBody = {};

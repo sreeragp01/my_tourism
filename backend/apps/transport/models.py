@@ -126,3 +126,32 @@ class CabBooking(models.Model):
 
     def __str__(self):
         return f"{self.booking_reference} - {self.traveler_name} ({self.vehicle_category.name})"
+
+
+class Driver(models.Model):
+    VEHICLE_TYPE_CHOICES = [
+        ('SEDAN', 'Prime Sedan (Dzire / Etios)'),
+        ('SUV_PREMIUM', 'Premium Mountain SUV (Innova Crysta / Hycross)'),
+        ('TEMPO_TRAVELLER', 'Executive Tempo Traveller (12-17 Seater)'),
+        ('ELECTRIC_EV', 'Green Eco Cab (Nexon / ZS EV)'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=150)
+    phone = models.CharField(max_length=30)
+    whatsapp = models.CharField(max_length=30, blank=True, default='')
+    license_number = models.CharField(max_length=50)
+    vehicle_type = models.CharField(max_length=50, choices=VEHICLE_TYPE_CHOICES, default='SUV_PREMIUM')
+    vehicle_plate_number = models.CharField(max_length=30)
+    district = models.CharField(max_length=100, default='Ernakulam')
+    rating = models.FloatField(default=4.95)
+    trips_completed = models.PositiveIntegerField(default=0)
+    is_verified = models.BooleanField(default=True)
+    is_available = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} - {self.vehicle_plate_number} ({self.district})"

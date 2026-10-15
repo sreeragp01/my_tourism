@@ -16,6 +16,8 @@ abstract class IProfileRepository {
     bool? accessibilityRequired,
   });
   Future<UserProfile> toggleOfflinePackage(String packageId);
+  Future<UserProfile> addDocument(TravelerDocumentItem doc);
+  Future<UserProfile> removeDocument(String docId);
 }
 
 class ProfileRepository implements IProfileRepository {
@@ -101,6 +103,26 @@ class ProfileRepository implements IProfileRepository {
     }).toList();
 
     _cachedProfile = _cachedProfile.copyWith(offlinePackages: updatedPackages);
+    return _cachedProfile;
+  }
+
+  @override
+  Future<UserProfile> addDocument(TravelerDocumentItem doc) async {
+    final docs = List<TravelerDocumentItem>.from(_cachedProfile.documents);
+    final index = docs.indexWhere((d) => d.id == doc.id || (d.type == doc.type && doc.type != 'PERMIT'));
+    if (index >= 0) {
+      docs[index] = doc;
+    } else {
+      docs.add(doc);
+    }
+    _cachedProfile = _cachedProfile.copyWith(documents: docs);
+    return _cachedProfile;
+  }
+
+  @override
+  Future<UserProfile> removeDocument(String docId) async {
+    final docs = _cachedProfile.documents.where((d) => d.id != docId).toList();
+    _cachedProfile = _cachedProfile.copyWith(documents: docs);
     return _cachedProfile;
   }
 }

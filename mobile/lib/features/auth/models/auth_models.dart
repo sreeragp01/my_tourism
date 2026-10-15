@@ -26,6 +26,8 @@ class User {
     return name.isNotEmpty ? name : email.split('@').first;
   }
 
+  bool get isAdmin => roles.contains('ADMIN') || roles.contains('SUPER_ADMIN');
+
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id']?.toString() ?? '',
