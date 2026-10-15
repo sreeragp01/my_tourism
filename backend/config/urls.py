@@ -5,6 +5,8 @@ from django.utils import timezone
 from django.conf import settings
 from django.db import connection
 
+import os
+
 def health_check(request):
     db_status = "healthy"
     try:
@@ -15,7 +17,8 @@ def health_check(request):
     return JsonResponse({
         "status": "ok",
         "service": "keralink-tourism-api",
-        "version": "1.0.0",
+        "version": "1.0.1",
+        "commit": os.environ.get('RENDER_GIT_COMMIT', 'local-3f2182c'),
         "timestamp": timezone.now().isoformat(),
         "database": db_status,
         "environment": "production" if not getattr(settings, 'DEBUG', True) else "development",
