@@ -267,6 +267,7 @@ class AICompanionOrchestrator:
     @classmethod
     def _generate_expert_travel_response(cls, lower: str, raw_query: str, destination: str, trip_day: int) -> Dict[str, Any]:
         """Comprehensive semantic domain engine providing authoritative Kerala travel insights."""
+        dest_title = (destination or 'Kerala').replace('_', ' ').title()
         # 0. Tour Packages & Local Tour Operator Marketplace Inquiries
         if any(w in lower for w in ['package', 'packages', 'tour company', 'tour companies', 'tour operator', 'operators', 'honeymoon package', 'family package', 'best package', 'book a package', 'agency', 'agencies']):
             content = (
